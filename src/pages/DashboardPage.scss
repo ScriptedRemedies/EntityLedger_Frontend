@@ -1,0 +1,28 @@
+/* Hide the container cleanly when collapsed */
+.sub-menu-container {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.4s ease-in-out;
+
+  &.expanded {
+    max-height: 300px; /* Adjust based on total height of buttons */
+  }
+}
+
+/* The actual items inside */
+.sub-menu-item {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* When the container gets the .expanded class, animate the items */
+.sub-menu-container.expanded .sub-menu-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger the cascade using nth-child delays */
+.sub-menu-container.expanded .sub-menu-item:nth-child(1) { transition-delay: 0.1s; }
+.sub-menu-container.expanded .sub-menu-item:nth-child(2) { transition-delay: 0.2s; }
+.sub-menu-container.expanded .sub-menu-item:nth-child(3) { transition-delay: 0.3s; }
