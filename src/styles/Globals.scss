@@ -4,18 +4,19 @@
   --font-bebas: 'Bebas', sans-serif;
   --font-inter: 'Inter', sans-serif;
   --font-gideon: 'Gideon Roman', sans-serif;
-}
 
-:root {
-  --text-color-white: #E5E5E5;
-  --text-color-normal: #757575;
-  --text-color-muted: #75757550;
+  --color-white: #E5E5E5;
+  --color-normal: #757575;
+  --color-muted: #75757550;
 
-  --ash: #B5A986;
-  --bronze: #CD7F32;
-  --silver: #C0C0C0;
-  --gold: #FFD700;
-  --iri: #AC261B;
+  --color-60-background: #04050799;
+  --color-full-background: #040507;
+
+  --color-ash: #B5A986;
+  --color-bronze: #CD7F32;
+  --color-silver: #C0C0C0;
+  --color-gold: #FFD700;
+  --color-iri: #AC261B;
 
   --title-size: 50px;
   --header-size-1: 30px;
@@ -30,22 +31,22 @@
   .bebas-header-login {
     @apply font-bebas uppercase;
     font-size: var(--title-size);
-    color: var(--text-color-white);
+    color: var(--color-white);
   }
   .bebas-header-1 {
     @apply font-bebas uppercase;
     font-size: var(--title-size);
-    color: var(--text-color-normal);
+    color: var(--color-normal);
   }
 
   .inter-text-normal {
     @apply font-inter;
     font-size: var(--text-size-normal);
-    color: var(--text-color-normal);
+    color: var(--color-normal);
   }
   .inter-text-small {
     @apply font-inter;
     font-size: var(--text-size-small);
-    color: var(--text-color-normal);
+    color: var(--color-normal);
   }
 }
