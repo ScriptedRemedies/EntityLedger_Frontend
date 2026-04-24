@@ -3,10 +3,17 @@ import './DashboardPage.scss';
 import ReactMarkdown from 'react-markdown';
 import fm from 'front-matter';
 import latestNotes from '../data/latest-update.md?raw';
+import {useNavigate} from "react-router-dom";
 
 const DashboardPage = () => {
     // State to handle the cascade menu
     const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+    const navigate = useNavigate();
+    const menuItems =[
+        { name: 'Start a New Challenge', path: '' },
+        { name: 'Continue Challenge', path: '' },
+        { name: 'Review Challenges', path: '/review-challenges'}
+    ]
     // State to handle the version info overlay
     const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
 
@@ -52,12 +59,15 @@ const DashboardPage = () => {
                         {/* Cascading Sub-Menu */}
                         {/* The 'expanded' class triggers SCSS cascade logic */}
                         <div className={`sub-menu-container flex flex-col ${isMenuExpanded ? 'expanded' : 'collapsed'}`}>
-                            {['Start a New Challenge', 'Continue Challenge', 'Review Challenges'].map((item, index) => (
+
+                            {/* Mapping over the menu items array which holds name and route */}
+                            {menuItems.map((item, index) => (
                                 <button
                                     key={index}
+                                    onClick={() => navigate(item.path)}
                                     className="inter-text-normal sub-menu-item text-left pl-16 pr-4 py-4 bg-60-background hover:bg-full-background hover:text-white transition-colors border-l-4 border-transparent hover:border-ash hover:cursor-pointer"
                                 >
-                                    {item}
+                                    {item.name}
                                 </button>
                             ))}
                         </div>
