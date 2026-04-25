@@ -3,11 +3,41 @@
 }
 
 .nav {
-  padding: 20px 10px 20px 25px;
+  width: 150px;
+  padding-bottom: 10px;
+}
+.variantIconContainer {
+  width: 90px;
+  height: 90px;
+  background: black;
+  box-shadow: -6px 8px 0 #0000004D;
 }
 .variantIcon {
-  width: 80px;
-  filter: grayscale(60%);
+  width: 70px;
+  filter: grayscale(70%);
+}
+.variantIconActive {
+  width: 145px;
+  height: 110px;
+  top: -7px;
+  left: -20px;
+  border-top: 2px solid #000;
+  border-bottom: 2px solid #000;
+
+  &::after {
+    content: ''; /* Required to make pseudo-elements render */
+    position: absolute;
+    top: 50%;
+    right: 5px; /* Exactly 5px padding from the right edge */
+    transform: translateY(-50%); /* Perfectly centers it vertically */
+
+    /* The Magic Triangle Geometry */
+    width: 0;
+    height: 0;
+    border-top: 15px solid transparent;
+    border-bottom: 15px solid transparent;
+    border-left: 20px solid #000;
+  }
 }
 
 /* Scopes strictly to this page's root container */

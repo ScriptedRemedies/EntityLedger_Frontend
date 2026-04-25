@@ -10,7 +10,24 @@ const ReviewChallengesPage = () => {
     // --- State Management ---
     // activeVariant defaults to the first item in our hardcoded array (Standard)
     const [activeVariant, setActiveVariant] = useState(VARIANTS[0]);
+    const [displayVariant, setDisplayVariant] = useState(VARIANTS[0]);
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const [activeTab, setActiveTab] = useState('Trials'); // 'Trials', 'Rules', 'Stats'
+
+    // --- Transition Handler ---
+    const handleVariantClick = (v) => {
+        // Prevent clicking the same tab or clicking while an animation is running
+        if (v.id === activeVariant.id || isTransitioning) return;
+
+        setActiveVariant(v); // Instantly move the nav indicator
+        setIsTransitioning(true); // Trigger the fade-out animation on the middle content
+
+        // Wait 300ms for the CSS fade-out to finish, then swap the data
+        setTimeout(() => {
+            setDisplayVariant(v);
+            setIsTransitioning(false); // The new keyed div will mount with the fade-in class
+        }, 100);
+    };
 
     // Global active season for the right-side character display
     const [globalActiveSeason, setGlobalActiveSeason] = useState(null);
@@ -40,7 +57,7 @@ const ReviewChallengesPage = () => {
 
     // --- Variant Selection Fetch ---
     useEffect(() => {
-        if (!activeVariant) return;
+        if (!displayVariant) return;
 
         // Reset sub-views when switching variants
         setSelectedSeason(null);
@@ -61,7 +78,7 @@ const ReviewChallengesPage = () => {
             }
         };
         fetchVariantData();
-    }, [activeVariant]);
+    }, [displayVariant]);
 
     // --- Season Selection Fetch (Trial Recap) ---
     useEffect(() => {
@@ -93,27 +110,28 @@ const ReviewChallengesPage = () => {
             <div className="bg-overlay absolute inset-0 z-0 pointer-events-none"></div>
 
             {/* === LEFT NAV === */}
-            {/* TODO: fix spacing of icons and the black background with shadow */}
-            <div className="nav border-r-2 border-black flex flex-col items-center py-6 relative z-30 flex-shrink-0 overflow-hidden">
-                <div className="nav-fog-bg -z-10 opacity-60"></div>
+            <div className="nav border-r-2 border-black flex flex-col relative z-30 flex-shrink-0">
+                <div className="absolute inset-0 overflow-hidden -z-20 pointer-events-none">
+                    <div className="nav-fog-bg opacity-60"></div>
+                </div>
 
                 {/* Variant List (Scrollable) */}
-                <div className="flex-1 w-full overflow-y-auto hide-scrollbar flex flex-col items-center gap-6 pb-4">
+                <div className="flex-1 w-[180px] py-6 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col items-center gap-6 pb-4">
                     {/* Map directly over the hardcoded VARIANTS import */}
                     {VARIANTS.map((v) => (
-                        <div key={v.id} className="variantIcon relative group flex items-center justify-center cursor-pointer" onClick={() => setActiveVariant(v)}>
+                        <div key={v.id} className="variantIconContainer relative group flex items-center justify-center cursor-pointer" onClick={() => handleVariantClick(v)}>
                             {/* The active variant indicator */}
                             {activeVariant?.id === v.id && (
-                                <div className="absolute inset-0 bg-60-background border border-normal shadow-variant-active rounded-md -z-10"></div>
+                                <div className="variantIconActive fade-in absolute -z-10 bg-30-background"></div>
                             )}
-                            <img src={`/assets/Variants/${v.name}.png`} alt={v.name} className="" />
+                            <img src={`/assets/Variants/${v.name}.png`} alt={v.name} className="variantIcon" />
                         </div>
                     ))}
                 </div>
 
                 <button
                     onClick={() => navigate(-1)}
-                    className="mt-auto pt-4 inter-text-normal text-normal hover:text-white transition-colors"
+                    className="back-button inter-text-normal text-normal hover:text-white transition-colors"
                 >
                     Back
                 </button>
@@ -121,17 +139,17 @@ const ReviewChallengesPage = () => {
 
             {/* === MIDDLE CONTENT AREA === */}
             <div className="flex-1 relative flex flex-col overflow-hidden z-10">
-                {activeVariant && (
-                    <>
+                {displayVariant && (
+                    <div key={displayVariant.id} className={`${isTransitioning ? 'fade-out' : 'fade-in'}`}>
                         <div className="content-fog-bg -z-10 opacity-50"></div>
-                        <img src={activeVariant.watermarkUrl} alt="" className="absolute inset-0 m-auto w-1/2 opacity-10 pointer-events-none object-contain" />
+                        <img src={displayVariant.watermarkUrl} alt="" className="absolute inset-0 m-auto w-1/2 opacity-10 pointer-events-none object-contain" />
 
                         <div className="flex-1 flex flex-col p-10 overflow-hidden relative z-20">
 
                             {/* Secondary Nav & Header */}
                             <div className="mb-6 flex-shrink-0">
-                                <h1 className="bebas-header-1 mb-1">{activeVariant.name}</h1>
-                                <p className="inter-text-small text-muted">{activeVariant.difficultyLevel}</p>
+                                <h1 className="bebas-header-1 mb-1">{displayVariant.name}</h1>
+                                <p className="inter-text-small text-muted">{displayVariant.difficultyLevel}</p>
 
                                 <div className="flex gap-8 mt-6 border-b border-normal pb-2">
                                     {['Trials', 'Rules', 'Stats'].map(tab => (
@@ -280,7 +298,7 @@ const ReviewChallengesPage = () => {
                                 )}
                             </div>
                         </div>
-                    </>
+                    </div>
                 )}
             </div>
 

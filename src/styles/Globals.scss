@@ -9,6 +9,7 @@
   --color-normal: #757575;
   --color-muted: #75757550;
 
+  --color-30-background: #0405074D;
   --color-60-background: #04050799;
   --color-full-background: #040507;
 
@@ -49,4 +50,97 @@
     font-size: var(--text-size-small);
     color: var(--color-normal);
   }
+
+  .back-button {
+    position: relative;
+    left: 15px;
+    width: 105px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding-left: 30px; /* Pushes the text away from the new internal arrows */
+    border: none; /* Removes standard borders so they don't pierce the arrow */
+
+    /* Draw the top and bottom borders dynamically starting exactly at x=22px */
+    background-image:
+            linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)),
+            linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15));
+    background-position:
+            22px 0,       /* Top line */
+            22px 100%;    /* Bottom line */
+    background-repeat: no-repeat;
+    background-size:
+            calc(100% - 22px) 2px,
+            calc(100% - 22px) 2px;
+
+    /* The Eraser Mask */
+    -webkit-mask-image: linear-gradient(to right, black 40%, transparent 100%);
+    mask-image: linear-gradient(to right, black 40%, transparent 100%);
+
+    /* The Outer Gray Arrow */
+    &::before {
+      content: '';
+      position: absolute;
+      /* Centers the 44px diagonal point perfectly at 22px so the tip touches 0 */
+      left: 22px;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      width: 31px;
+      height: 31px;
+      border-top: 2px solid rgba(255, 255, 255, 0.15);
+      border-left: 2px solid rgba(255, 255, 255, 0.15);
+      transition: border-color 0.3s ease;
+    }
+
+    /* The Inner Red Entity Chevron */
+    &::after {
+      content: '';
+      position: absolute;
+      /* Centers the inner arrow neatly inside the outer point */
+      left: 20px;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      width: 12px;
+      height: 12px;
+      border-top: 2px solid var(--color-iri);
+      border-left: 2px solid var(--color-iri);
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Hover State */
+    &:hover {
+      background-image:
+              linear-gradient(var(--color-iri), var(--color-iri)),
+              linear-gradient(var(--color-iri), var(--color-iri));
+
+      &::before {
+        border-top-color: var(--color-iri);
+        border-left-color: var(--color-iri);
+      }
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 0.2s ease-out forwards;
+  }
+  .fade-out {
+    animation: fadeOut 0.2s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
