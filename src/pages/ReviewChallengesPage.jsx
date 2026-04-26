@@ -258,6 +258,14 @@ const ReviewChallengesPage = () => {
                                                 <div key={rule.id} className="flex flex-col">
                                                     <h4 className="inter-text-normal text-white font-bold mb-1">{rule.title}</h4>
                                                     <p className="inter-text-small text-normal leading-relaxed">{rule.description}</p>
+
+                                                    {rule.bullets && rule.bullets.length > 0 && (
+                                                        <ul className="list-disc list-inside inter-text-small text-normal leading-relaxed mt-2 pl-2 flex flex-col gap-1">
+                                                            {rule.bullets.map((bullet, index) => (
+                                                                <li key={index}>{bullet}</li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
