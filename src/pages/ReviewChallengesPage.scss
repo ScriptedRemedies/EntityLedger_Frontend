@@ -93,3 +93,22 @@
     }
   }
 }
+
+.secondaryNav, .secondaryNavIndicator {
+  padding: 3px 15px;
+  color: var(--color-normal);
+  border-color: #000;
+
+  &:hover {
+    color: var(--color-white);
+    cursor: pointer;
+  }
+}
+.secondaryNav {
+}
+.secondaryNavIndicator {
+  background: linear-gradient(transparent, var(--color-60-background));
+  border-right: 2px solid #000;
+  border-left: 2px solid #000;
+  color: var(--color-white);
+}

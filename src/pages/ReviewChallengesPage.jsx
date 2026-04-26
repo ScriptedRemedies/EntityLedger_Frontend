@@ -3,31 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { VARIANTS } from '../data/variants';
 import './ReviewChallengesPage.scss';
+import {useFadeTransition} from "../hooks/useFadeTranistion.js";
 
 const ReviewChallengesPage = () => {
     const navigate = useNavigate();
 
     // --- State Management ---
-    // activeVariant defaults to the first item in our hardcoded array (Standard)
-    const [activeVariant, setActiveVariant] = useState(VARIANTS[0]);
-    const [displayVariant, setDisplayVariant] = useState(VARIANTS[0]);
-    const [isTransitioning, setIsTransitioning] = useState(false);
-    const [activeTab, setActiveTab] = useState('Trials'); // 'Trials', 'Rules', 'Stats'
-
-    // --- Transition Handler ---
-    const handleVariantClick = (v) => {
-        // Prevent clicking the same tab or clicking while an animation is running
-        if (v.id === activeVariant.id || isTransitioning) return;
-
-        setActiveVariant(v); // Instantly move the nav indicator
-        setIsTransitioning(true); // Trigger the fade-out animation on the middle content
-
-        // Wait 300ms for the CSS fade-out to finish, then swap the data
-        setTimeout(() => {
-            setDisplayVariant(v);
-            setIsTransitioning(false); // The new keyed div will mount with the fade-in class
-        }, 100);
-    };
+    const variantView = useFadeTransition(VARIANTS[0]);
+    const tabView = useFadeTransition('Trials');
 
     // Global active season for the right-side character display
     const [globalActiveSeason, setGlobalActiveSeason] = useState(null);
@@ -57,19 +40,19 @@ const ReviewChallengesPage = () => {
 
     // --- Variant Selection Fetch ---
     useEffect(() => {
-        if (!displayVariant) return;
+        if (!variantView.display) return;
 
         // Reset sub-views when switching variants
         setSelectedSeason(null);
         setActiveTrialOverlay(null);
-        setActiveTab('Trials');
+        tabView.triggerTransition('Trials');
 
         const fetchVariantData = async () => {
             try {
                 // Fetch all history/stats tied to this specific variant Enum (e.g., 'STANDARD')
                 const [seasonsRes, statsRes] = await Promise.all([
-                    api.get(`/variants/${activeVariant.id}/seasons`),
-                    api.get(`/variants/${activeVariant.id}/stats`)
+                    api.get(`/variants/${variantView.display.id}/seasons`),
+                    api.get(`/variants/${variantView.display.id}/stats`)
                 ]);
                 setSeasons(seasonsRes.data);
                 setStats(statsRes.data);
@@ -78,7 +61,7 @@ const ReviewChallengesPage = () => {
             }
         };
         fetchVariantData();
-    }, [displayVariant]);
+    }, [variantView.display]);
 
     // --- Season Selection Fetch (Trial Recap) ---
     useEffect(() => {
@@ -119,9 +102,9 @@ const ReviewChallengesPage = () => {
                 <div className="flex-1 w-[180px] py-6 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col items-center gap-6 pb-4">
                     {/* Map directly over the hardcoded VARIANTS import */}
                     {VARIANTS.map((v) => (
-                        <div key={v.id} className="variantIconContainer relative group flex items-center justify-center cursor-pointer" onClick={() => handleVariantClick(v)}>
+                        <div key={v.id} className="variantIconContainer relative group flex items-center justify-center cursor-pointer" onClick={() => variantView.triggerTransition(v)}>
                             {/* The active variant indicator */}
-                            {activeVariant?.id === v.id && (
+                            {variantView.active?.id === v.id && (
                                 <div className="variantIconActive fade-in absolute -z-10 bg-30-background"></div>
                             )}
                             <img src={`/assets/Variants/${v.name}.png`} alt={v.name} className="variantIcon" />
@@ -139,24 +122,24 @@ const ReviewChallengesPage = () => {
 
             {/* === MIDDLE CONTENT AREA === */}
             <div className="flex-1 relative flex flex-col overflow-hidden z-10">
-                {displayVariant && (
-                    <div key={displayVariant.id} className={`${isTransitioning ? 'fade-out' : 'fade-in'}`}>
+                {variantView.display && (
+                    <div key={variantView.display.id} className={`flex-1 flex flex-col h-full w-full relative ${variantView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
                         <div className="content-fog-bg -z-10 opacity-50"></div>
-                        <img src={displayVariant.watermarkUrl} alt="" className="absolute inset-0 m-auto w-1/2 opacity-10 pointer-events-none object-contain" />
+                        <img src={variantView.display.watermarkUrl} alt="" className="absolute inset-0 m-auto w-1/2 opacity-10 pointer-events-none object-contain" />
 
                         <div className="flex-1 flex flex-col p-10 overflow-hidden relative z-20">
 
                             {/* Secondary Nav & Header */}
-                            <div className="mb-6 flex-shrink-0">
-                                <h1 className="bebas-header-1 mb-1">{displayVariant.name}</h1>
-                                <p className="inter-text-small text-muted">{displayVariant.difficultyLevel}</p>
+                            <div className="flex-shrink-0">
+                                <h1 className="bebas-header-1 text-white">{variantView.display.name}</h1>
+                                <p className="inter-text-normal">{variantView.display.difficultyLevel}</p>
 
-                                <div className="flex gap-8 mt-6 border-b border-normal pb-2">
+                                <div className="flex border-b border-60-background">
                                     {['Trials', 'Rules', 'Stats'].map(tab => (
                                         <button
                                             key={tab}
-                                            onClick={() => { setActiveTab(tab); setSelectedSeason(null); }}
-                                            className={`inter-text-normal transition-colors ${activeTab === tab ? 'text-white border-b-2 border-white' : 'text-normal hover:text-white'}`}
+                                            onClick={() => tabView.triggerTransition(tab, () => setSelectedSeason(null))}
+                                            className={`inter-text-normal transition-colors ${tabView.active === tab ? 'secondaryNavIndicator' : 'secondaryNav'}`}
                                         >
                                             {tab}
                                         </button>
@@ -166,136 +149,144 @@ const ReviewChallengesPage = () => {
 
                             {/* Scrollable Content Area */}
                             <div className="flex-1 overflow-y-auto hide-scrollbar pb-10">
-
-                                {/* EMPTY STATE */}
-                                {seasons.length === 0 && (
-                                    <div className="flex items-center justify-center h-full">
-                                        <p className="inter-text-normal text-muted">No past or current seasons recorded for this variant.</p>
-                                    </div>
-                                )}
-
-                                {/* TAB 1: TRIALS (Grid View) */}
-                                {activeTab === 'Trials' && !selectedSeason && seasons.length > 0 && (
-                                    <div className="flex flex-wrap gap-[60px]">
-                                        {seasons.map(season => (
-                                            <div key={season.id} onClick={() => setSelectedSeason(season)} className="relative group w-48 h-64 cursor-pointer border border-transparent hover:border-normal transition-all">
-
-                                                <div className="absolute inset-0 bg-60-background p-4 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <p className="inter-text-small text-muted mb-2">{season.status === 'IN_PROGRESS' ? 'Current' : season.dateCompleted}</p>
-                                                    <h3 className="bebas-header-1 text-ash text-center">{season.gradeName}</h3>
-                                                    <img src={season.badgeUrl} alt="Grade" className="w-16 h-16 my-2" />
-                                                    <p className="inter-text-small text-iri">Next Grade: {season.nextGradeName}</p>
-                                                </div>
-
-                                                <div className="absolute inset-0 bg-[#0A0A0A] p-4 flex flex-col items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300 border border-black">
-                                                    <p className="inter-text-small text-muted mb-4">{season.dateRange}</p>
-                                                    <p className="inter-text-small text-ash uppercase tracking-widest mb-1">Result</p>
-                                                    <h2 className="bebas-header-1 text-iri text-center leading-none">{getResultTitle(season.gradeName)}</h2>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* TAB 1: TRIALS (List View / Trial Recap) */}
-                                {activeTab === 'Trials' && selectedSeason && (
-                                    <div className="flex flex-col">
-                                        <button onClick={() => setSelectedSeason(null)} className="self-start text-muted hover:text-white mb-6">← Back to Seasons</button>
-
-                                        <div className="flex justify-between items-center mb-8 border-b border-normal pb-4">
-                                            <div>
-                                                <h2 className="bebas-header-1">{activeVariant.name} - TRIALS</h2>
-                                                <p className="inter-text-normal text-muted">{activeVariant.difficultyLevel}</p>
-                                                <p className="inter-text-small mt-2">
-                                                    <span className="text-white">{selectedSeason.dateRange}</span> | <span className="text-iri uppercase">{selectedSeason.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed'}</span>
-                                                </p>
-                                            </div>
-                                            <div className="flex flex-col items-center">
-                                                <img src={selectedSeason.badgeUrl} alt="Grade" className="w-16 h-16" />
-                                            </div>
+                                <div key={tabView.display} className={`h-full w-full ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
+                                    {/* EMPTY STATE - TRIALS */}
+                                    {tabView.display === 'Trials' && seasons.length === 0 && (
+                                        <div className="flex items-center justify-center h-full">
+                                            <p className="inter-text-normal text-muted">No past or current seasons recorded for this variant.</p>
                                         </div>
+                                    )}
 
-                                        <div className="flex flex-col">
-                                            <div className="flex text-muted inter-text-small pb-2 border-b border-60-background px-4">
-                                                <div className="w-1/4">Perks</div>
-                                                <div className="w-1/4 text-center">Add Ons</div>
-                                                <div className="w-1/4 text-center">Survivor Status</div>
-                                                <div className="w-1/4 text-right">Grade</div>
-                                            </div>
+                                    {/* EMPTY STATE - STATS */}
+                                    {tabView.display === 'Stats' && (!stats || seasons.length === 0) && (
+                                        <div className="flex items-center justify-center h-full">
+                                            <p className="inter-text-normal text-muted">Complete trials to generate performance stats.</p>
+                                        </div>
+                                    )}
 
-                                            {trials.map(trial => (
-                                                <div key={trial.id} onClick={() => setActiveTrialOverlay(trial)} className="flex items-center py-4 px-4 border-b border-60-background hover:bg-60-background cursor-pointer transition-colors">
-                                                    <div className="w-1/4 flex items-center gap-4">
-                                                        <img src={trial.killer.portraitUrl} alt={trial.killer.name} className="w-12 h-12 object-cover border border-normal" />
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="text-white text-sm uppercase font-bold">{trial.killer.name}</span>
-                                                            <div className="flex gap-1">
-                                                                {trial.perks.map(p => <img key={p.id} src={p.iconUrl} className="w-6 h-6" alt="perk" />)}
-                                                            </div>
-                                                        </div>
+                                    {/* TAB 1: TRIALS (Grid View) */}
+                                    {tabView.display === 'Trials' && !selectedSeason && seasons.length > 0 && (
+                                        <div className="flex flex-wrap gap-[60px]">
+                                            {seasons.map(season => (
+                                                <div key={season.id} onClick={() => setSelectedSeason(season)} className="relative group w-48 h-64 cursor-pointer border border-transparent hover:border-normal transition-all">
+
+                                                    <div className="absolute inset-0 bg-60-background p-4 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                        <p className="inter-text-small text-muted mb-2">{season.status === 'IN_PROGRESS' ? 'Current' : season.dateCompleted}</p>
+                                                        <h3 className="bebas-header-1 text-ash text-center">{season.gradeName}</h3>
+                                                        <img src={season.badgeUrl} alt="Grade" className="w-16 h-16 my-2" />
+                                                        <p className="inter-text-small text-iri">Next Grade: {season.nextGradeName}</p>
                                                     </div>
 
-                                                    <div className="w-1/4 flex justify-center gap-2 items-center border-l border-r border-60-background px-2">
-                                                        {trial.addons.map((a, i) => (
-                                                            <div key={a.id} className="flex items-center gap-2">
-                                                                {i > 0 && <span className="text-muted">+</span>}
-                                                                <img src={a.iconUrl} className="w-8 h-8" alt="addon" />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="w-1/4 flex justify-center gap-2">
-                                                        {trial.survivorResults.map((res, i) => (
-                                                            <img key={i} src={`/assets/status/${res.toLowerCase()}.png`} className="w-6 h-6" alt={res} />
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="w-1/4 flex flex-col items-end">
-                                                        <img src={trial.gradeBadgeUrl} className="w-8 h-8" alt="grade" />
+                                                    <div className="absolute inset-0 bg-[#0A0A0A] p-4 flex flex-col items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300 border border-black">
+                                                        <p className="inter-text-small text-muted mb-4">{season.dateRange}</p>
+                                                        <p className="inter-text-small text-ash uppercase tracking-widest mb-1">Result</p>
+                                                        <h2 className="bebas-header-1 text-iri text-center leading-none">{getResultTitle(season.gradeName)}</h2>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                                {/* TAB 2: RULES */}
-                                {activeTab === 'Rules' && (
-                                    <div className="flex flex-col gap-8 max-w-2xl">
-                                        <p className="inter-text-normal text-muted">{activeVariant.rulesDescription}</p>
-                                        <h3 className="bebas-header-1 text-white mt-4">RULES</h3>
-                                        {activeVariant.rules.map(rule => (
-                                            <div key={rule.id} className="flex flex-col">
-                                                <h4 className="inter-text-normal text-white font-bold mb-1">{rule.title}</h4>
-                                                <p className="inter-text-small text-normal leading-relaxed">{rule.description}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                    {/* TAB 1: TRIALS (List View / Trial Recap) */}
+                                    {tabView.display === 'Trials' && selectedSeason && (
+                                        <div className="flex flex-col">
+                                            <button onClick={() => setSelectedSeason(null)} className="self-start text-muted hover:text-white mb-6">← Back to Seasons</button>
 
-                                {/* TAB 3: STATS */}
-                                {activeTab === 'Stats' && stats && (
-                                    <div className="flex flex-col gap-10">
-                                        <div>
-                                            <h3 className="inter-text-small text-muted uppercase tracking-widest mb-4">Core Performance Metrics</h3>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="bg-60-background p-4 flex justify-between items-center border-l-2 border-transparent hover:border-ash transition-colors">
-                                                    <div className="flex flex-col">
-                                                        <span className="inter-text-small text-muted">Trials Played</span>
-                                                        <span className="text-white text-xl">{stats.trialsPlayed}</span>
-                                                    </div>
+                                            <div className="flex justify-between items-center mb-8 border-b border-normal pb-4">
+                                                <div>
+                                                    <h2 className="bebas-header-1">{variantView.display.name} - TRIALS</h2>
+                                                    <p className="inter-text-normal text-muted">{variantView.display.difficultyLevel}</p>
+                                                    <p className="inter-text-small mt-2">
+                                                        <span className="text-white">{selectedSeason.dateRange}</span> | <span className="text-iri uppercase">{selectedSeason.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed'}</span>
+                                                    </p>
                                                 </div>
-                                                <div className="bg-60-background p-4 flex justify-between items-center border-l-2 border-transparent hover:border-ash transition-colors">
-                                                    <div className="flex flex-col">
-                                                        <span className="inter-text-small text-muted">Kill Rate</span>
-                                                        <span className="text-white text-xl">{stats.killRate}%</span>
+                                                <div className="flex flex-col items-center">
+                                                    <img src={selectedSeason.badgeUrl} alt="Grade" className="w-16 h-16" />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col">
+                                                <div className="flex text-muted inter-text-small pb-2 border-b border-60-background px-4">
+                                                    <div className="w-1/4">Perks</div>
+                                                    <div className="w-1/4 text-center">Add Ons</div>
+                                                    <div className="w-1/4 text-center">Survivor Status</div>
+                                                    <div className="w-1/4 text-right">Grade</div>
+                                                </div>
+
+                                                {trials.map(trial => (
+                                                    <div key={trial.id} onClick={() => setActiveTrialOverlay(trial)} className="flex items-center py-4 px-4 border-b border-60-background hover:bg-60-background cursor-pointer transition-colors">
+                                                        <div className="w-1/4 flex items-center gap-4">
+                                                            <img src={trial.killer.portraitUrl} alt={trial.killer.name} className="w-12 h-12 object-cover border border-normal" />
+                                                            <div className="flex flex-col gap-1">
+                                                                <span className="text-white text-sm uppercase font-bold">{trial.killer.name}</span>
+                                                                <div className="flex gap-1">
+                                                                    {trial.perks.map(p => <img key={p.id} src={p.iconUrl} className="w-6 h-6" alt="perk" />)}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="w-1/4 flex justify-center gap-2 items-center border-l border-r border-60-background px-2">
+                                                            {trial.addons.map((a, i) => (
+                                                                <div key={a.id} className="flex items-center gap-2">
+                                                                    {i > 0 && <span className="text-muted">+</span>}
+                                                                    <img src={a.iconUrl} className="w-8 h-8" alt="addon" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        <div className="w-1/4 flex justify-center gap-2">
+                                                            {trial.survivorResults.map((res, i) => (
+                                                                <img key={i} src={`/assets/status/${res.toLowerCase()}.png`} className="w-6 h-6" alt={res} />
+                                                            ))}
+                                                        </div>
+
+                                                        <div className="w-1/4 flex flex-col items-end">
+                                                            <img src={trial.gradeBadgeUrl} className="w-8 h-8" alt="grade" />
+                                                        </div>
                                                     </div>
-                                                    <img src="/assets/icons/skull.png" className="w-6 h-6 opacity-80" alt="" />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* TAB 2: RULES */}
+                                    {tabView.display === 'Rules' && (
+                                        <div className="flex flex-col gap-8 max-w-2xl">
+                                            <p className="inter-text-normal text-muted">{variantView.display.rulesDescription}</p>
+                                            <h3 className="bebas-header-1 text-white mt-4">RULES</h3>
+                                            {variantView.display.rules.map(rule => (
+                                                <div key={rule.id} className="flex flex-col">
+                                                    <h4 className="inter-text-normal text-white font-bold mb-1">{rule.title}</h4>
+                                                    <p className="inter-text-small text-normal leading-relaxed">{rule.description}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* TAB 3: STATS */}
+                                    {tabView.display === 'Stats' && stats && seasons.length > 0 && (
+                                        <div className="flex flex-col gap-10">
+                                            <div>
+                                                <h3 className="inter-text-small text-muted uppercase tracking-widest mb-4">Core Performance Metrics</h3>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="bg-60-background p-4 flex justify-between items-center border-l-2 border-transparent hover:border-ash transition-colors">
+                                                        <div className="flex flex-col">
+                                                            <span className="inter-text-small text-muted">Trials Played</span>
+                                                            <span className="text-white text-xl">{stats.trialsPlayed}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-60-background p-4 flex justify-between items-center border-l-2 border-transparent hover:border-ash transition-colors">
+                                                        <div className="flex flex-col">
+                                                            <span className="inter-text-small text-muted">Kill Rate</span>
+                                                            <span className="text-white text-xl">{stats.killRate}%</span>
+                                                        </div>
+                                                        <img src="/assets/icons/skull.png" className="w-6 h-6 opacity-80" alt="" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
