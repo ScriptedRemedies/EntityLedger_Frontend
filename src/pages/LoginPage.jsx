@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
 import './LoginPage.scss';
 
 const LoginPage = () => {
@@ -12,26 +10,6 @@ const LoginPage = () => {
     useEffect(() => {
         setIsMounted(true);
     }, []);
-
-    // The success handler for the official Google button
-    const handleLoginSuccess = async (credentialResponse) => {
-        try {
-            // credentialResponse.credential contains the 'eyJ...' JWT that Spring Boot requires!
-            const res = await api.post('/players/sync', {}, {
-                headers: {
-                    Authorization: `Bearer ${credentialResponse.credential}`
-                }
-            });
-
-            // Save the JWT so our Axios Interceptor can use it for future requests
-            localStorage.setItem('entity_jwt', credentialResponse.credential);
-
-            console.log("Logged in successfully!", res.data);
-            navigate('/dashboard');
-        } catch (error) {
-            console.error("Failed to sync with The Entity", error);
-        }
-    };
 
     return (
         // Layer 1: Base layer with dark background
@@ -70,14 +48,11 @@ const LoginPage = () => {
 
                 {/* Google Login button */}
                 <div className="flex gap-6 mx-auto">
-                    <GoogleLogin
-                        onSuccess={handleLoginSuccess}
-                        onError={() => console.error('Login Failed')}
-                        theme="filled_black"
-                        size="large"
-                        shape="rectangular"
-                        text="signin_with"
-                    />
+                    <a
+                        href={`${import.meta.env.VITE_API_BASE_URL || ''}/oauth2/authorization/google`}
+                        className="bg-white text-black px-8 py-3 rounded-md font-bebas text-2xl tracking-wider hover:bg-gray-200 transition-colors">
+                        SIGN IN WITH GOOGLE
+                    </a>
                 </div>
 
             </div>

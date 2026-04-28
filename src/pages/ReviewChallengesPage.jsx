@@ -29,7 +29,7 @@ const ReviewChallengesPage = () => {
         const fetchInitialData = async () => {
             try {
                 // We no longer fetch variants here, only the global active season
-                const currentSeasonRes = await api.get('/seasons/current');
+                const currentSeasonRes = await api.get('/seasons/active');
                 if (currentSeasonRes.data) setGlobalActiveSeason(currentSeasonRes.data);
             } catch (error) {
                 console.error("Failed to load global season data", error);
@@ -153,14 +153,13 @@ const ReviewChallengesPage = () => {
                                     {/* EMPTY STATE - TRIALS */}
                                     {tabView.display === 'Trials' && seasons.length === 0 && (
                                         <div className="flex items-center justify-center h-full">
-                                            <p className="inter-text-normal text-muted">No past or current seasons recorded for this variant.</p>
+                                            <p className="inter-text-normal text-normal">No past or current seasons recorded for this variant.</p>
                                         </div>
                                     )}
-
                                     {/* EMPTY STATE - STATS */}
                                     {tabView.display === 'Stats' && (!stats || seasons.length === 0) && (
                                         <div className="flex items-center justify-center h-full">
-                                            <p className="inter-text-normal text-muted">Complete trials to generate performance stats.</p>
+                                            <p className="inter-text-normal text-normal">Complete trials to generate performance stats.</p>
                                         </div>
                                     )}
 
@@ -251,9 +250,9 @@ const ReviewChallengesPage = () => {
 
                                     {/* TAB 2: RULES */}
                                     {tabView.display === 'Rules' && (
-                                        <div className="flex flex-col gap-8 max-w-2xl">
-                                            <p className="inter-text-normal text-muted">{variantView.display.rulesDescription}</p>
-                                            <h3 className="bebas-header-1 text-white mt-4">RULES</h3>
+                                        <div className="flex flex-col gap-1 max-w-2xl">
+                                            <p className="inter-text-normal text-normal pt-5">{variantView.display.rulesDescription}</p>
+                                            <h3 className="bebas-header-1 text-white">RULES</h3>
                                             {variantView.display.rules.map(rule => (
                                                 <div key={rule.id} className="flex flex-col">
                                                     <h4 className="inter-text-normal text-white font-bold mb-1">{rule.title}</h4>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import './DashboardPage.scss';
 import ReactMarkdown from 'react-markdown';
 import fm from 'front-matter';
@@ -6,6 +6,7 @@ import latestNotes from '../data/latest-update.md?raw';
 import {useNavigate} from "react-router-dom";
 
 const DashboardPage = () => {
+
     // State to handle the cascade menu
     const [isMenuExpanded, setIsMenuExpanded] = useState(false);
     const navigate = useNavigate();
@@ -21,6 +22,15 @@ const DashboardPage = () => {
     const parsedNotes = fm(latestNotes);
     const { version, date } = parsedNotes.attributes; // Extracts version number and date
     const content = parsedNotes.body;
+
+    // Inside your DashboardPage.jsx's initial useEffect:
+    useEffect(() => {
+        const returnPath = localStorage.getItem('returnPath');
+        if (returnPath && returnPath !== '/dashboard') {
+            localStorage.removeItem('returnPath'); // Clean up
+            navigate(returnPath); // Send them to where they were!
+        }
+    }, []);
 
     return (
         <div className="dashboard-container min-h-screen bg-[#040507] text-[#a0a0a0] relative overflow-hidden">
