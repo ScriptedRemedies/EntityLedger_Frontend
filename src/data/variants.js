@@ -115,7 +115,7 @@ export const VARIANTS = [
             {
                 id: 4,
                 title: "LOADOUT RESTRICTIONS",
-                description: "There are no add-ons allowed. Players can have up to 4 perks but each perk has it's own price to pay before starting the trial."
+                description: "Players can have up to 4 perks but each perk and add-on has it's own price to pay before starting the trial."
             },
             {
                 id: 5,
