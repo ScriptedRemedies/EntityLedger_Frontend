@@ -11,7 +11,7 @@ const DashboardPage = () => {
     const [isMenuExpanded, setIsMenuExpanded] = useState(false);
     const navigate = useNavigate();
     const menuItems =[
-        { name: 'Start a New Challenge', path: '' },
+        { name: 'Start a New Challenge', path: '/start-challenge' },
         { name: 'Continue Challenge', path: '' },
         { name: 'Review Challenges', path: '/review-challenges'}
     ]
@@ -23,14 +23,14 @@ const DashboardPage = () => {
     const { version, date } = parsedNotes.attributes; // Extracts version number and date
     const content = parsedNotes.body;
 
-    // Inside your DashboardPage.jsx's initial useEffect:
+    // Returns users to page they were on before auto logout
     useEffect(() => {
         const returnPath = localStorage.getItem('returnPath');
         if (returnPath && returnPath !== '/dashboard') {
             localStorage.removeItem('returnPath'); // Clean up
             navigate(returnPath); // Send them to where they were!
         }
-    }, []);
+    });
 
     return (
         <div className="dashboard-container min-h-screen bg-[#040507] text-[#a0a0a0] relative overflow-hidden">
