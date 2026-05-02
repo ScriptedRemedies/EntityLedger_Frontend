@@ -34,7 +34,7 @@ const DashboardPage = () => {
     });
 
     return (
-        <div className="dashboard-container">
+        <div className="dashboard-container fade-in">
 
             {/* Main Content Wrapper */}
             <div className="dashboard-content">
