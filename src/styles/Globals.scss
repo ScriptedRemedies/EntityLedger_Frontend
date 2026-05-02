@@ -9,6 +9,8 @@
   --color-normal: #757575;
   --color-muted: #75757550;
 
+  --color-btn-border: rgba(255, 255, 255, 0.15);
+
   --color-30-background: #0405074D;
   --color-60-background: #04050799;
   --color-full-background: #040507;
@@ -49,6 +51,33 @@
     @apply font-inter;
     font-size: var(--text-size-small);
     color: var(--color-normal);
+  }
+
+  .squareBtn {
+    position: relative;
+    background: transparent;
+    color: var(--color-normal);
+    @apply font-inter;
+    padding: 6px 20px 6px 24px;
+    cursor: pointer;
+    border: 2px solid;
+    border-left: none;
+    border-image: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.15) 100%) 1;
+    transition: all 0.2s ease-in-out;
+  }
+  .squareBtn::after {
+    content: '';
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 50%;
+    background-color: var(--color-iri);
+  }
+  .squareBtn:hover {
+    background: linear-gradient(to left, rgba(139, 40, 40, 0.4) 0%, transparent 100%);
+    color: #e0e0e0;
   }
 
   .back-button {
