@@ -10,7 +10,7 @@ const ReviewChallengesPage = () => {
 
     // --- State Management ---
     const variantView = useFadeTransition(VARIANTS[0]);
-    const tabView = useFadeTransition('Trials');
+    const tabView = useFadeTransition('Seasons');
 
     // Global active season for the right-side character display
     const [globalActiveSeason, setGlobalActiveSeason] = useState(null);
@@ -28,7 +28,7 @@ const ReviewChallengesPage = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // We no longer fetch variants here, only the global active season
+                // Fetch active season
                 const currentSeasonRes = await api.get('/seasons/active');
                 if (currentSeasonRes.data) setGlobalActiveSeason(currentSeasonRes.data);
             } catch (error) {
@@ -45,19 +45,21 @@ const ReviewChallengesPage = () => {
         // Reset sub-views when switching variants
         setSelectedSeason(null);
         setActiveTrialOverlay(null);
-        tabView.triggerTransition('Trials');
+        tabView.triggerTransition('Seasons');
 
         const fetchVariantData = async () => {
             try {
-                // Fetch all history/stats tied to this specific variant Enum (e.g., 'STANDARD')
                 const [seasonsRes, statsRes] = await Promise.all([
-                    api.get(`/variants/${variantView.display.id}/seasons`),
-                    api.get(`/variants/${variantView.display.id}/stats`)
+                    api.get(`/seasons/variant/${variantView.display.id}`),
+                    api.get(`/seasons/variant/${variantView.display.id}/stats`)
                 ]);
-                setSeasons(seasonsRes.data);
+
+                // SAFETY NET: Guarantee it's an array before saving it, otherwise default to []
+                setSeasons(Array.isArray(seasonsRes.data) ? seasonsRes.data : []);
                 setStats(statsRes.data);
             } catch (error) {
                 console.error("Failed to load variant details", error);
+                setSeasons([]); // Fallback to empty array on error
             }
         };
         fetchVariantData();
@@ -135,7 +137,7 @@ const ReviewChallengesPage = () => {
                                 <p className="inter-text-normal">{variantView.display.difficultyLevel}</p>
 
                                 <div className="flex border-b border-60-background">
-                                    {['Trials', 'Rules', 'Stats'].map(tab => (
+                                    {['Seasons', 'Rules', 'Stats'].map(tab => (
                                         <button
                                             key={tab}
                                             onClick={() => tabView.triggerTransition(tab, () => setSelectedSeason(null))}
@@ -150,8 +152,8 @@ const ReviewChallengesPage = () => {
                             {/* Scrollable Content Area */}
                             <div className="flex-1 overflow-y-auto hide-scrollbar pb-10">
                                 <div key={tabView.display} className={`h-full w-full ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
-                                    {/* EMPTY STATE - TRIALS */}
-                                    {tabView.display === 'Trials' && seasons.length === 0 && (
+                                    {/* EMPTY STATE - SEASONS */}
+                                    {tabView.display === 'Seasons' && seasons.length === 0 && (
                                         <div className="flex items-center justify-center h-full">
                                             <p className="inter-text-normal text-normal">No past or current seasons recorded for this variant.</p>
                                         </div>
@@ -163,8 +165,8 @@ const ReviewChallengesPage = () => {
                                         </div>
                                     )}
 
-                                    {/* TAB 1: TRIALS (Grid View) */}
-                                    {tabView.display === 'Trials' && !selectedSeason && seasons.length > 0 && (
+                                    {/* TAB 1: SEASONS (Grid View) */}
+                                    {tabView.display === 'Seasons' && !selectedSeason && seasons.length > 0 && (
                                         <div className="flex flex-wrap gap-[60px]">
                                             {seasons.map(season => (
                                                 <div key={season.id} onClick={() => setSelectedSeason(season)} className="relative group w-48 h-64 cursor-pointer border border-transparent hover:border-normal transition-all">
