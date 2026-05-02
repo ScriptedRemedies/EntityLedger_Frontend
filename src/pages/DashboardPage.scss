@@ -1,32 +1,278 @@
-.bg-overlay {
-  background: url('assets/junkyard.png');
+/* ==================== */
+/* LAYOUT BASE          */
+/* ==================== */
+
+.dashboard-container {
+  min-height: 100vh;
+  background: url('/assets/junkyard.png') no-repeat fixed center / cover;
+  background-color: var(--color-full-background);
+  color: #a0a0a0;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Hide the container cleanly when collapsed */
+.dashboard-content {
+  position: relative;
+  z-index: 10;
+  height: 100vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  @media (min-width: 768px) {
+    padding: 4rem;
+  }
+}
+
+.top-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.dashboard-title {
+  margin-bottom: 2rem;
+}
+
+.menu-wrapper {
+  width: 100%;
+  max-width: 24rem; /* max-w-sm equivalent */
+}
+
+
+/* ==================== */
+/* MENUS & BUTTONS      */
+/* ==================== */
+
+.primary-menu-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--color-60-background);
+  padding: 1rem;
+  border: none;
+  border-left: 4px solid transparent;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  cursor: pointer;
+  color: var(--color-normal);
+
+  &:hover {
+    background-color: var(--color-full-background);
+    color: var(--color-white);
+    border-color: var(--color-iri);
+  }
+}
+
+.menu-icon-wrapper {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cascading Menu Logic */
 .sub-menu-container {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.4s ease-in-out;
 
   &.expanded {
-    max-height: 300px; /* Adjust based on total height of buttons */
+    max-height: 300px;
   }
 }
 
-/* The actual items inside */
 .sub-menu-item {
+  text-align: left;
+  padding: 1rem 1rem 1rem 4rem;
+  background-color: var(--color-60-background);
+  color: var(--color-normal);
+  border: none;
+  border-left: 4px solid transparent;
   opacity: 0;
   transform: translateY(-10px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s, color 0.3s, border-color 0.3s;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-full-background);
+    color: var(--color-white);
+    border-color: var(--color-ash);
+  }
 }
 
-/* When the container gets the .expanded class, animate the items */
+/* Stagger the cascade animation */
 .sub-menu-container.expanded .sub-menu-item {
   opacity: 1;
   transform: translateY(0);
 }
-
-/* Stagger the cascade using nth-child delays */
 .sub-menu-container.expanded .sub-menu-item:nth-child(1) { transition-delay: 0.1s; }
 .sub-menu-container.expanded .sub-menu-item:nth-child(2) { transition-delay: 0.2s; }
 .sub-menu-container.expanded .sub-menu-item:nth-child(3) { transition-delay: 0.3s; }
+
+
+/* ==================== */
+/* VERSION BOTTOM BAR   */
+/* ==================== */
+
+.bottom-section {
+  margin-top: auto;
+}
+
+.version-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--color-60-background);
+  padding: 1rem 2.5rem 1rem 1rem;
+  border: none;
+  border-left: 4px solid transparent;
+  transition: background-color 0.3s, border-color 0.3s;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-ash);
+  }
+}
+
+.version-icon-wrapper {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.version-text-wrapper {
+  text-align: left;
+  line-height: 1.25;
+}
+
+.version-number {
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.version-label {
+  font-size: 0.75rem;
+}
+
+
+/* ==================== */
+/* MODAL & MARKDOWN     */
+/* ==================== */
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-60-background);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s duration;
+}
+
+.modal-content-box {
+  background-color: var(--color-full-background);
+  padding: 2rem;
+  max-width: 60vw;
+  position: relative;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: var(--color-normal);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+
+  &:hover {
+    color: var(--color-white);
+  }
+}
+
+.modal-title {
+  margin-bottom: 0.5rem;
+}
+
+.modal-date {
+  margin-bottom: 1.5rem;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom Markdown Rendering Rules (Replaces Tailwind Prose) */
+.markdown-content {
+  max-width: none;
+  color: var(--color-normal);
+  font-family: var(--font-inter);
+  font-size: 0.875rem;
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-bebas);
+    color: var(--color-white);
+  }
+
+  h3 {
+    color: var(--color-iri);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  a {
+    color: var(--color-iri);
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: var(--color-white);
+    }
+  }
+
+  ul {
+    list-style-type: square;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+
+    li {
+      &::marker {
+        color: var(--color-normal);
+      }
+    }
+  }
+
+  strong {
+    color: var(--color-white);
+  }
+}
