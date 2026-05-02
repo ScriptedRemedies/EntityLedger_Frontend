@@ -134,7 +134,7 @@ const ReviewChallengesPage = () => {
                             {/* Secondary Nav & Header */}
                             <div className="flex-shrink-0">
                                 <h1 className="bebas-header-1 text-white">{variantView.display.name}</h1>
-                                <p className="inter-text-normal">{variantView.display.difficultyLevel}</p>
+                                <p className="inter-text-normal pb-4">{variantView.display.difficultyLevel}</p>
 
                                 <div className="flex border-b border-60-background">
                                     {['Seasons', 'Rules', 'Stats'].map(tab => (
@@ -254,10 +254,10 @@ const ReviewChallengesPage = () => {
                                     {tabView.display === 'Rules' && (
                                         <div className="flex flex-col gap-1 max-w-2xl">
                                             <p className="inter-text-normal text-normal pt-5">{variantView.display.rulesDescription}</p>
-                                            <h3 className="bebas-header-1 text-white">RULES</h3>
+                                            <h1 className="bebas-header-1 text-white">RULES</h1>
                                             {variantView.display.rules.map(rule => (
-                                                <div key={rule.id} className="flex flex-col">
-                                                    <h4 className="inter-text-normal text-white font-bold mb-1">{rule.title}</h4>
+                                                <div key={rule.id} className="flex flex-col pb-4">
+                                                    <h2 className="bebas-header-2 inter-text-normal text-normal font-bold mb-1">{rule.title}</h2>
                                                     <p className="inter-text-small text-normal leading-relaxed">{rule.description}</p>
 
                                                     {rule.bullets && rule.bullets.length > 0 && (

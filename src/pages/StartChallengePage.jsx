@@ -287,7 +287,7 @@ const ReviewChallengesPage = () => {
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
-            <div className="flex-1 relative flex flex-col overflow-hidden z-10">
+            <div className="middle-content flex-1 relative flex flex-col overflow-hidden z-10">
                 {variantView.display && (
                     <div key={variantView.display.id} className={`flex-1 flex flex-col h-full w-full relative ${variantView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
                         <div className="content-fog-bg -z-10 opacity-50"></div>
@@ -320,10 +320,10 @@ const ReviewChallengesPage = () => {
                                     {tabView.display === 'Rules' && (
                                         <div className="flex flex-col gap-1 max-w-2xl">
                                             <p className="inter-text-normal text-normal pt-5">{variantView.display.rulesDescription}</p>
-                                            <h3 className="bebas-header-1 text-white">RULES</h3>
+                                            <h1 className="bebas-header-1 text-white">RULES</h1>
                                             {variantView.display.rules.map(rule => (
-                                                <div key={rule.id} className="flex flex-col">
-                                                    <h4 className="inter-text-normal text-white font-bold mb-1">{rule.title}</h4>
+                                                <div key={rule.id} className="flex flex-col pb-4">
+                                                    <h2 className="bebas-header-2 inter-text-normal text-normal font-bold mb-1">{rule.title}</h2>
                                                     <p className="inter-text-small text-normal leading-relaxed">{rule.description}</p>
 
                                                     {rule.bullets && rule.bullets.length > 0 && (
@@ -355,7 +355,7 @@ const ReviewChallengesPage = () => {
             </div>
 
             {/* === RIGHT PANEL (Start challenge button) === */}
-            <div className="w-[383px] relative z-0 flex-shrink-0">
+            <div className="right-panel relative z-0 flex-shrink-0">
                 <button className="squareBtn">Start Challenge</button>
             </div>
         </div>
