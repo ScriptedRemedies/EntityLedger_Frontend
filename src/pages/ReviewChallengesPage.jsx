@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { VARIANTS } from '../data/variants';
-import './ReviewChallengesPage.scss';
+import '../styles/ChallengesPage.scss';
 import {useFadeTransition} from "../hooks/useFadeTranistion.js";
 
 const ReviewChallengesPage = () => {
@@ -90,12 +90,10 @@ const ReviewChallengesPage = () => {
     };
 
     return (
-        <div className="review-container h-screen w-screen overflow-hidden bg-full-background flex relative font-inter text-normal">
-
-            <div className="bg-overlay absolute inset-0 z-0 pointer-events-none"></div>
+        <div className="main-container review-container h-screen w-screen overflow-hidden bg-full-background font-inter text-normal">
 
             {/* === LEFT NAV === */}
-            <div className="nav border-r-2 border-black flex flex-col relative z-30 flex-shrink-0">
+            <div className="nav">
                 <div className="absolute inset-0 overflow-hidden -z-20 pointer-events-none">
                     <div className="nav-fog-bg opacity-60"></div>
                 </div>
@@ -123,7 +121,7 @@ const ReviewChallengesPage = () => {
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
-            <div className="flex-1 relative flex flex-col overflow-hidden z-10">
+            <div className="middle-content overflow-hidden z-10">
                 {variantView.display && (
                     <div key={variantView.display.id} className={`flex-1 flex flex-col h-full w-full relative ${variantView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
                         <div className="content-fog-bg -z-10 opacity-50"></div>
@@ -150,7 +148,7 @@ const ReviewChallengesPage = () => {
                             </div>
 
                             {/* Scrollable Content Area */}
-                            <div className="flex-1 overflow-y-auto hide-scrollbar pb-10">
+                            <div className="overflow-y-auto hide-scrollbar">
                                 <div key={tabView.display} className={`h-full w-full ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
                                     {/* EMPTY STATE - SEASONS */}
                                     {tabView.display === 'Seasons' && seasons.length === 0 && (
@@ -303,7 +301,7 @@ const ReviewChallengesPage = () => {
             </div>
 
             {/* === RIGHT PANEL (Static Character Display) === */}
-            <div className="w-[383px] relative z-0 flex-shrink-0">
+            <div className="right-panel z-0">
                 {globalActiveSeason && (
                     <>
                         <div className="absolute bottom-6 right-6 flex flex-col items-end gap-2 z-20">
@@ -323,7 +321,7 @@ const ReviewChallengesPage = () => {
                         <img
                             src={globalActiveSeason.characterImageUrl}
                             alt={globalActiveSeason.characterName}
-                            className="absolute bottom-0 right-0 w-full h-[85%] object-cover object-bottom pointer-events-none -z-10"
+                            className="absolute bottom-0 right-0 h-[85%] object-cover object-bottom pointer-events-none -z-10"
                             style={{ filter: 'brightness(0.8)' }}
                         />
                     </>

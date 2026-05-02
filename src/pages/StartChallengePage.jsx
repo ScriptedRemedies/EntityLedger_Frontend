@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { VARIANTS } from '../data/variants';
-import './StartChallengePage.scss';
+import '../styles/ChallengesPage.scss';
 import {useFadeTransition} from "../hooks/useFadeTranistion.js";
 import {useEffect, useState} from "react";
 import api from "../services/api.js";
 
-const ReviewChallengesPage = () => {
+const StartChallengePage = () => {
     const navigate = useNavigate();
 
     // --- State Management ---
@@ -93,23 +93,23 @@ const ReviewChallengesPage = () => {
         switch (variantId) {
             case 'STANDARD':
                 return (
-                    <div className="flex flex-col gap-6">
-                        <h3 className="bebas-header-1 text-white">Standard Options</h3>
+                    <div className="standard-options-container">
+                        <h3 className="bebas-header-1 title-white">Standard Options</h3>
 
                         {/* 1. Consecutive Matches */}
-                        <label className="flex items-center gap-3 text-white cursor-pointer">
+                        <label className="settings-toggle-label">
                             <input
                                 type="checkbox"
                                 checked={!!seasonPayload.variantSettings.consecutiveMatches}
                                 onChange={() => handleToggleSetting('consecutiveMatches')}
-                                className="w-5 h-5"
+                                className="settings-toggle-input"
                             />
                             Consecutive Matches
                         </label>
 
                         {/* 2. Restricted Loadout */}
-                        <div className="flex flex-col gap-3">
-                            <label className="flex items-center gap-3 text-white cursor-pointer">
+                        <div className="settings-group">
+                            <label className="settings-toggle-label">
                                 <input
                                     type="checkbox"
                                     checked={!!seasonPayload.variantSettings.restrictedLoadout}
@@ -118,22 +118,22 @@ const ReviewChallengesPage = () => {
                                         handleToggleSetting('restrictedLoadout');
                                     }}
                                     disabled={seasonPayload.variantSettings.sameBuild}
-                                    className="w-5 h-5 disabled:opacity-50"
+                                    className="settings-toggle-input"
                                 />
                                 Restricted Loadout
-                                {seasonPayload.variantSettings.sameBuild && <span className="text-red-500 text-sm">(Disabled by Same Build)</span>}
+                                {seasonPayload.variantSettings.sameBuild && <span className="settings-warning">(Disabled by Same Build)</span>}
                             </label>
 
                             {/* The Grade Limits UI (Only shows if toggle is checked) */}
                             {seasonPayload.variantSettings.restrictedLoadout && (
-                                <div className="ml-8 grid grid-cols-2 gap-4 bg-black/50 p-4 border border-60-background">
+                                <div className="grade-limits-container">
                                     {['ASH', 'BRONZE', 'SILVER', 'GOLD', 'IRIDESCENT'].map(grade => (
-                                        <div key={grade} className="flex justify-between items-center text-white">
-                                            <span className="text-sm">{grade}</span>
+                                        <div key={grade} className="grade-limit-item">
+                                            <span className="grade-limit-label">{grade}</span>
                                             <input
                                                 type="number"
                                                 min="0" max="2"
-                                                className="w-12 bg-transparent border-b border-white text-center"
+                                                className="grade-limit-input"
                                                 value={seasonPayload.variantSettings.addOnLimits[grade]}
                                                 onChange={(e) => {
                                                     const val = parseInt(e.target.value) || 0;
@@ -156,8 +156,8 @@ const ReviewChallengesPage = () => {
                         </div>
 
                         {/* 3. Same Build */}
-                        <div className="flex flex-col gap-3">
-                            <label className="flex items-center gap-3 text-white cursor-pointer">
+                        <div className="settings-group">
+                            <label className="settings-toggle-label">
                                 <input
                                     type="checkbox"
                                     checked={!!seasonPayload.variantSettings.sameBuild}
@@ -166,19 +166,19 @@ const ReviewChallengesPage = () => {
                                         handleToggleSetting('sameBuild');
                                     }}
                                     disabled={seasonPayload.variantSettings.restrictedLoadout}
-                                    className="w-5 h-5 disabled:opacity-50"
+                                    className="settings-toggle-input"
                                 />
                                 Same Build
-                                {seasonPayload.variantSettings.restrictedLoadout && <span className="text-red-500 text-sm">(Disabled by Restricted Loadout)</span>}
+                                {seasonPayload.variantSettings.restrictedLoadout && <span className="settings-warning">(Disabled by Restricted Loadout)</span>}
                             </label>
 
                             {/* The Build Picker UI (Only shows if toggle is checked) */}
                             {seasonPayload.variantSettings.sameBuild && (
-                                <div className="ml-8 p-4 border border-60-background text-white bg-black/50">
+                                <div className="same-build-container">
                                     {/* Replace this div with your actual Perk/Addon picker components! */}
-                                    <p className="text-sm text-gray-400 mb-2">Select your locked loadout:</p>
+                                    <p className="same-build-description">Select your locked loadout:</p>
                                     <button
-                                        className="bg-60-background px-4 py-2 hover:bg-white hover:text-black transition-colors"
+                                        className="same-build-btn"
                                         onClick={() => {
                                             // Example of how you will update state when a perk is picked
                                             // setSeasonPayload(prev => ({...prev, variantSettings: {...prev.variantSettings, lockedPerks: ['uuid-1', 'uuid-2']}}))
@@ -195,17 +195,17 @@ const ReviewChallengesPage = () => {
 
             case 'AFTERBURN':
                 return (
-                    <div className="flex flex-col gap-4">
-                        <h3 className="bebas-header-1 text-white">SELECT BLOOD MONEY SAVE</h3>
+                    <div className="afterburn-options-container">
+                        <h3 className="bebas-header-1 title-white">SELECT BLOOD MONEY SAVE</h3>
                         <p className="inter-text-small text-normal">Choose a completed Blood Money run to inherit your remaining killers and funds.</p>
 
                         {pastBloodMoneyRuns.length === 0 ? (
-                            <div className="p-4 border border-red-900 bg-red-900/20 text-red-400">
+                            <div className="error-box">
                                 No completed Blood Money runs found. You must complete a Blood Money season before attempting Afterburn.
                             </div>
                         ) : (
                             <select
-                                className="bg-black border border-60-background text-white p-2"
+                                className="season-select-dropdown"
                                 value={seasonPayload.inheritedSeasonId || ''}
                                 onChange={(e) => setSeasonPayload({...seasonPayload, inheritedSeasonId: e.target.value})}
                             >
@@ -223,8 +223,8 @@ const ReviewChallengesPage = () => {
 
             default:
                 return (
-                    <div className="flex flex-col items-center justify-center py-10 opacity-70">
-                        <p className="inter-text-normal text-white text-center">
+                    <div className="default-variant-message">
+                        <p className="inter-text-normal text-center title-white">
                             The Entity dictates the rules for this trial.<br/>
                             No additional configuration is required.
                         </p>
@@ -254,24 +254,23 @@ const ReviewChallengesPage = () => {
     };
 
     return (
-        <div className="review-container h-screen w-screen overflow-hidden bg-full-background flex relative font-inter text-normal">
-
-            <div className="bg-overlay absolute inset-0 z-0 pointer-events-none"></div>
+        <div className="main-container review-container">
 
             {/* === LEFT NAV === */}
-            <div className="nav border-r-2 border-black flex flex-col relative z-30 flex-shrink-0">
-                <div className="absolute inset-0 overflow-hidden -z-20 pointer-events-none">
-                    <div className="nav-fog-bg opacity-60"></div>
+            <div className="nav">
+                {/* Fog Background */}
+                <div className="nav-fog-wrapper">
+                    <div className="nav-fog-bg"></div>
                 </div>
 
                 {/* Variant List (Scrollable) */}
-                <div className="flex-1 w-[180px] py-6 overflow-y-auto overflow-x-hidden hide-scrollbar flex flex-col items-center gap-6 pb-4">
+                <div className="nav-icons-list hide-scrollbar">
                     {/* Map directly over the hardcoded VARIANTS import */}
                     {VARIANTS.map((v) => (
-                        <div key={v.id} className="variantIconContainer relative group flex items-center justify-center cursor-pointer" onClick={() => variantView.triggerTransition(v)}>
+                        <div key={v.id} className="variantIconContainer" onClick={() => variantView.triggerTransition(v)}>
                             {/* The active variant indicator */}
                             {variantView.active?.id === v.id && (
-                                <div className="variantIconActive fade-in absolute -z-10 bg-30-background"></div>
+                                <div className="variantIconActive fade-in"></div>
                             )}
                             <img src={`/assets/Variants/${v.name}.png`} alt={v.name} className="variantIcon" />
                         </div>
@@ -280,27 +279,27 @@ const ReviewChallengesPage = () => {
 
                 <button
                     onClick={() => navigate(-1)}
-                    className="back-button inter-text-normal text-normal hover:text-white transition-colors"
+                    className="back-button"
                 >
                     Back
                 </button>
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
-            <div className="middle-content flex-1 relative flex flex-col overflow-hidden z-10">
+            <div className="middle-content">
                 {variantView.display && (
-                    <div key={variantView.display.id} className={`flex-1 flex flex-col h-full w-full relative ${variantView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
-                        <div className="content-fog-bg -z-10 opacity-50"></div>
-                        <img src={variantView.display.watermarkUrl} alt="" className="absolute inset-0 m-auto w-1/2 opacity-10 pointer-events-none object-contain" />
+                    <div key={variantView.display.id} className={`variant-view-wrapper ${variantView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
+                        <div className="content-fog-bg"></div>
+                        <img src={variantView.display.watermarkUrl} alt="" className="variant-watermark" />
 
-                        <div className="flex-1 flex flex-col p-10 overflow-hidden relative z-20">
+                        <div className="variant-content-area">
 
                             {/* Secondary Nav & Header */}
-                            <div className="flex-shrink-0">
-                                <h1 className="bebas-header-1 text-white">{variantView.display.name}</h1>
+                            <div className="variant-header">
+                                <h1 className="bebas-header-1 title-white">{variantView.display.name}</h1>
                                 <p className="inter-text-normal">{variantView.display.difficultyLevel}</p>
 
-                                <div className="flex border-b border-60-background">
+                                <div className="secondary-nav-container">
                                     {['Rules', 'Settings'].map(tab => (
                                         <button
                                             key={tab}
@@ -314,20 +313,20 @@ const ReviewChallengesPage = () => {
                             </div>
 
                             {/* Scrollable Content Area */}
-                            <div className="flex-1 overflow-y-auto hide-scrollbar pb-10">
-                                <div key={tabView.display} className={`h-full w-full ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
+                            <div className="tab-content-wrapper hide-scrollbar">
+                                <div key={tabView.display} className={`tab-content ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
                                     {/* TAB 1: RULES */}
                                     {tabView.display === 'Rules' && (
-                                        <div className="flex flex-col gap-1 max-w-2xl">
-                                            <p className="inter-text-normal text-normal pt-5">{variantView.display.rulesDescription}</p>
-                                            <h1 className="bebas-header-1 text-white">RULES</h1>
+                                        <div className="rules-container">
+                                            <p className="inter-text-normal rules-description">{variantView.display.rulesDescription}</p>
+                                            <h1 className="bebas-header-1 title-white">RULES</h1>
                                             {variantView.display.rules.map(rule => (
-                                                <div key={rule.id} className="flex flex-col pb-4">
-                                                    <h2 className="bebas-header-2 inter-text-normal text-normal font-bold mb-1">{rule.title}</h2>
-                                                    <p className="inter-text-small text-normal leading-relaxed">{rule.description}</p>
+                                                <div key={rule.id} className="rule-item">
+                                                    <h2 className="bebas-header-2 rule-title">{rule.title}</h2>
+                                                    <p className="inter-text-small rule-desc">{rule.description}</p>
 
                                                     {rule.bullets && rule.bullets.length > 0 && (
-                                                        <ul className="list-disc list-inside inter-text-small text-normal leading-relaxed mt-2 pl-2 flex flex-col gap-1">
+                                                        <ul className="rule-bullets">
                                                             {rule.bullets.map((bullet, index) => (
                                                                 <li key={index}>{bullet}</li>
                                                             ))}
@@ -340,7 +339,7 @@ const ReviewChallengesPage = () => {
 
                                     {/* TAB 2: SETTINGS */}
                                     {tabView.display === 'Settings' && (
-                                        <div className="flex flex-col gap-[40px]">
+                                        <div className="settings-container">
 
                                             {/* Dynamic Settings based on Variant */}
                                             {renderVariantSettings()}
@@ -355,11 +354,11 @@ const ReviewChallengesPage = () => {
             </div>
 
             {/* === RIGHT PANEL (Start challenge button) === */}
-            <div className="right-panel relative z-0 flex-shrink-0">
+            <div className="right-panel">
                 <button className="squareBtn">Start Challenge</button>
             </div>
         </div>
     );
 };
 
-export default ReviewChallengesPage;
+export default StartChallengePage;
