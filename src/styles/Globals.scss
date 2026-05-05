@@ -1,7 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gideon+Roman&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-
 :root {
-  --font-bebas: 'Bebas', sans-serif;
+  --font-bebas: 'Bebas Neue', sans-serif;
   --font-inter: 'Inter', sans-serif;
   --font-gideon: 'Gideon Roman', sans-serif;
 
@@ -72,19 +70,13 @@
 
   .main-container {
     background: url('/assets/junkyard.png') no-repeat fixed center / cover;
-
-    /* 1. The Magic Grid Definition */
     display: grid;
     grid-template-columns: 150px 1fr 383px; /* Fixed Left, Fluid Middle, Fixed Right */
-
-    /* 2. The Safety Net */
     min-width: 1024px; /* Stops the UI from imploding on small browser windows */
-
     height: 100vh;
     width: 100vw;
     overflow-x: auto; /* Adds a scrollbar ONLY if they shrink the window below 1024px */
     overflow-y: hidden;
-
     background-color: var(--color-full-background);
     font-family: var(--font-inter);
     color: var(--color-normal);
