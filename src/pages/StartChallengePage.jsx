@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
-import {useFadeTransition} from "../hooks/useFadeTranistion.js";
-import {useEffect, useState} from "react";
+import { useFadeTransition } from "../hooks/useFadeTranistion.js";
+import { useEffect, useState } from "react";
 import api from "../services/api.js";
 
 const StartChallengePage = () => {
@@ -10,7 +10,7 @@ const StartChallengePage = () => {
 
     // --- State Management ---
     const variantView = useFadeTransition(VARIANTS[0]);
-    const tabView = useFadeTransition('Rules'); // Defaults to Rules
+    const tabView = useFadeTransition('Rules');
 
     const [masterKillerList, setMasterKillerList] = useState([]);
     const [pastBloodMoneyRuns, setPastBloodMoneyRuns] = useState([]);
@@ -20,6 +20,10 @@ const StartChallengePage = () => {
         inheritedSeasonId: null,
         unlockedKillerIds: []
     });
+
+    // Modal States
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isKillerListExpanded, setIsKillerListExpanded] = useState(false);
 
     // --- Fetch Master Killer List ---
     useEffect(() => {
@@ -58,8 +62,8 @@ const StartChallengePage = () => {
     useEffect(() => {
         if (!variantView.display) return;
 
-        // Reset to Rules tab and clear inherited season when switching variants
         tabView.triggerTransition('Rules');
+        setIsConfirmModalOpen(false); // Close modal if open
         setSeasonPayload(prev => ({
             ...prev,
             inheritedSeasonId: null
@@ -78,7 +82,8 @@ const StartChallengePage = () => {
         });
     };
 
-    const handleStartChallenge = async () => {
+    // --- Submit to Backend ---
+    const submitChallenge = async () => {
         try {
             const requestBody = {
                 variantType: variantView.display.id,
@@ -88,7 +93,9 @@ const StartChallengePage = () => {
             };
 
             const response = await api.post('/seasons', requestBody);
-            navigate(`/season/${response.data.id}/roster`);
+
+            // Navigate to the newly created placeholder page
+            navigate(`/current-season/${response.data.id}`);
 
         } catch (error) {
             console.error("Failed to start season:", error.response?.data?.message || error.message);
@@ -96,7 +103,7 @@ const StartChallengePage = () => {
     };
 
     return (
-        <div className="main-container review-container">
+        <div className="main-container review-container relative">
 
             {/* === LEFT NAV === */}
             <div className="nav">
@@ -127,13 +134,11 @@ const StartChallengePage = () => {
 
                         <div className="variant-content-area">
 
-                            {/* Secondary Nav & Header */}
                             <div className="variant-header">
                                 <h1 className="bebas-header-1 title-white">{variantView.display.name}</h1>
                                 <p className="inter-text-normal">{variantView.display.difficultyLevel}</p>
 
                                 <div className="secondary-nav-container mt-4">
-                                    {/* Changed Settings to Killers */}
                                     {['Rules', 'Killers'].map(tab => (
                                         <button
                                             key={tab}
@@ -146,7 +151,6 @@ const StartChallengePage = () => {
                                 </div>
                             </div>
 
-                            {/* Scrollable Content Area */}
                             <div className="tab-content-wrapper hide-scrollbar mt-6">
                                 <div key={tabView.display} className={`tab-content ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
 
@@ -172,11 +176,10 @@ const StartChallengePage = () => {
                                         </div>
                                     )}
 
-                                    {/* TAB 2: KILLER LIST (Replaces Settings) */}
+                                    {/* TAB 2: KILLER LIST */}
                                     {tabView.display === 'Killers' && (
                                         <div className="killers-container">
 
-                                            {/* Afterburn Requires the Save Selector */}
                                             {variantView.display.id === 'AFTERBURN' && (
                                                 <div className="afterburn-options-container">
                                                     <h3 className="bebas-header-1 title-white">SELECT BLOOD MONEY SAVE</h3>
@@ -203,7 +206,6 @@ const StartChallengePage = () => {
                                                 </div>
                                             )}
 
-                                            {/* Universal Killer Grid */}
                                             <div className="killer-selection-header">
                                                 <div>
                                                     <h1 className="bebas-header-1 title-white">KILLERS</h1>
@@ -239,10 +241,58 @@ const StartChallengePage = () => {
                 )}
             </div>
 
-            {/* === RIGHT PANEL (Start challenge button) === */}
+            {/* === RIGHT PANEL (Triggers Confirmation Modal) === */}
             <div className="right-panel">
-                <button className="squareBtn" onClick={handleStartChallenge}>Start Challenge</button>
+                <button className="squareBtn" onClick={() => setIsConfirmModalOpen(true)}>Start Challenge</button>
             </div>
+
+            {/* === CONFIRMATION MODAL === */}
+            {isConfirmModalOpen && (
+                <div className="modal-backdrop fade-in">
+                    <div className="modal-content-box confirm-modal">
+
+                        <h2 className="bebas-header-1 title-white modal-title">Confirm Challenge</h2>
+                        <div className="modal-divider"></div>
+
+                        <div className="modal-scroll-area hide-scrollbar">
+                            <h3 className="bebas-header-1">Variant: <span className="title-iri modal-variant-name">{variantView.display.name}</span></h3>
+                            <p className="bebas-header-1">Rules Summary: <span className="modal-variant-name">{variantView.display.rulesDescription}</span></p>
+                            <ul className="rules-summary-list">
+                                {variantView.display.rulesSummary.map((rule, index) => (
+                                    <li key={index}>{rule}</li>
+                                ))}
+                            </ul>
+
+                            <div className="collapsible-section">
+                                <button
+                                    className="inter-text-normal title-white collapsible-btn"
+                                    onClick={() => setIsKillerListExpanded(!isKillerListExpanded)}
+                                >
+                                    <span>Included Killers ({seasonPayload.unlockedKillerIds.length})</span>
+                                    <span>{isKillerListExpanded ? '▲' : '▼'}</span>
+                                </button>
+
+                                <div className={`collapsible-content ${isKillerListExpanded ? 'expanded' : ''}`}>
+                                    <ul className="killer-summary-list">
+                                        {masterKillerList
+                                            .filter(k => seasonPayload.unlockedKillerIds.includes(k.id))
+                                            .map(k => (
+                                                <li key={k.id} className="inter-text-small text-normal">{k.name}</li>
+                                            ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons - Edit on Left, Start on Right */}
+                        <div className="modal-actions">
+                            <button className="back-button" onClick={() => setIsConfirmModalOpen(false)}>Edit</button>
+                            <button className="squareBtn" onClick={submitChallenge}>Start Challenge</button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

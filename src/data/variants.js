@@ -22,24 +22,19 @@ export const VARIANTS = [
             },
             {
                 id: 4,
-                title: "VARIATIONS",
-                description: "Player can choose to turn on or off the settings listed below:",
-                bullets: [
-                    "LoadOut Restrictions: Edit what, if any, perks and add-ons are allowed and at what grades.",
-                    "Consecutive Matches: Once you start a match with a killer, you must continue playing that killer until they die.",
-                    "Same Build: Player must use the same perks with each killer throughout the entire challenge."
-                ]
-            },
-            {
-                id: 5,
                 title: "GAMEPLAY",
                 description: "You cannot quit or turn off the game to saver a killer if a match goes poorly. Severe hacking, lag-switching, or teaming from survivors is an exception in which the killer would not die if the match resulted in a loss."
             },
             {
-                id: 6,
+                id: 5,
                 title: "CHALLENGE FAILURE",
                 description: "Challenge results in a failure if player does not have any killers left before reaching Iridescent I."
             }
+        ],
+        rulesSummary: [
+            "3K w/ Hatch",
+            "Permadeath",
+            "Full Loadout"
         ]
     },
     {
@@ -89,6 +84,11 @@ export const VARIANTS = [
                 title: "CHALLENGE FAILURE",
                 description: "Challenge results in a failure if player does not have any killers left before reaching Iridescent I."
             }
+        ],
+        rulesSummary: [
+            "3K w/ Hatch",
+            "Permadeath",
+            "Loadout Restrictions"
         ]
     },
     {
@@ -161,6 +161,13 @@ export const VARIANTS = [
                 title: "CHALLENGE FAILURE",
                 description: "Challenge results in a failure if player does not have any killers left or reaches a negative balance before reaching Iridescent I."
             }
+        ],
+        rulesSummary: [
+            "3K w/ Hatch",
+            "Permadeath",
+            "Loadout Restrictions",
+            "Killer Cooldown",
+            "Money Management"
         ]
     },
     {
@@ -234,6 +241,14 @@ export const VARIANTS = [
                 title: "CHALLENGE FAILURE",
                 description: "Challenge results in a failure if player does not have any killers left or reaches a negative balance before reaching Iridescent I."
             }
+        ],
+        rulesSummary: [
+            "3K w/ Hatch",
+            "Permadeath",
+            "Loadout Restrictions",
+            "Killer Cooldown",
+            "Money Management",
+            "Restricted Roster"
         ]
     },
     {
@@ -295,6 +310,12 @@ export const VARIANTS = [
                 title: "CHALLENGE FAILURE",
                 description: "Challenge results in a failure if player does not have any killers left before reaching Iridescent I."
             }
+        ],
+        rulesSummary: [
+            "3K w/ Hatch",
+            "Permadeath",
+            "Randomized Loadout",
+            "Killer Cooldown"
         ]
     },
     {
@@ -356,6 +377,13 @@ export const VARIANTS = [
                 title: "CHALLENGE FAILURE",
                 description: "The challenge results in a failure if a survivor escapes through an exit gate (and you have no Mulligans to use), is you violate the Marathon Timer by taking too long of a break, or if you accidentally use a locked-out perk or add-on."
             }
+        ],
+        rulesSummary: [
+            "3K w/ Hatch",
+            "Run Death",
+            "Loadout Restrictions",
+            "Killer Cooldown",
+            "Marathon Timer"
         ]
     }
 ];

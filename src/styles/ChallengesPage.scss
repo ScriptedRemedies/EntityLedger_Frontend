@@ -1,5 +1,3 @@
-
-
 /* ==================== */
 /* LAYOUT BASE          */
 /* ==================== */
@@ -142,20 +140,17 @@
 }
 .back-button {
   position: relative;
-  left: 15px;
+  left: 5px;
   width: 105px;
-  height: 40px;
   display: flex;
   align-items: center;
-  padding-left: 30px;
+  padding: 6px 0 6px 30px;
   border: none;
   background-color: transparent;
   font-family: var(--font-inter);
-  font-size: var(--text-size-normal);
   color: var(--color-normal);
   transition: color 0.3s ease, background-image 0.3s ease;
   cursor: pointer;
-
   background-image:
           linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)),
           linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15));
@@ -168,7 +163,7 @@
   &::before {
     content: '';
     position: absolute;
-    left: 22px;
+    left: 24px;
     top: 50%;
     transform: translate(-50%, -50%) rotate(-45deg);
     width: 31px;
@@ -181,14 +176,13 @@
   &::after {
     content: '';
     position: absolute;
-    left: 20px;
+    left: 22px;
     top: 50%;
     transform: translate(-50%, -50%) rotate(-45deg);
     width: 12px;
     height: 12px;
     border-top: 2px solid var(--color-iri);
     border-left: 2px solid var(--color-iri);
-    opacity: 0.5;
     transition: opacity 0.3s ease;
   }
 
@@ -212,6 +206,7 @@
   background: transparent;
   color: var(--color-normal);
   font-family: var(--font-inter);
+  font-size: var(--font-size-small);
   padding: 6px 20px 6px 24px;
   cursor: pointer;
   border: 2px solid;
@@ -790,6 +785,113 @@
   pointer-events: none;
   z-index: -10;
   filter: brightness(0.8);
+}
+
+/* ==================== */
+/* CONFIRMATION MODAL   */
+/* ==================== */
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-60-background);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content-box {
+  background-color: var(--color-full-background);
+  padding: 30px;
+  width: 70vw;
+  height: 80vh;
+  border: 1px solid var(--color-60-background);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+.confirm-modal {
+  display: flex;
+  flex-direction: column;
+}
+.modal-title {
+  margin-bottom: 0.5rem;
+}
+.modal-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-60-background);
+  margin-bottom: 1.5rem;
+}
+.modal-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+}
+.modal-variant-name {
+  font-family: var(--font-inter);
+  font-size: var(--header-size-2);
+}
+.collapsible-btn {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-60-background);
+  padding-bottom: 0.75rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: var(--color-iri);
+  }
+}
+.collapsible-content {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 0;
+
+  &.expanded {
+    max-height: 2000px;
+    opacity: 1;
+  }
+}
+.killer-summary-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-left: 1.5rem;
+  list-style-type: square;
+
+  li {
+    padding: 0.25rem 0; /* Translated from py-1 */
+    &::marker {
+      color: var(--color-iri);
+    }
+  }
+}
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-60-background);
+  margin-top: 5px;
+}
+.rules-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 1.5rem;
+  list-style-type: square;
+  margin-bottom: 20px;
+
+  li {
+    &::marker {
+      color: var(--color-iri);
+    }
+  }
 }
 
 /* ==================== */
