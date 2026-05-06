@@ -1,0 +1,100 @@
+/* ==================== */
+/* GLOBAL ALERTS/TOASTS */
+/* ==================== */
+
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast-message {
+  pointer-events: auto;
+  position: relative; /* Required for the progress bar to lock to the bottom */
+  overflow: hidden; /* Keeps the progress bar neatly inside the borders */
+  min-width: 320px;
+  max-width: 450px;
+  background-color: var(--color-full-background);
+  border: 1px solid var(--color-60-background);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+}
+
+/* New inner wrapper to handle the padding we removed from the parent */
+.toast-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+}
+
+/* The Animated Progress Bar */
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  /* The animation runs linearly over exactly 3 seconds to match your React timeout */
+  animation: shrinkProgress 3s linear forwards;
+}
+
+/* --- THEME MODIFIERS --- */
+
+.toast-success {
+  border-left: 4px solid var(--color-ash);
+
+  /* Match the bar color to the border color */
+  .toast-progress {
+    background-color: var(--color-ash);
+  }
+}
+
+.toast-error {
+  border-left: 4px solid var(--color-iri);
+
+  /* Match the bar color to the border color */
+  .toast-progress {
+    background-color: var(--color-iri);
+  }
+}
+
+/* --- BUTTONS & ANIMATIONS --- */
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: var(--color-normal);
+  cursor: pointer;
+  font-size: 1.25rem;
+  margin-left: 1.5rem;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: var(--color-white);
+  }
+}
+
+.animation-slide-in-toast {
+  animation: slideUpToast 0.3s ease-out forwards;
+}
+
+@keyframes slideUpToast {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shrinkProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
