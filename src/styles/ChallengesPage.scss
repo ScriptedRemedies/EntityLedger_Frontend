@@ -245,9 +245,10 @@
 }
 .variant-watermark {
   position: absolute;
+  top: 20px;
   inset: 0;
   margin: auto;
-  width: 50%;
+  max-width: 40%;
   opacity: 0.1;
   pointer-events: none;
   object-fit: contain;

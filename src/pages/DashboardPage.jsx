@@ -110,6 +110,7 @@ const DashboardPage = () => {
 
                 {/* Bottom Section: Version Info */}
                 <div className="bottom-section">
+                    {/* TODO: Add tutorial modal button here */}
                     <button
                         onClick={() => setIsVersionModalOpen(true)}
                         className="inter-text-small version-btn"
@@ -129,6 +130,7 @@ const DashboardPage = () => {
                 </div>
             </div>
 
+            {/* TODO: Add a tips and tricks/tutorial modal (make sure to add the md file too)  */}
             {/* Version Info Modal Overlay */}
             {isVersionModalOpen && (
                 <div className="modal-backdrop">

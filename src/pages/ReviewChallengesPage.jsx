@@ -113,7 +113,7 @@ const ReviewChallengesPage = () => {
                 {variantView.display && (
                     <div key={variantView.display.id} className={`variant-view-wrapper ${variantView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
                         <div className="content-fog-bg"></div>
-                        <img src={variantView.display.watermarkUrl} alt="" className="variant-watermark" />
+                        <img src={`/assets/Variants/${variantView.display.name}.png`} alt="" className="variant-watermark" />
 
                         <div className="variant-content-area">
 
@@ -155,6 +155,8 @@ const ReviewChallengesPage = () => {
                                             {seasons.map(season => (
                                                 <div key={season.id} onClick={() => setSelectedSeason(season)} className="season-card">
 
+                                                    {/* TODO: Need to fix the current season not showing in the season cards */}
+                                                    {/* TODO:  */}
                                                     <div className="season-card-hover">
                                                         <p className="season-date">{season.status === 'IN_PROGRESS' ? 'Current' : season.dateCompleted}</p>
                                                         <h3 className="bebas-header-1 title-ash text-center">{season.gradeName}</h3>
@@ -172,6 +174,7 @@ const ReviewChallengesPage = () => {
                                         </div>
                                     )}
 
+                                    {/* TODO: Test trial view */}
                                     {/* TAB 1: TRIALS (List View) */}
                                     {tabView.display === 'Seasons' && selectedSeason && (
                                         <div className="trials-list-container">
@@ -292,6 +295,7 @@ const ReviewChallengesPage = () => {
                     <>
                         <div className="global-actions">
                             <button className="action-btn-secondary">Continue</button>
+                            {/* TODO: Make start new challenge static and change it to only show IF there isn't a current season */}
                             <button className="action-btn-primary">Start New Challenge</button>
                         </div>
 
