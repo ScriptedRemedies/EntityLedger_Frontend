@@ -3,6 +3,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from "./pages/DashboardPage.jsx";
 import ReviewChallengesPage from "./pages/ReviewChallengesPage.jsx";
 import StartChallengePage from "./pages/StartChallengePage.jsx";
+import CurrentSeasonPage from "./pages/CurrentSeasonPage.jsx";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/start-challenge" element={<StartChallengePage />} />
             <Route path="/review-challenges" element={<ReviewChallengesPage />} />
+            <Route path="/current-season" element={<CurrentSeasonPage />} />
         </Routes>
       </Router>
   )

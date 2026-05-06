@@ -4,9 +4,11 @@ import '../styles/ChallengesPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
+import {useToast} from "../hooks/ToastContext.jsx";
 
 const StartChallengePage = () => {
     const navigate = useNavigate();
+    const { addToast } = useToast();
 
     // --- State Management ---
     const variantView = useFadeTransition(VARIANTS[0]);
@@ -63,7 +65,6 @@ const StartChallengePage = () => {
         if (!variantView.display) return;
 
         tabView.triggerTransition('Rules');
-        setIsConfirmModalOpen(false); // Close modal if open
         setSeasonPayload(prev => ({
             ...prev,
             inheritedSeasonId: null
@@ -94,11 +95,15 @@ const StartChallengePage = () => {
 
             const response = await api.post('/seasons', requestBody);
 
+            addToast("Challenge successfully created!", "success");
+
             // Navigate to the newly created placeholder page
             navigate(`/current-season/${response.data.id}`);
 
         } catch (error) {
             console.error("Failed to start season:", error.response?.data?.message || error.message);
+            const errorMsg = error.response?.data?.message || "The Entity rejected your request. Try again.";
+            addToast(errorMsg, "error");
         }
     };
 
