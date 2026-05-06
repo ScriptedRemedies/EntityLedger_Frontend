@@ -13,7 +13,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/start-challenge" element={<StartChallengePage />} />
             <Route path="/review-challenges" element={<ReviewChallengesPage />} />
-            <Route path="/current-season" element={<CurrentSeasonPage />} />
+            <Route path="/current-season/:seasonId" element={<CurrentSeasonPage />} />
         </Routes>
       </Router>
   )

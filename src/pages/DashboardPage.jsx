@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
-import './DashboardPage.scss';
+import api from "../services/api.js";
+import { useToast } from "../hooks/ToastContext.jsx";
+import '../styles/DashboardPage.scss';
 import ReactMarkdown from 'react-markdown';
 import fm from 'front-matter';
 import latestNotes from '../data/latest-update.md?raw';
@@ -7,14 +9,41 @@ import {useNavigate} from "react-router-dom";
 
 const DashboardPage = () => {
 
+    const { addToast } = useToast();
+
     // State to handle the cascade menu
     const [isMenuExpanded, setIsMenuExpanded] = useState(false);
     const navigate = useNavigate();
     const menuItems =[
         { name: 'Start a New Challenge', path: '/start-challenge' },
-        { name: 'Continue Challenge', path: '' },
+        { name: 'Continue Challenge', path: '/continue-season' },
         { name: 'Review Challenges', path: '/review-challenges'}
     ]
+
+    const handleMenuClick = async (path) => {
+        if (path === '/continue-season') {
+            try {
+                const response = await api.get('/seasons/active');
+
+                // Let's log the actual data so you can see exactly what the DTO looks like in your browser console!
+                console.log("Active Season Data:", response.data);
+
+                // Look for 'id' (Entity) or 'seasonId' (DTO)
+                const targetId = response.data?.id || response.data?.seasonId;
+
+                if (targetId) {
+                    navigate(`/current-season/${targetId}`);
+                } else {
+                    // If we get data but no ID, fire an error so it doesn't fail silently
+                    addToast("Found season data, but couldn't read the ID.", "error");
+                }
+            } catch (error) {
+                addToast("No active challenge found. The Entity waits.", "error");
+            }
+        } else {
+            navigate(path);
+        }
+    };
 
     // State to handle the version info overlay
     const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
@@ -68,7 +97,7 @@ const DashboardPage = () => {
                             {menuItems.map((item, index) => (
                                 <button
                                     key={index}
-                                    onClick={() => navigate(item.path)}
+                                    onClick={() => handleMenuClick(item.path)}
                                     className="inter-text-normal sub-menu-item"
                                 >
                                     {item.name}

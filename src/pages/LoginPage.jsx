@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './LoginPage.scss';
+import '../styles/LoginPage.scss';
 
 const LoginPage = () => {
     const [isMounted, setIsMounted] = useState(false);
