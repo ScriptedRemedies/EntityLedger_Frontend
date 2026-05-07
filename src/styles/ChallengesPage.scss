@@ -181,20 +181,20 @@
     transform: translate(-50%, -50%) rotate(-45deg);
     width: 12px;
     height: 12px;
-    border-top: 2px solid var(--color-iri);
-    border-left: 2px solid var(--color-iri);
+    border-top: 2px solid var(--color-IRI);
+    border-left: 2px solid var(--color-IRI);
     transition: opacity 0.3s ease;
   }
 
   &:hover {
     color: var(--color-white);
     background-image:
-            linear-gradient(var(--color-iri), var(--color-iri)),
-            linear-gradient(var(--color-iri), var(--color-iri));
+            linear-gradient(var(--color-IRI), var(--color-IRI)),
+            linear-gradient(var(--color-IRI), var(--color-IRI));
 
     &::before {
-      border-top-color: var(--color-iri);
-      border-left-color: var(--color-iri);
+      border-top-color: var(--color-IRI);
+      border-left-color: var(--color-IRI);
     }
     &::after { opacity: 1; }
   }
@@ -222,7 +222,7 @@
     transform: translateY(-50%);
     width: 3px;
     height: 50%;
-    background-color: var(--color-iri);
+    background-color: var(--color-IRI);
   }
 
   &:hover {
@@ -350,7 +350,7 @@
 }
 .season-next-grade {
   font-size: var(--text-size-small);
-  color: var(--color-iri);
+  color: var(--color-IRI);
 }
 .season-date-range {
   font-size: var(--text-size-small);
@@ -359,13 +359,13 @@
 }
 .season-result-label {
   font-size: var(--text-size-small);
-  color: var(--color-ash);
+  color: var(--color-ASH);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 0.25rem;
 }
 .season-result-title {
-  color: var(--color-iri);
+  color: var(--color-IRI);
   text-align: center;
   line-height: 1;
 }
@@ -590,7 +590,7 @@
   transition: border-color 0.3s ease;
 
   &:hover {
-    border-color: var(--color-ash);
+    border-color: var(--color-ASH);
   }
 }
 .stat-info {
@@ -721,41 +721,27 @@
   gap: 0.5rem;
   z-index: 20;
 }
-.action-btn-secondary, .action-btn-primary {
-  font-family: var(--font-inter);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding-bottom: 0.25rem;
-  transition: all 0.3s ease;
-
-  &:hover {
-    color: var(--color-white);
-    border-color: var(--color-white);
-  }
-}
-.action-btn-secondary {
-  color: var(--color-normal);
-  border-bottom: 1px solid var(--color-normal);
-}
-.action-btn-primary {
-  color: var(--color-iri);
-  border-bottom: 1px solid var(--color-iri);
-  margin-top: 0.5rem;
-}
 .global-season-info {
   position: absolute;
   bottom: 6rem;
-  right: 1.5rem;
+  right: 20px;
   display: flex;
   align-items: center;
   gap: 1rem;
   z-index: 20;
 }
-.global-badge {
-  width: 4rem;
-  height: 4rem;
+.badge {
+  position: relative;
+}
+.badge-image {
+  width: 70px;
   filter: drop-shadow(0 4px 3px rgba(0,0,0,0.5));
+}
+.gradeNum {
+  font-size: var(--header-size-1);
+  position: absolute;
+  bottom: 23px;
+  left: 23px;
 }
 .global-season-text {
   display: flex;
@@ -764,28 +750,21 @@
 }
 .global-character-name {
   color: var(--color-white);
-  line-height: 1;
-}
-.global-variant-name {
-  color: var(--color-muted);
-  line-height: 1.25;
 }
 .global-days-left {
-  color: var(--color-normal);
-  line-height: 1.25;
-  margin-top: 0.25rem;
+  color: var(--color-IRI);
 }
 .global-character-bg {
   position: absolute;
-  bottom: 0;
+  bottom: 40px;
   right: 0;
   height: 85%;
   width: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: bottom;
   pointer-events: none;
   z-index: -10;
-  filter: brightness(0.8);
+  filter: brightness(0.9);
 }
 
 /* ==================== */
@@ -844,7 +823,7 @@
   transition: color 0.3s ease;
 
   &:hover {
-    color: var(--color-iri);
+    color: var(--color-IRI);
   }
 }
 .collapsible-content {
@@ -869,7 +848,7 @@
   li {
     padding: 0.25rem 0; /* Translated from py-1 */
     &::marker {
-      color: var(--color-iri);
+      color: var(--color-IRI);
     }
   }
 }
@@ -890,7 +869,7 @@
 
   li {
     &::marker {
-      color: var(--color-iri);
+      color: var(--color-IRI);
     }
   }
 }

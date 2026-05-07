@@ -13,11 +13,11 @@
   --color-60-background: rgba(4, 5, 7, 0.6);
   --color-full-background: #040507;
 
-  --color-ash: #B5A986;
-  --color-bronze: #CD7F32;
-  --color-silver: #C0C0C0;
-  --color-gold: #FFD700;
-  --color-iri: #AC261B;
+  --color-ASH: #B5A986;
+  --color-BRONZE: #CD7F32;
+  --color-SILVER: #C0C0C0;
+  --color-GOLD: #FFD700;
+  --color-IRI: #AC261B;
 
   --title-size: 50px;
   --header-size-1: 30px;
@@ -61,8 +61,8 @@
 
   /* Global Utility Additions */
   .title-white { color: var(--color-white); }
-  .title-ash { color: var(--color-ash); }
-  .title-iri { color: var(--color-iri); }
+  .title-ash { color: var(--color-ASH); }
+  .title-iri { color: var(--color-IRI); }
   .text-muted { color: var(--color-muted); }
   .text-normal { color: var(--color-normal); }
   .uppercase { text-transform: uppercase; }

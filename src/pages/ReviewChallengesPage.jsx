@@ -13,7 +13,7 @@ const ReviewChallengesPage = () => {
     const tabView = useFadeTransition('Seasons');
 
     // Global active season for the right-side character display
-    const [globalActiveSeason, setGlobalActiveSeason] = useState(null);
+    const [activeSeason, setActiveSeason] = useState(null);
 
     // Data states for the currently selected variant
     const [seasons, setSeasons] = useState([]);
@@ -29,7 +29,8 @@ const ReviewChallengesPage = () => {
         const fetchInitialData = async () => {
             try {
                 const currentSeasonRes = await api.get('/seasons/active');
-                if (currentSeasonRes.data) setGlobalActiveSeason(currentSeasonRes.data);
+                console.log(currentSeasonRes);
+                if (currentSeasonRes.data) setActiveSeason(currentSeasonRes.data);
             } catch (error) {
                 console.error("Failed to load global season data", error);
             }
@@ -84,6 +85,18 @@ const ReviewChallengesPage = () => {
         if (grade.includes("GOLD") || grade.includes("IRIDESCENT II")) return "RUTHLESS KILLER";
         return "MERCILESS KILLER";
     };
+
+    if (!activeSeason) {
+        return (
+            <div className="main-container review-container relative flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="bebas-header-1 title-white text-2xl animate-pulse">Summoning The Entity...</h2>
+                </div>
+            </div>
+        );
+    }
+
+    const [badge, gradeNum] = activeSeason.currentGrade.split("_");
 
     return (
         <div className="main-container review-container">
@@ -291,28 +304,39 @@ const ReviewChallengesPage = () => {
 
             {/* === RIGHT PANEL (Static Character Display) === */}
             <div className="right-panel">
-                {globalActiveSeason && (
+                {activeSeason && (
                     <>
                         <div className="global-actions">
-                            <button className="action-btn-secondary">Continue</button>
-                            {/* TODO: Make start new challenge static and change it to only show IF there isn't a current season */}
-                            <button className="action-btn-primary">Start New Challenge</button>
+                            {/* TODO: Add routing */}
+                            <button className="squareBtn">Continue</button>
                         </div>
 
                         <div className="global-season-info">
-                            <img src={globalActiveSeason.badgeUrl} alt="Current Grade" className="global-badge" />
+                            <div className="badge">
+                                <img src={`/assets/Grades/${badge}.png`} alt={gradeNum} className="badge-image"/>
+                                <p className="gradeNum" style={{ color: `var(--color-${badge})` }}>{gradeNum}</p>
+                            </div>
                             <div className="global-season-text">
-                                <h3 className="bebas-header-1 global-character-name">{globalActiveSeason.characterName}</h3>
-                                <p className="inter-text-small global-variant-name">{globalActiveSeason.variantName}</p>
-                                <p className="inter-text-small global-days-left">{globalActiveSeason.daysLeft} Days Left</p>
+                                <h3 className="bebas-header-1 global-character-name">{activeSeason.characterName}</h3>
+                                <p className="inter-text-small">{activeSeason.variantType}</p>
+                                <p className="inter-text-small global-days-left">{activeSeason.daysLeft} Days Left</p>
                             </div>
                         </div>
 
                         <img
-                            src={globalActiveSeason.characterImageUrl}
-                            alt={globalActiveSeason.characterName}
+                            src={activeSeason.characterImageUrl}
+                            alt={activeSeason.characterName}
                             className="global-character-bg"
                         />
+                    </>
+                )}
+                {/* If there is no current active season then show the start new season button */}
+                {!activeSeason && (
+                    <>
+                        <div className="global-actions">
+                            {/* TODO: Add routing */}
+                            <button className="sqaureBtn">Start New Challenge</button>
+                        </div>
                     </>
                 )}
             </div>

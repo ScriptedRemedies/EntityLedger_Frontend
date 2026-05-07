@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/ChallengesPage.scss';
 import '../styles/CurrentSeasonPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
-import { useEffect } from "react";
+import {useEffect, useState} from "react";
 import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
 
@@ -18,12 +18,15 @@ const CurrentSeasonPage = () => {
 
     const navView = useFadeTransition(NAV_TABS[0]);
 
+    const [activeSeason, setActiveSeason] = useState();
+
     useEffect(() => {
         if (!seasonId) return;
 
         const fetchSeasonData = async () => {
             try {
                 const response = await api.get(`/seasons/active`);
+                setActiveSeason(response.data);
                 // TODO: Remove once page is finished
                 console.log(response.data);
             } catch (error) {
@@ -33,6 +36,18 @@ const CurrentSeasonPage = () => {
 
         fetchSeasonData();
     }, [seasonId]);
+
+    if (!activeSeason) {
+        return (
+            <div className="main-container review-container relative flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="bebas-header-1 title-white text-2xl animate-pulse">Summoning The Entity...</h2>
+                </div>
+            </div>
+        );
+    }
+
+    const [badge, gradeNum] = activeSeason.currentGrade.split("_");
 
     return (
         <div className="main-container review-container relative">
@@ -71,6 +86,7 @@ const CurrentSeasonPage = () => {
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
+            {/* TODO: Add killers and loadout */}
             <div className="middle-content">
                 {navView.display && (
                     <div key={navView.display.id} className={`variant-view-wrapper ${navView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
@@ -91,9 +107,26 @@ const CurrentSeasonPage = () => {
             </div>
 
             {/* === RIGHT PANEL === */}
-            {/* TODO: Add functionality */}
             <div className="right-panel">
+                {/* TODO: Add functionality */}
                 <button className="squareBtn">Start Trial</button>
+
+                <div className="global-season-info">
+                    <div className="badge">
+                        <img src={`/assets/Grades/${badge}.png`} alt={gradeNum} className="badge-image"/>
+                        <p className="gradeNum" style={{ color: `var(--color-${badge})` }}>{gradeNum}</p>
+                    </div>
+                    <div className="global-season-text">
+                        <h3 className="bebas-header-1 global-character-name">{activeSeason.characterName}</h3>
+                        <p className="inter-text-small">{activeSeason.variantType}</p>
+                        <p className="inter-text-small global-days-left">{activeSeason.daysLeft} Days Left</p>
+                    </div>
+                </div>
+
+                <img
+                    src={activeSeason.characterImageUrl}
+                    className="global-character-bg"
+                />
             </div>
         </div>
     );
