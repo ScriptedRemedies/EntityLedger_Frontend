@@ -2,9 +2,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/ChallengesPage.scss';
 import '../styles/CurrentSeasonPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
+import KillerCard from "./KillerCard.jsx";
+import StandardLoadout from "./variant-loadouts/StandardLoadout.jsx";
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -18,7 +20,9 @@ const CurrentSeasonPage = () => {
 
     const navView = useFadeTransition(NAV_TABS[0]);
 
-    const [activeSeason, setActiveSeason] = useState();
+    const [activeSeason, setActiveSeason] = useState(null);
+
+    const [selectedKiller, setSelectedKiller] = useState(null);
 
     useEffect(() => {
         if (!seasonId) return;
@@ -27,8 +31,7 @@ const CurrentSeasonPage = () => {
             try {
                 const response = await api.get(`/seasons/active`);
                 setActiveSeason(response.data);
-                // TODO: Remove once page is finished
-                console.log(response.data);
+                console.log("Current Season Data:", response.data);
             } catch (error) {
                 console.error("Failed to fetch season:", error);
             }
@@ -37,6 +40,7 @@ const CurrentSeasonPage = () => {
         fetchSeasonData();
     }, [seasonId]);
 
+    // Loading Guard
     if (!activeSeason) {
         return (
             <div className="main-container review-container relative flex items-center justify-center">
@@ -49,6 +53,30 @@ const CurrentSeasonPage = () => {
 
     const [badge, gradeNum] = activeSeason.currentGrade.split("_");
 
+    const defaultKiller = activeSeason.roster.find(k => k.killerName === activeSeason.characterName);
+    const currentKiller = selectedKiller || defaultKiller;
+
+    // If they clicked someone, show that killer. If not, fallback to the backend's default.
+    const displayImageUrl = currentKiller
+        ? `/assets/Killer Portraits/${currentKiller.killerName}.png`
+        : activeSeason.characterImageUrl;
+
+    const displayCharacterName = currentKiller
+        ? currentKiller.killerName
+        : activeSeason.characterName;
+
+    const renderLoadoutView = () => {
+        switch (activeSeason.variantType) {
+
+            // case 'CHAOS_SHUFFLE':
+                // return <ChaosShuffleLoadout season={activeSeason} />;
+            // case 'BLOOD_MONEY':
+                // return <BloodMoneyLoadout season={activeSeason} />;
+            default:
+                return <StandardLoadout currentKiller={currentKiller} season={activeSeason} />;
+        }
+    };
+
     return (
         <div className="main-container review-container relative">
 
@@ -59,19 +87,16 @@ const CurrentSeasonPage = () => {
                 </div>
 
                 <div className="nav-icons-list hide-scrollbar">
-                    {/* 3. Map over your static array, NOT the hook state! */}
                     {NAV_TABS.map((tab) => (
                         <div
                             key={tab.id}
                             className="variantIconContainer"
                             onClick={() => navView.triggerTransition(tab)}
                         >
-                            {/* Check if the hook's active state matches this tab */}
                             {navView.active?.id === tab.id && (
                                 <div className="variantIconActive fade-in"></div>
                             )}
 
-                            {/* Make sure to drop Killers.png and Loadout.png into an appropriate assets folder! */}
                             <img
                                 src={`/assets/Nav/${tab.name}Selection.png`}
                                 alt={tab.name}
@@ -80,13 +105,11 @@ const CurrentSeasonPage = () => {
                         </div>
                     ))}
                 </div>
-                {/* TODO: Add trial recap screen just like in the review section but make it above the back button if you can */}
 
                 <button onClick={() => navigate("/dashboard")} className="back-button">Back</button>
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
-            {/* TODO: Add killers and loadout */}
             <div className="middle-content">
                 {navView.display && (
                     <div key={navView.display.id} className={`variant-view-wrapper ${navView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
@@ -100,6 +123,28 @@ const CurrentSeasonPage = () => {
 
                             <div className="tab-content-wrapper hide-scrollbar mt-6">
 
+                                {/* KILLER LIST */}
+                                {navView.display.id === 'KILLERS' && (
+                                    <div className="killer-grid hide-scrollbar">
+                                        {activeSeason.roster.map(rosterItem => (
+                                            <KillerCard
+                                                key={rosterItem.killerId}
+                                                killer={rosterItem}
+                                                variantType={activeSeason.variantType}
+                                                isSelected={currentKiller?.killerId === rosterItem.killerId}
+                                                onSelect={() => setSelectedKiller(rosterItem)}
+                                                mode="active"
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* LOADOUT */}
+                                {navView.display.id === 'LOADOUT' && (
+                                    <div className="loadout-container">
+                                        {renderLoadoutView()}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -107,8 +152,8 @@ const CurrentSeasonPage = () => {
             </div>
 
             {/* === RIGHT PANEL === */}
+            {/* TODO: Download all killer full portrait images */}
             <div className="right-panel">
-                {/* TODO: Add functionality */}
                 <button className="squareBtn">Start Trial</button>
 
                 <div className="global-season-info">
@@ -117,15 +162,19 @@ const CurrentSeasonPage = () => {
                         <p className="gradeNum" style={{ color: `var(--color-${badge})` }}>{gradeNum}</p>
                     </div>
                     <div className="global-season-text">
-                        <h3 className="bebas-header-1 global-character-name">{activeSeason.characterName}</h3>
+                        {/* Dynamically uses the selected killer's name */}
+                        <h3 key={displayCharacterName} className="bebas-header-1 global-character-name fade-in">{displayCharacterName}</h3>
                         <p className="inter-text-small">{activeSeason.variantType}</p>
                         <p className="inter-text-small global-days-left">{activeSeason.daysLeft} Days Left</p>
                     </div>
                 </div>
 
+                {/* Dynamically uses the selected killer's image */}
                 <img
-                    src={activeSeason.characterImageUrl}
-                    className="global-character-bg"
+                    key={displayImageUrl}
+                    src={displayImageUrl}
+                    className="global-character-bg fade-in"
+                    alt={displayCharacterName}
                 />
             </div>
         </div>

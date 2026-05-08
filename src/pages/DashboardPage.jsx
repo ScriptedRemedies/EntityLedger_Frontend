@@ -135,7 +135,7 @@ const DashboardPage = () => {
             {isVersionModalOpen && (
                 <div className="modal-backdrop">
                     <div className="modal-content-box hide-scrollbar">
-
+                        {/* TODO: Change styles of md file */}
                         <button
                             onClick={() => setIsVersionModalOpen(false)}
                             className="close-modal-btn"

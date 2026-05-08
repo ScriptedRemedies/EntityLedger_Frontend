@@ -1,0 +1,98 @@
+.killer-card {
+  position: relative;
+  background-color: #000;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 160px;
+  aspect-ratio: 384 / 500;
+
+  .killer-portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.2s ease-in-out, opacity 0.2s ease;
+  }
+
+  /* === REVIEW MODE STATES === */
+  &.state-deselected {
+    .killer-portrait {
+      filter: grayscale(100%) brightness(0.6);
+    }
+    &:hover .killer-portrait {
+      filter: grayscale(50%) brightness(0.8);
+    }
+  }
+
+  /* === ACTIVE GAME STATES === */
+  &.state-available {
+    .killer-portrait {
+      filter: grayscale(0%) brightness(1); // Full color!
+    }
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.3); // Subtle white glow on hover
+    }
+  }
+
+  &.state-selected {
+    border-color: var(--color-IRI); // The Entity Red border
+    .killer-portrait {
+      filter: grayscale(0%) brightness(1.1);
+    }
+  }
+
+  &.state-dead {
+    cursor: not-allowed;
+    .killer-portrait {
+      filter: grayscale(100%) brightness(0.3); // Very dark and dead
+    }
+  }
+
+  &.state-sold {
+    cursor: not-allowed;
+    opacity: 0.5; // Faded out
+    .killer-portrait {
+      filter: grayscale(100%);
+    }
+  }
+
+  /* === OVERLAYS === */
+  .card-overlay-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    z-index: 10;
+    pointer-events: none; // Lets clicks pass through to the card
+  }
+
+  .price-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 5px 0;
+    text-align: center;
+
+    .price-text {
+      color: white;
+      font-family: var(--font-bebas);
+      font-size: 24px;
+    }
+
+    .sell-text {
+      display: none; // Hidden by default
+      color: var(--color-IRI);
+      font-family: var(--font-bebas);
+      font-size: 24px;
+    }
+
+    &.sell-mode:hover {
+      .price-text { display: none; }
+      .sell-text { display: block; } // Swaps to red SELL text on hover
+    }
+  }
+}
