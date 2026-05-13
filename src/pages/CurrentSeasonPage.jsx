@@ -121,7 +121,7 @@ const CurrentSeasonPage = () => {
                                 <h1 className="bebas-header-1 title-white">{navView.display.name}</h1>
                             </div>
 
-                            <div className="tab-content-wrapper hide-scrollbar mt-6">
+                            <div className="tab-content-wrapper hide-scrollbar">
 
                                 {/* KILLER LIST */}
                                 {navView.display.id === 'KILLERS' && (

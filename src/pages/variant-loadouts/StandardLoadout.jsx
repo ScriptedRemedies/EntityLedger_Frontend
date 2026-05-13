@@ -17,7 +17,7 @@ const StandardLoadout = ({ currentKiller }) => {
 
     // --- Pagination State ---
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 18; // 6 columns x 3 rows
+    const ITEMS_PER_PAGE = 15; // 5 columns x 3 rows
 
     // --- Fetch Inventory Data ---
     useEffect(() => {
@@ -106,25 +106,24 @@ const StandardLoadout = ({ currentKiller }) => {
 
                 {/* ADD-ONS ROW */}
                 <div className="loadout-row">
-                    <h3 className="inter-text-normal text-muted mb-2">Add Ons</h3>
+                    <h3 className="inter-text-normal text-muted ">Add Ons</h3>
                     <div className="slots-container" onClick={() => setActiveInventory('ADDONS')}>
                         {/* Map a fixed array of 2 to always render 2 boxes */}
                         {[0, 1].map(index => {
                             const addon = selectedAddons[index];
                             return (
                                 <div key={index} className="addon-slot square-slot">
-                                    {addon && <img src={`/assets/Addons/${addon.name}.png`} alt={addon.name} />}
+                                    {addon && <img src={`/assets/Addons/${currentKiller.killerName}/${addon.name}.png`} alt={addon.name} />}
                                 </div>
                             );
                         })}
                     </div>
                 </div>
 
-                <div className="divider-line"></div>
 
                 {/* PERKS ROW */}
                 <div className="loadout-row">
-                    <h3 className="inter-text-normal text-muted mb-2">Perks</h3>
+                    <h3 className="inter-text-normal text-muted">Perks</h3>
                     <div className="slots-container perks-container" onClick={() => setActiveInventory('PERKS')}>
                         {/* We map a fixed array of 4 to always render 4 diamonds */}
                         {[0, 1, 2, 3].map(index => {
@@ -144,29 +143,36 @@ const StandardLoadout = ({ currentKiller }) => {
             </div>
 
             {/* === BOTTOM: INVENTORY SELECTION === */}
-            <div className="inventory-section mt-8">
+            <div className="inventory-section">
 
-                <input
-                    type="text"
-                    className="inventory-search"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-
-                <div className="inventory-header mt-4">
-                    <h2 className="inter-text-normal">Inventory</h2>
-                    <p className="inter-text-small text-muted">{activeInventory === 'ADDONS' ? 'Add-ons' : 'Perks'}</p>
+                <div className="inventory-header">
+                    <div className="text">
+                        <h2 className="inter-text-normal">Inventory</h2>
+                        <p className="inter-text-small text-muted">{activeInventory === 'ADDONS' ? 'Add-ons' : 'Perks'}</p>
+                    </div>
+                    <input
+                        type="text"
+                        className="inventory-search"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
 
+                <div className="divider-line"></div>
+
                 {/* UPDATED: Added the dynamic classes for grid-diamonds and grid-squares */}
-                <div className={`inventory-grid mt-4 ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
+                <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
                     {/* UPDATED: Map over currentItems instead of filteredData */}
                     {currentItems.map(item => {
-                        // Check if this specific item is currently in our selected arrays
                         const isSelected = activeInventory === 'ADDONS'
                             ? selectedAddons.some(a => a.id === item.id)
                             : selectedPerks.some(p => p.id === item.id);
+
+                        // Calculate the exact image path before returning the JSX
+                        const imagePath = activeInventory === 'ADDONS'
+                            ? `/assets/Addons/${currentKiller.killerName}/${item.name}.png`
+                            : `/assets/Perks/${item.name}.png`;
 
                         return (
                             <div
@@ -175,10 +181,8 @@ const StandardLoadout = ({ currentKiller }) => {
                                 className={`inventory-item ${activeInventory === 'ADDONS' ? 'square-slot' : 'diamond-slot'} ${isSelected ? 'selected' : ''}`}
                             >
                                 <div className={activeInventory === 'PERKS' ? 'diamond-content' : ''}>
-                                    <img
-                                        src={`/assets/${activeInventory === 'ADDONS' ? 'Addons' : 'Perks'}/${item.name}.png`}
-                                        alt={item.name}
-                                    />
+                                    {/* Use the clean variable here! */}
+                                    <img src={imagePath} alt={item.name} />
                                 </div>
                                 {isSelected && <div className="active-check"></div>}
                             </div>

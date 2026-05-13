@@ -1,16 +1,30 @@
 .standard-loadout {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  gap: 10px;
 
   /* === EQUIPPED SECTION === */
   .equipped-section {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    justify-content: space-around;
+    align-items: center;
+
+    .square-slot {
+      width: 65px;
+      height: 65px;
+    }
+    .diamond-slot {
+      width: 60px;
+      height: 60px;
+    }
   }
 
   .loadout-row {
     h3 {
       text-transform: uppercase;
-      letter-spacing: 1px;
+      font-size: var(--font-size-small);
     }
   }
 
@@ -19,7 +33,6 @@
     gap: 20px;
     align-items: center;
     cursor: pointer;
-    padding: 10px 0; // Gives hover animations room to breathe
   }
 
   .perks-container {
@@ -28,41 +41,41 @@
   }
 
   .divider-line {
-    height: 1px;
+    height: 2px;
     width: 100%;
     background: rgba(255, 255, 255, 0.1);
-    margin: 10px 0;
+    margin: 5px 0;
   }
 
   /* === UNIVERSAL SLOT LOGIC === */
   .square-slot, .diamond-slot {
-    width: 64px;
-    height: 64px;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    flex-shrink: 0; // CRITICAL: Prevents flexbox/grid from squishing the box!
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-
-      // CRITICAL FIX: Hides the text of broken images so it doesn't stretch the layout
       color: transparent;
       font-size: 0;
     }
   }
 
   .square-slot {
+    width: 75px;
+    height: 75px;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
   .diamond-slot {
+    width: 75px;
+    height: 75px;
     transform: rotate(45deg);
-    margin: 12px; // MAGIC FIX: Gives the rotated points room to exist without overlapping!
+    margin: 12px;
 
     .diamond-content {
       width: 100%;
@@ -75,9 +88,14 @@
   }
 
   /* === BOTTOM INVENTORY SECTION === */
+  .inventory-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
   .inventory-search {
     width: 300px;
-    padding: 10px 15px;
+    padding: 5px 15px;
     background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: var(--color-white);
@@ -90,22 +108,29 @@
   }
 
   .inventory-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
   }
 
   /* === FIXED INVENTORY GRID === */
+  /* === FIXED INVENTORY GRID === */
   .inventory-grid {
     display: grid;
-    grid-template-columns: repeat(6, 64px);
-    padding: 20px 10px;
+    grid-template-columns: repeat(5, 1fr);
+    justify-content: center;
+    min-height: 340px;
+    align-content: start;
+
+    column-gap: 15px;
+    width: 100%;
+    padding: 20px 0;
 
     &.grid-squares {
-      gap: 20px;
+      row-gap: 30px;
     }
 
     &.grid-diamonds {
-      gap: 15px 35px; // The margin: 12px on the diamond slot handles most of the spacing now
+      row-gap: 15px;
     }
 
     .inventory-item {
@@ -123,7 +148,7 @@
       }
 
       &.selected {
-        background: rgba(172, 38, 27, 0.4); // The Entity Red
+        background: rgba(172, 38, 27, 0.4);
         border-color: var(--color-IRI);
       }
     }
@@ -134,8 +159,7 @@
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin-top: 30px;
-    padding-bottom: 20px;
+    margin-top: auto;
 
     .page-number {
       background: rgba(0, 0, 0, 0.5);

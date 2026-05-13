@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
-import {useFadeTransition} from "../hooks/useFadeTranistion.js";
+import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 
 const ReviewChallengesPage = () => {
     const navigate = useNavigate();
@@ -14,6 +14,9 @@ const ReviewChallengesPage = () => {
 
     // Global active season for the right-side character display
     const [activeSeason, setActiveSeason] = useState(null);
+
+    // NEW: Dedicated loading state so we don't get stuck!
+    const [isLoading, setIsLoading] = useState(true);
 
     // Data states for the currently selected variant
     const [seasons, setSeasons] = useState([]);
@@ -29,10 +32,20 @@ const ReviewChallengesPage = () => {
         const fetchInitialData = async () => {
             try {
                 const currentSeasonRes = await api.get('/seasons/active');
-                console.log(currentSeasonRes);
-                if (currentSeasonRes.data) setActiveSeason(currentSeasonRes.data);
+                if (currentSeasonRes.data) {
+                    setActiveSeason(currentSeasonRes.data);
+                }
             } catch (error) {
-                console.error("Failed to load global season data", error);
+                // Handle the 404 gracefully without crashing
+                if (error.response && error.response.status === 404) {
+                    console.log("No active season found or season expired.");
+                    setActiveSeason(null);
+                } else {
+                    console.error("Failed to load global season data", error);
+                }
+            } finally {
+                // FIXED: Tell the component to stop showing the loading screen regardless of success or 404
+                setIsLoading(false);
             }
         };
         fetchInitialData();
@@ -48,16 +61,45 @@ const ReviewChallengesPage = () => {
 
         const fetchVariantData = async () => {
             try {
+                // FIXED 1: Send the Variant Name uppercase (e.g. "STANDARD") to match the backend enum
+                const variantName = variantView.display.name.toUpperCase();
+
                 const [seasonsRes, statsRes] = await Promise.all([
-                    api.get(`/seasons/variant/${variantView.display.id}`),
-                    api.get(`/seasons/variant/${variantView.display.id}/stats`)
+                    api.get(`/seasons/variant/${variantName}`),
+                    api.get(`/seasons/variant/${variantName}/stats`)
                 ]);
 
-                setSeasons(Array.isArray(seasonsRes.data) ? seasonsRes.data : []);
+                // FIXED 2: Map the raw backend Season entities to match the UI's expected fields
+                const rawSeasons = Array.isArray(seasonsRes.data) ? seasonsRes.data : [];
+                const romanToNum = { "I": "1", "II": "2", "III": "3", "IV": "4" };
+
+                const formattedSeasons = rawSeasons.map(season => {
+                    // Safely parse the backend 'currentGrade' (e.g. "BRONZE_III" -> "bronze-3")
+                    const gradeParts = season.currentGrade ? season.currentGrade.split("_") : ["ASH", "IV"];
+                    const badgeStr = `${gradeParts[0].toLowerCase()}-${romanToNum[gradeParts[1]] || '4'}`;
+
+                    // Format dates elegantly for the UI
+                    const start = new Date(season.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                    const end = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Present';
+                    const completed = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+                    return {
+                        ...season,
+                        // Map backend 'ACTIVE' status to UI's expected 'IN_PROGRESS'
+                        status: season.status === 'ACTIVE' ? 'IN_PROGRESS' : season.status,
+                        gradeName: season.currentGrade ? season.currentGrade.replace("_", " ") : "ASH IV",
+                        nextGradeName: "TBD", // You can calculate this if you build a rank-up map later
+                        badgeUrl: `/assets/badges/${badgeStr}.png`,
+                        dateRange: `${start} - ${end}`,
+                        dateCompleted: completed
+                    };
+                });
+
+                setSeasons(formattedSeasons);
                 setStats(statsRes.data);
             } catch (error) {
                 console.error("Failed to load variant details", error);
-                setSeasons([]);
+                setSeasons([]); // Safely fallback to empty state
             }
         };
         fetchVariantData();
@@ -86,7 +128,8 @@ const ReviewChallengesPage = () => {
         return "MERCILESS KILLER";
     };
 
-    if (!activeSeason) {
+    // FIXED: Use the actual isLoading state instead of checking if activeSeason exists
+    if (isLoading) {
         return (
             <div className="main-container review-container relative flex items-center justify-center">
                 <div className="text-center">
@@ -96,7 +139,11 @@ const ReviewChallengesPage = () => {
         );
     }
 
-    const [badge, gradeNum] = activeSeason.currentGrade.split("_");
+    // FIXED: Safely destructure the grade only if an active season exists to prevent crashes
+    let badge = "", gradeNum = "";
+    if (activeSeason && activeSeason.currentGrade) {
+        [badge, gradeNum] = activeSeason.currentGrade.split("_");
+    }
 
     return (
         <div className="main-container review-container">
@@ -168,8 +215,6 @@ const ReviewChallengesPage = () => {
                                             {seasons.map(season => (
                                                 <div key={season.id} onClick={() => setSelectedSeason(season)} className="season-card">
 
-                                                    {/* TODO: Need to fix the current season not showing in the season cards */}
-                                                    {/* TODO:  */}
                                                     <div className="season-card-hover">
                                                         <p className="season-date">{season.status === 'IN_PROGRESS' ? 'Current' : season.dateCompleted}</p>
                                                         <h3 className="bebas-header-1 title-ash text-center">{season.gradeName}</h3>
@@ -187,7 +232,6 @@ const ReviewChallengesPage = () => {
                                         </div>
                                     )}
 
-                                    {/* TODO: Test trial view */}
                                     {/* TAB 1: TRIALS (List View) */}
                                     {tabView.display === 'Seasons' && selectedSeason && (
                                         <div className="trials-list-container">
@@ -304,11 +348,10 @@ const ReviewChallengesPage = () => {
 
             {/* === RIGHT PANEL (Static Character Display) === */}
             <div className="right-panel">
-                {activeSeason && (
+                {activeSeason ? (
                     <>
                         <div className="global-actions">
-                            {/* TODO: Add routing */}
-                            <button className="squareBtn">Continue</button>
+                            <button className="squareBtn" onClick={() => navigate(`/current-season/${activeSeason.id}`)}>Continue</button>
                         </div>
 
                         <div className="global-season-info">
@@ -329,15 +372,12 @@ const ReviewChallengesPage = () => {
                             className="global-character-bg"
                         />
                     </>
-                )}
-                {/* If there is no current active season then show the start new season button */}
-                {!activeSeason && (
-                    <>
-                        <div className="global-actions">
-                            {/* TODO: Add routing */}
-                            <button className="sqaureBtn">Start New Challenge</button>
-                        </div>
-                    </>
+                ) : (
+                    /* If there is no current active season then show the start new season button */
+                    <div className="global-actions">
+                        {/* FIXED: Added routing to the Start Challenge page and fixed typo on squareBtn */}
+                        <button className="squareBtn" onClick={() => navigate('/start-challenge')}>Start New Challenge</button>
+                    </div>
                 )}
             </div>
 
