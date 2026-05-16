@@ -5,6 +5,7 @@ import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import {useToast} from "../hooks/ToastContext.jsx";
+import KillerCard from "./KillerCard.jsx";
 
 const StartChallengePage = () => {
     const navigate = useNavigate();
@@ -227,13 +228,13 @@ const StartChallengePage = () => {
                                                 {masterKillerList.map(killer => {
                                                     const isSelected = seasonPayload.unlockedKillerIds.includes(killer.id);
                                                     return (
-                                                        <div
+                                                        <KillerCard
                                                             key={killer.id}
-                                                            onClick={() => handleToggleKiller(killer.id)}
-                                                            className={`killer-card ${isSelected ? 'selected' : 'unselected'}`}
-                                                        >
-                                                            <img src={`/assets/Killers/${killer.name}.png`} alt={killer.name} className="killer-portrait" />
-                                                        </div>
+                                                            killer={{ ...killer, killerName: killer.name }}
+                                                            mode="review"
+                                                            isSelected={isSelected}
+                                                            onSelect={() => handleToggleKiller(killer.id)}
+                                                        />
                                                     );
                                                 })}
                                             </div>

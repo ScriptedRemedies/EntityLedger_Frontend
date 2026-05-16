@@ -270,6 +270,7 @@
   padding-bottom: 10px;
 }
 .tab-content-wrapper {
+  overflow-y: auto;
   flex: 1;
   padding-bottom: 10px;
 }
@@ -405,6 +406,13 @@
     color: var(--color-white);
   }
 }
+/*
+TODO: Fix styles -
+Not cut off overflow,
+Make the header static,
+Scroll only the trials container
+Style the actual trial row
+*/
 .trials-header {
   display: flex;
   justify-content: space-between;
@@ -658,7 +666,7 @@
   justify-content: space-between;
   gap: 15px 5px;
   overflow-y: auto;
-  padding-bottom: 2rem;
+  padding-bottom: 10px;
 }
 /* Afterburn Specific Elements */
 .afterburn-options-container {
