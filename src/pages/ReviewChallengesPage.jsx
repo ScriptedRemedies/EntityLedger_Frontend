@@ -5,6 +5,57 @@ import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 
+// === REUSABLE GRADE BADGE COMPONENT ===
+const GradeBadgeDisplay = ({ rawGrade = "ASH_IV", pips = 0, size = "normal" }) => {
+    const gradeParts = rawGrade.split("_");
+    const badgeTier = gradeParts[0];
+    const romanNum = gradeParts[1] || 'IV';
+
+    let maxPips = 5;
+    if (badgeTier === "ASH") maxPips = 3;
+    else if (badgeTier === "BRONZE") maxPips = 4;
+
+    return (
+        // Dynamically inject the size parameter as a CSS class (e.g., "size-small")
+        <div className={`grade-badge-display size-${size}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="badge">
+                <img src={`/assets/Grades/${badgeTier}.png`} alt={romanNum} className="season-badge-image" />
+                <p className="season-gradeNum" style={{ color: `var(--color-${badgeTier})` }}>{romanNum}</p>
+            </div>
+
+            {/* PIPS DISPLAY */}
+            {rawGrade !== 'IRIDESCENT_I' && (
+                <div className="pips-container">
+                    {Array.from({ length: maxPips }).map((_, index) => {
+                        const isFilled = index < pips;
+                        return (
+                            <div
+                                key={index}
+                                className={`pip ${isFilled ? 'filled' : 'empty'}`}
+                                style={isFilled ? {
+                                    backgroundColor: `var(--color-${badgeTier})`,
+                                    border: `1px solid var(--color-${badgeTier})`,
+                                    boxShadow: `0 0 5px var(--color-${badgeTier})`
+                                } : {
+                                    border: `1px solid var(--color-${badgeTier})`
+                                }}
+                            ></div>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// === SEASON STATUS MESSAGES ===
+const STATUS_MESSAGES = {
+    ACTIVE: <><span className="bebas-header-2 title-iri">IN PROGRESS</span></>,
+    COMPLETED: <><span className="bebas-header-2 title-iri">COMPLETED</span></>,
+    FAILED_TIME: <><span className="bebas-header-2 title-iri">FAILED</span> - Ran out of time</>,
+    FAILED_ROSTER: <><span className="bebas-header-2 title-iri">FAILED</span> - Empty Roster</>
+}
+
 const ReviewChallengesPage = () => {
     const navigate = useNavigate();
 
@@ -15,7 +66,7 @@ const ReviewChallengesPage = () => {
     // Global active season for the right-side character display
     const [activeSeason, setActiveSeason] = useState(null);
 
-    // NEW: Dedicated loading state so we don't get stuck!
+    // Dedicated loading state
     const [isLoading, setIsLoading] = useState(true);
 
     // Data states for the currently selected variant
@@ -44,7 +95,7 @@ const ReviewChallengesPage = () => {
                     console.error("Failed to load global season data", error);
                 }
             } finally {
-                // FIXED: Tell the component to stop showing the loading screen regardless of success or 404
+                // Tell the component to stop showing the loading screen regardless of success or 404
                 setIsLoading(false);
             }
         };
@@ -61,7 +112,7 @@ const ReviewChallengesPage = () => {
 
         const fetchVariantData = async () => {
             try {
-                // FIXED 1: Send the Variant Name uppercase (e.g. "STANDARD") to match the backend enum
+                // Send the Variant Name uppercase (e.g. "STANDARD") to match the backend enum
                 const variantName = variantView.display.name.toUpperCase();
 
                 const [seasonsRes, statsRes] = await Promise.all([
@@ -69,28 +120,47 @@ const ReviewChallengesPage = () => {
                     api.get(`/seasons/variant/${variantName}/stats`)
                 ]);
 
-                // FIXED 2: Map the raw backend Season entities to match the UI's expected fields
+                // Map the raw backend Season entities to match the UI's expected fields
                 const rawSeasons = Array.isArray(seasonsRes.data) ? seasonsRes.data : [];
                 const romanToNum = { "I": "1", "II": "2", "III": "3", "IV": "4" };
 
+                const GRADE_PROGRESSION = [
+                    "ASH_IV", "ASH_III", "ASH_II", "ASH_I",
+                    "BRONZE_IV", "BRONZE_III", "BRONZE_II", "BRONZE_I",
+                    "SILVER_IV", "SILVER_III", "SILVER_II", "SILVER_I",
+                    "GOLD_IV", "GOLD_III", "GOLD_II", "GOLD_I",
+                    "IRIDESCENT_IV", "IRIDESCENT_III", "IRIDESCENT_II", "IRIDESCENT_I"
+                ];
+
                 const formattedSeasons = rawSeasons.map(season => {
-                    // Safely parse the backend 'currentGrade' (e.g. "BRONZE_III" -> "bronze-3")
-                    const gradeParts = season.currentGrade ? season.currentGrade.split("_") : ["ASH", "IV"];
+                    const currentGradeRaw = season.currentGrade || "ASH_IV";
+                    const gradeParts = currentGradeRaw.split("_");
                     const badgeStr = `${gradeParts[0].toLowerCase()}-${romanToNum[gradeParts[1]] || '4'}`;
 
-                    // Format dates elegantly for the UI
-                    const start = new Date(season.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                    const end = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Present';
+                    // 2. Calculate "Next Grade" by finding the current index and moving +1
+                    const currentIndex = GRADE_PROGRESSION.indexOf(currentGradeRaw);
+                    const nextGradeName = currentIndex !== -1 && currentIndex < GRADE_PROGRESSION.length - 1
+                        ? GRADE_PROGRESSION[currentIndex + 1].replace("_", " ")
+                        : "MAX RANK"; // If they are Iridescent I, there is no next grade!
+
+                    // 3. Calculate Maximum Pips for this specific grade tier
+                    let maxPips = 5;
+                    if (currentGradeRaw.startsWith("ASH")) maxPips = 3;
+                    else if (currentGradeRaw.startsWith("BRONZE")) maxPips = 4;
+
+                    const start = new Date(season.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     const completed = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
                     return {
                         ...season,
-                        // Map backend 'ACTIVE' status to UI's expected 'IN_PROGRESS'
                         status: season.status === 'ACTIVE' ? 'IN_PROGRESS' : season.status,
-                        gradeName: season.currentGrade ? season.currentGrade.replace("_", " ") : "ASH IV",
-                        nextGradeName: "TBD", // You can calculate this if you build a rank-up map later
-                        badgeUrl: `/assets/badges/${badgeStr}.png`,
-                        dateRange: `${start} - ${end}`,
+                        gradeName: currentGradeRaw.replace("_", " "),
+                        currentGradeRaw: currentGradeRaw, // Save raw grade so we can hide pips on IRI_I
+                        seasonPips: season.currentPips || 0, // Fallback to 0 if null
+                        maxPips: maxPips, // Send the calculated max pips to the UI
+                        nextGradeName: nextGradeName,
+                        dateRange: `${start} - ${completed}`,
+                        dateStarted: start,
                         dateCompleted: completed
                     };
                 });
@@ -113,6 +183,7 @@ const ReviewChallengesPage = () => {
             try {
                 const trialsRes = await api.get(`/seasons/${selectedSeason.id}/trials`);
                 setTrials(trialsRes.data);
+                console.log(selectedSeason);
             } catch (error) {
                 console.error("Failed to load trial history", error);
             }
@@ -128,7 +199,7 @@ const ReviewChallengesPage = () => {
         return "MERCILESS KILLER";
     };
 
-    // FIXED: Use the actual isLoading state instead of checking if activeSeason exists
+    // Use the actual isLoading state instead of checking if activeSeason exists
     if (isLoading) {
         return (
             <div className="main-container review-container relative flex items-center justify-center">
@@ -139,10 +210,16 @@ const ReviewChallengesPage = () => {
         );
     }
 
-    // FIXED: Safely destructure the grade only if an active season exists to prevent crashes
+    // Safely destructure the grade only if an active season exists to prevent crashes
     let badge = "", gradeNum = "";
     if (activeSeason && activeSeason.currentGrade) {
         [badge, gradeNum] = activeSeason.currentGrade.split("_");
+    }
+
+    // Safely destructure the grade for the SELECTED season (Trials View)
+    let selectedBadge = "", selectedGradeNum = "";
+    if (selectedSeason && selectedSeason.currentGrade) {
+        [selectedBadge, selectedGradeNum] = selectedSeason.currentGrade.split("_");
     }
 
     return (
@@ -178,20 +255,26 @@ const ReviewChallengesPage = () => {
                         <div className="variant-content-area">
 
                             <div className="variant-header">
-                                <h1 className="bebas-header-1 title-white">{variantView.display.name}</h1>
+                                <h1 className="bebas-header-1 title-white">
+                                    {variantView.display.name}
+                                    {tabView.display === 'Seasons' && selectedSeason && " - MATCHES"}
+                                </h1>
                                 <p className="inter-text-normal header-desc">{variantView.display.difficultyLevel}</p>
 
-                                <div className="secondary-nav-container">
-                                    {['Seasons', 'Rules', 'Stats'].map(tab => (
-                                        <button
-                                            key={tab}
-                                            onClick={() => tabView.triggerTransition(tab, () => setSelectedSeason(null))}
-                                            className={`inter-text-normal secondaryNav ${tabView.active === tab ? 'secondaryNavIndicator' : ''}`}
-                                        >
-                                            {tab}
-                                        </button>
-                                    ))}
-                                </div>
+                                {/* Remove the secondary nav when on the trials view */}
+                                {!selectedSeason && (
+                                    <div className="secondary-nav-container">
+                                        {['Seasons', 'Rules', 'Stats'].map(tab => (
+                                            <button
+                                                key={tab}
+                                                onClick={() => tabView.triggerTransition(tab, () => setSelectedSeason(null))}
+                                                className={`inter-text-normal secondaryNav ${tabView.active === tab ? 'secondaryNavIndicator' : ''}`}
+                                            >
+                                                {tab}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="tab-content-wrapper hide-scrollbar">
@@ -212,44 +295,55 @@ const ReviewChallengesPage = () => {
                                     {/* TAB 1: SEASONS (Grid View) */}
                                     {tabView.display === 'Seasons' && !selectedSeason && seasons.length > 0 && (
                                         <div className="seasons-grid">
-                                            {seasons.map(season => (
-                                                <div key={season.id} onClick={() => setSelectedSeason(season)} className="season-card">
+                                            {seasons.map(season => {
+                                                const [badge, gradeNum] = (season.currentGrade).split("_");
+                                                return (
+                                                    <div key={season.id} onClick={() => setSelectedSeason(season)} className="season-card">
 
-                                                    <div className="season-card-hover">
-                                                        <p className="season-date">{season.status === 'IN_PROGRESS' ? 'Current' : season.dateCompleted}</p>
-                                                        <h3 className="bebas-header-1 title-ash text-center">{season.gradeName}</h3>
-                                                        <img src={season.badgeUrl} alt="Grade" className="season-badge" />
-                                                        <p className="season-next-grade">Next Grade: {season.nextGradeName}</p>
-                                                    </div>
+                                                        {/* BASE LAYER (Revealed completely on Hover) */}
+                                                        <div className="season-card-base">
+                                                            <p className="season-date inter-text-small text-muted">{season.status === 'IN_PROGRESS' ? 'Current' : season.dateRange}</p>
+                                                            <h3 className="bebas-header-2 text-center" style={{ color: `var(--color-${badge})` }}>{season.gradeName}</h3>
 
-                                                    <div className="season-card-default">
-                                                        <p className="season-date-range">{season.dateRange}</p>
-                                                        <p className="season-result-label">Result</p>
-                                                        <h2 className="bebas-header-1 season-result-title">{getResultTitle(season.gradeName)}</h2>
+                                                            {/* Badge and pip component */}
+                                                            <GradeBadgeDisplay rawGrade={season.currentGradeRaw} pips={season.seasonPips} />
+
+                                                            <p className="season-next-grade inter-text-small">Next Grade</p>
+                                                            {/* TODO: Check the color of this when the next grade is different from current grade */}
+                                                            <p style={{ color: `var(--color-${season.nextGradeName.split(" ")})` }}>{season.nextGradeName}</p>
+                                                        </div>
+
+                                                        {/* OVERLAY LAYER (Disappears on Hover) */}
+                                                        <div className="season-card-overlay">
+                                                            <p className="season-result-label text-size-normal text-muted uppercase">Result</p>
+                                                            <h2 className="bebas-header-1 season-result-title">{getResultTitle(season.gradeName)}</h2>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     )}
 
                                     {/* TAB 1: TRIALS (List View) */}
+                                    {/* TODO: Change styles of entire container to match figma */}
                                     {tabView.display === 'Seasons' && selectedSeason && (
                                         <div className="trials-list-container">
-                                            <button onClick={() => setSelectedSeason(null)} className="back-to-seasons-btn">← Back to Seasons</button>
 
                                             <div className="trials-header">
                                                 <div className="trials-header-text">
-                                                    <h2 className="bebas-header-1">{variantView.display.name} - TRIALS</h2>
-                                                    <p className="inter-text-normal trials-header-desc">{variantView.display.difficultyLevel}</p>
-                                                    <p className="inter-text-small trials-header-meta">
-                                                        <span className="title-white">{selectedSeason.dateRange}</span> | <span className="title-iri uppercase">{selectedSeason.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed'}</span>
+                                                    <p className="inter-text-normal">{selectedSeason.dateRange}</p>
+                                                    <p className="inter-text-normal">
+                                                        {STATUS_MESSAGES[selectedSeason.status] || "UNKNOWN STATUS"}
                                                     </p>
                                                 </div>
+
+                                                {/* Badge and pip component */}
                                                 <div className="trials-header-badge">
-                                                    <img src={selectedSeason.badgeUrl} alt="Grade" className="season-badge" />
+                                                    <GradeBadgeDisplay rawGrade={selectedSeason.currentGradeRaw} pips={selectedSeason.seasonPips} />
                                                 </div>
                                             </div>
 
+                                            {/* TODO: Check styles after trials are added */}
                                             <div className="trials-table">
                                                 <div className="trials-table-header">
                                                     <div className="table-col-1">Perks</div>
@@ -292,6 +386,9 @@ const ReviewChallengesPage = () => {
                                                     </div>
                                                 ))}
                                             </div>
+
+                                            <button onClick={() => setSelectedSeason(null)} className="back-button mt-2">Back</button>
+
                                         </div>
                                     )}
 
@@ -319,6 +416,7 @@ const ReviewChallengesPage = () => {
                                     {/* TAB 3: STATS */}
                                     {tabView.display === 'Stats' && stats && seasons.length > 0 && (
                                         <div className="stats-container">
+                                            {/* TODO: Change image url's if needed, match styles to figma */}
                                             <div>
                                                 <h3 className="inter-text-small stats-section-title">Core Performance Metrics</h3>
                                                 <div className="stats-grid">
@@ -355,10 +453,11 @@ const ReviewChallengesPage = () => {
                         </div>
 
                         <div className="global-season-info">
-                            <div className="badge">
-                                <img src={`/assets/Grades/${badge}.png`} alt={gradeNum} className="badge-image"/>
-                                <p className="gradeNum" style={{ color: `var(--color-${badge})` }}>{gradeNum}</p>
-                            </div>
+                            <GradeBadgeDisplay
+                                rawGrade={activeSeason.currentGrade}
+                                pips={activeSeason.currentPips}
+                                size="small"
+                            />
                             <div className="global-season-text">
                                 <h3 className="bebas-header-1 global-character-name">{activeSeason.characterName}</h3>
                                 <p className="inter-text-small">{activeSeason.variantType}</p>
@@ -375,7 +474,6 @@ const ReviewChallengesPage = () => {
                 ) : (
                     /* If there is no current active season then show the start new season button */
                     <div className="global-actions">
-                        {/* FIXED: Added routing to the Start Challenge page and fixed typo on squareBtn */}
                         <button className="squareBtn" onClick={() => navigate('/start-challenge')}>Start New Challenge</button>
                     </div>
                 )}
@@ -384,6 +482,7 @@ const ReviewChallengesPage = () => {
             {/* === TRIAL DETAILS OVERLAY === */}
             {activeTrialOverlay && (
                 <div className="trial-overlay hide-scrollbar animation-slide-in">
+                    {/* TODO: test this once a trial is logged to test trial details overlay */}
 
                     <button onClick={() => setActiveTrialOverlay(null)} className="close-overlay-btn">✕</button>
 

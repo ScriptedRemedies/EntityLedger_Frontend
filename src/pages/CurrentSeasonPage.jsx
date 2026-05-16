@@ -152,14 +152,13 @@ const CurrentSeasonPage = () => {
             </div>
 
             {/* === RIGHT PANEL === */}
-            {/* TODO: Download all killer full portrait images */}
             <div className="right-panel">
                 <button className="squareBtn">Start Trial</button>
 
                 <div className="global-season-info">
                     <div className="badge">
-                        <img src={`/assets/Grades/${badge}.png`} alt={gradeNum} className="badge-image"/>
-                        <p className="gradeNum" style={{ color: `var(--color-${badge})` }}>{gradeNum}</p>
+                        <img src={`/assets/Grades/${badge}.png`} alt={gradeNum} className="rp-badge-image"/>
+                        <p className="rp-gradeNum" style={{ color: `var(--color-${badge})` }}>{gradeNum}</p>
                     </div>
                     <div className="global-season-text">
                         {/* Dynamically uses the selected killer's name */}
