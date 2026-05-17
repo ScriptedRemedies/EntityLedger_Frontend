@@ -7,6 +7,7 @@ import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
 import KillerCard from "./KillerCard.jsx";
 import StandardLoadout from "./variant-loadouts/StandardLoadout.jsx";
+import GradeBadgeDisplay from './GradeBadgeDisplay';
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -50,8 +51,6 @@ const CurrentSeasonPage = () => {
             </div>
         );
     }
-
-    const [badge, gradeNum] = activeSeason.currentGrade.split("_");
 
     const defaultKiller = activeSeason.roster.find(k => k.killerName === activeSeason.characterName);
     const currentKiller = selectedKiller || defaultKiller;
@@ -156,10 +155,12 @@ const CurrentSeasonPage = () => {
                 <button className="squareBtn">Start Trial</button>
 
                 <div className="global-season-info">
-                    <div className="badge">
-                        <img src={`/assets/Grades/${badge}.png`} alt={gradeNum} className="rp-badge-image"/>
-                        <p className="rp-gradeNum" style={{ color: `var(--color-${badge})` }}>{gradeNum}</p>
-                    </div>
+
+                    <GradeBadgeDisplay
+                        rawGrade={activeSeason.currentGrade}
+                        pips={activeSeason.currentPips}
+                    />
+
                     <div className="global-season-text">
                         {/* Dynamically uses the selected killer's name */}
                         <h3 key={displayCharacterName} className="bebas-header-1 global-character-name fade-in">{displayCharacterName}</h3>

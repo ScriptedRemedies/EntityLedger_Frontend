@@ -728,11 +728,10 @@ Style the actual trial row
 }
 .global-character-bg {
   position: absolute;
-  bottom: 40px;
-  right: 0;
-  height: 85%;
-  width: 100%;
-  object-fit: contain;
+  bottom: 10px;
+  right: 90px;
+  height: 90%;
+  aspect-ratio: 2/3;
   object-position: bottom;
   pointer-events: none;
   z-index: -10;
