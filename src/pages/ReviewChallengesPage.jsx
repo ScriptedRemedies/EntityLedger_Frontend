@@ -8,7 +8,7 @@ import GradeBadgeDisplay from './GradeBadgeDisplay';
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {
-    ACTIVE: <><span className="bebas-header-2 title-iri">IN PROGRESS</span></>,
+    IN_PROGRESS: <><span className="bebas-header-2 title-iri">IN PROGRESS</span></>,
     COMPLETED: <><span className="bebas-header-2 title-iri">COMPLETED</span></>,
     FAILED_TIME: <><span className="bebas-header-2 title-iri">FAILED</span> - Ran out of time</>,
     FAILED_ROSTER: <><span className="bebas-header-2 title-iri">FAILED</span> - Empty Roster</>
@@ -107,7 +107,7 @@ const ReviewChallengesPage = () => {
                     else if (currentGradeRaw.startsWith("BRONZE")) maxPips = 4;
 
                     const start = new Date(season.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    const completed = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                    const completed = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Current';
 
                     return {
                         ...season,
@@ -272,10 +272,13 @@ const ReviewChallengesPage = () => {
                                                         </div>
 
                                                         {/* OVERLAY LAYER (Disappears on Hover) */}
-                                                        <div className="season-card-overlay">
-                                                            <p className="season-result-label text-size-normal text-muted uppercase">Result</p>
-                                                            <h2 className="bebas-header-1 season-result-title">{getResultTitle(season.gradeName)}</h2>
-                                                        </div>
+                                                        {season.status !== "IN_PROGRESS" && (
+                                                            <div className="season-card-overlay">
+                                                                <p className="season-result-label text-size-normal text-muted uppercase">Result</p>
+                                                                <h2 className="bebas-header-1 season-result-title">{getResultTitle(season.gradeName)}</h2>
+                                                            </div>
+                                                        )}
+
                                                     </div>
                                                 )
                                             })}

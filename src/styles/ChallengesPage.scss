@@ -383,8 +383,6 @@
 /* ==================== */
 
 .trials-list-container {
-  position: relative;
-  top: -10px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -406,17 +404,13 @@
     color: var(--color-white);
   }
 }
-/*
-TODO: Fix styles -
-Not cut off overflow,
-Make the header static,
-Scroll only the trials container
-Style the actual trial row
-*/
 .trials-header {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: flex-start;
+  z-index: 300;
+  position: relative;
+  margin-bottom: 15px;
 }
 .trials-header-text {
   display: flex;
@@ -426,15 +420,22 @@ Style the actual trial row
   color: var(--color-muted);
 }
 .trials-header-badge {
-  position: relative;
-  top: -60px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+/* TODO: Check styles of the trial row */
 .trials-table {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 .trials-table-header {
   display: flex;
@@ -443,6 +444,11 @@ Style the actual trial row
   text-align: center;
   padding: 10px 5px;
   background: var(--color-60-background);
+
+  /* === THE STICKY HEADER MAGIC === */
+  position: sticky;
+  top: 0;
+  z-index: 10; /* Keeps the header floating above the scrolling trial rows */
 }
 .table-col-1 { width: 25%; }
 .table-col-center { width: 25%; }
@@ -532,7 +538,6 @@ Style the actual trial row
   width: 2rem;
   height: 2rem;
 }
-
 
 /* ==================== */
 /* TAB: RULES           */

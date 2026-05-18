@@ -8,6 +8,7 @@ import { useToast } from "../hooks/ToastContext.jsx";
 import KillerCard from "./KillerCard.jsx";
 import StandardLoadout from "./variant-loadouts/StandardLoadout.jsx";
 import GradeBadgeDisplay from './GradeBadgeDisplay';
+import TrialConfirmationOverlay from './TrialConfirmationOverlay';
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -24,6 +25,10 @@ const CurrentSeasonPage = () => {
     const [activeSeason, setActiveSeason] = useState(null);
 
     const [selectedKiller, setSelectedKiller] = useState(null);
+
+    const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
+    const [selectedPerks, setSelectedPerks] = useState([]);
+    const [selectedAddons, setSelectedAddons] = useState([]);
 
     useEffect(() => {
         if (!seasonId) return;
@@ -66,13 +71,25 @@ const CurrentSeasonPage = () => {
 
     const renderLoadoutView = () => {
         switch (activeSeason.variantType) {
-
-            // case 'CHAOS_SHUFFLE':
-                // return <ChaosShuffleLoadout season={activeSeason} />;
-            // case 'BLOOD_MONEY':
-                // return <BloodMoneyLoadout season={activeSeason} />;
-            default:
-                return <StandardLoadout currentKiller={currentKiller} season={activeSeason} />;
+            case 'CHAOS_SHUFFLE':
+                return (
+                    {/*
+                    <ChaosShuffleLoadout
+                        selectedPerks={selectedPerks}
+                        setSelectedPerks={setSelectedPerks}
+                    />
+                    */}
+                );
+            default: // STANDARD
+                return (
+                    <StandardLoadout
+                        currentKiller={currentKiller}
+                        selectedPerks={selectedPerks}
+                        setSelectedPerks={setSelectedPerks}
+                        selectedAddons={selectedAddons}
+                        setSelectedAddons={setSelectedAddons}
+                    />
+                );
         }
     };
 
@@ -152,7 +169,9 @@ const CurrentSeasonPage = () => {
 
             {/* === RIGHT PANEL === */}
             <div className="right-panel">
-                <button className="squareBtn">Start Trial</button>
+                <button className="squareBtn" onClick={() => setIsConfirmingTrial(true)}>
+                    Start Trial
+                </button>
 
                 <div className="global-season-info">
 
@@ -177,6 +196,18 @@ const CurrentSeasonPage = () => {
                     alt={displayCharacterName}
                 />
             </div>
+
+            {/* Trial Confirmation */}
+            {isConfirmingTrial && (
+                <TrialConfirmationOverlay
+                    season={activeSeason}
+                    killer={currentKiller}
+                    selectedPerks={selectedPerks}
+                    selectedAddons={selectedAddons}
+                    onCancel={() => setIsConfirmingTrial(false)}
+                    onConfirm={() => console.log("Move to Results Screen!")}
+                />
+            )}
         </div>
     );
 };

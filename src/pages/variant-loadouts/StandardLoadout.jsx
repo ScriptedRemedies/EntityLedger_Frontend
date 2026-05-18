@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import '../../styles/Loadouts.scss';
 
-const StandardLoadout = ({ currentKiller }) => {
+const StandardLoadout = ({
+                             currentKiller,
+                             selectedPerks,
+                             setSelectedPerks,
+                             selectedAddons,
+                             setSelectedAddons
+                         }) => {
     // --- Data States (From Backend) ---
     const [allPerks, setAllPerks] = useState([]);
     const [killerAddons, setKillerAddons] = useState([]);
-
-    // --- Loadout Selection States ---
-    const [selectedAddons, setSelectedAddons] = useState([]); // Max 2
-    const [selectedPerks, setSelectedPerks] = useState([]);   // Max 4
 
     // --- UI States ---
     const [activeInventory, setActiveInventory] = useState('PERKS'); // 'ADDONS' or 'PERKS'
@@ -161,9 +163,9 @@ const StandardLoadout = ({ currentKiller }) => {
 
                 <div className="divider-line"></div>
 
-                {/* UPDATED: Added the dynamic classes for grid-diamonds and grid-squares */}
+                {/* Added the dynamic classes for grid-diamonds and grid-squares */}
                 <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
-                    {/* UPDATED: Map over currentItems instead of filteredData */}
+                    {/* Map over currentItems instead of filteredData */}
                     {currentItems.map(item => {
                         const isSelected = activeInventory === 'ADDONS'
                             ? selectedAddons.some(a => a.id === item.id)
@@ -171,7 +173,7 @@ const StandardLoadout = ({ currentKiller }) => {
 
                         // Calculate the exact image path before returning the JSX
                         const imagePath = activeInventory === 'ADDONS'
-                            ? `/assets/Addons/${currentKiller.killerName}/${item.name}.png`
+                            ? `/assets/Addons/${currentKiller.killerName}/${item.name.replace('%', '')}.png`
                             : `/assets/Perks/${item.name}.png`;
 
                         return (

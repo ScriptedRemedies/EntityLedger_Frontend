@@ -183,7 +183,6 @@ const StartChallengePage = () => {
                                     )}
 
                                     {/* TAB 2: KILLER LIST */}
-                                    {/* TODO: Move styles and functionality to include Killer Card */}
                                     {tabView.display === 'Killers' && (
                                         <div className="killers-container">
 
