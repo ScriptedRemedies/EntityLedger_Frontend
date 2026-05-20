@@ -753,19 +753,21 @@
 
   .badge {
     position: relative;
+    display: inline-block;
   }
 
   /* --- NORMAL SIZE (Season Cards & Trials View) --- */
   &.size-normal {
     .season-badge-image {
-      width: 80px; /* Adjust this if you want the cards to be slightly bigger/smaller */
+      width: 80px;
     }
     .season-gradeNum {
       font-size: 34px;
       font-family: var(--font-gideon);
       position: absolute;
-      bottom: 22px;
-      left: 22px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
     .pips-container {
       display: flex;
@@ -795,8 +797,9 @@
       font-size: var(--header-size-1);
       font-family: var(--font-gideon);
       position: absolute;
-      bottom: 21px;
-      left: 20px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
     .pips-container {
       display: flex;

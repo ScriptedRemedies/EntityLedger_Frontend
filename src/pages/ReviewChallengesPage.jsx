@@ -143,13 +143,6 @@ const ReviewChallengesPage = () => {
         fetchTrials();
     }, [selectedSeason]);
 
-    useEffect(() => {
-        if (activeTrialOverlay) {
-            console.log("--- DEBUGGING OVERLAY OBJECT ---");
-            console.log("Full Object:", activeTrialOverlay);
-        }
-    }, [activeTrialOverlay]);
-
     const getResultTitle = (grade) => {
         if (!grade) return "IN PROGRESS";
         if (grade.includes("ASH") || grade.includes("BRONZE III")) return "THE ENTITY HUNGERS";
@@ -296,7 +289,6 @@ const ReviewChallengesPage = () => {
                                                     <div className="table-col-right">Grade</div>
                                                 </div>
 
-                                                {/* THE FIX IS HERE: using trial.addOns and trial.survivors and dynamic paths */}
                                                 {trials.map(trial => {
                                                     return (
                                                         <div key={trial.id} onClick={() => setActiveTrialOverlay(trial)} className="trial-row">
@@ -324,12 +316,16 @@ const ReviewChallengesPage = () => {
                                                             <div className="trial-survivors-mini">
                                                                 {/* NOTE: Using 'survivors' and 'res.outcome' from JSON response */}
                                                                 {trial.survivors?.map((res, i) => (
-                                                                    <img key={i} src={`/assets/status/${res.outcome.toLowerCase()}.png`} className="survivor-status-mini" alt={res.outcome} />
+                                                                    <img key={i} src={`/assets/Survivor Status/${res.outcome.toLowerCase()}.png`} className="survivor-status-mini" alt={res.outcome} />
                                                                 ))}
                                                             </div>
 
                                                             <div className="trial-grade-col">
-                                                                {/* Empty or fallback since no gradeBadgeUrl exists in backend JSON */}
+                                                                <GradeBadgeDisplay
+                                                                    rawGrade={trial.resultingGrade}
+                                                                    pips={trial.resultingPips}
+                                                                    size="small"
+                                                                />
                                                             </div>
                                                         </div>
                                                     )
@@ -438,6 +434,7 @@ const ReviewChallengesPage = () => {
                         </div>
                     </div>
 
+                    {/* PERKS */}
                     <div className="overlay-section">
                         <h4 className="bebas-header-1 section-title">PERKS</h4>
                         <div className="overlay-perks-grid">
@@ -451,6 +448,7 @@ const ReviewChallengesPage = () => {
                         </div>
                     </div>
 
+                    {/* ADD ONS */}
                     <div className="overlay-section">
                         <h4 className="bebas-header-1 section-title">ADD ONS</h4>
                         <div className="overlay-addons-flex">
@@ -467,19 +465,21 @@ const ReviewChallengesPage = () => {
                         </div>
                     </div>
 
+                    {/* SURVIVOR RESULTS */}
                     <div className="overlay-section">
                         <h4 className="bebas-header-1 section-title uppercase">SURVIVOR RESULT</h4>
                         <div className="overlay-flex-between">
                             {/* FIX: Using survivors and res.outcome */}
                             {activeTrialOverlay.survivors?.map((res, i) => (
                                 <div key={i} className="overlay-item">
-                                    <img src={`/assets/status/${res.outcome.toLowerCase()}.png`} className="overlay-icon-sm" alt={res.outcome} />
+                                    <img src={`/assets/Survivor Status/${res.outcome.toLowerCase()}.png`} className="overlay-icon-sm" alt={res.outcome} />
                                     <span className="overlay-item-name">{res.outcome}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
+                    {/* EMBLEMS */}
                     <div className="overlay-section">
                         <h4 className="bebas-header-1 section-title uppercase">
                             EMBLEMS {activeTrialOverlay.pipProgression > 0 ? `+${activeTrialOverlay.pipProgression} PIPS` : ''}

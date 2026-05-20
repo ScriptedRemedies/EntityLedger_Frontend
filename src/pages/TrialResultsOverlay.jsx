@@ -101,6 +101,7 @@ const TrialResultsOverlay = ({ season, killer, onSubmit }) => {
                                     </div>
 
                                     {/* Hover Menu for Colors */}
+                                    {/* TODO: Fix the colors not showing */}
                                     <div className="emblem-hover-menu">
                                         {QUALITIES.map((q, qIndex) => (
                                             <div
