@@ -1,0 +1,153 @@
+.trials-list-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .back-button {
+    margin-top: auto;
+  }
+}
+.back-to-seasons-btn {
+  align-self: flex-start;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+
+  &:hover {
+    color: var(--color-white);
+  }
+}
+.trials-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 300;
+  position: relative;
+  margin-bottom: 15px;
+}
+.trials-header-text {
+  display: flex;
+  flex-direction: column;
+}
+.trials-header-desc {
+  color: var(--color-muted);
+}
+.trials-header-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.trials-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+.trials-table-header {
+  display: flex;
+  align-items: center;
+  font-size: var(--text-size-small);
+  text-align: center;
+  padding: 10px 5px;
+  background: var(--color-60-background);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.table-col-1 {
+  width: 25%;
+}
+.table-col-center {
+  width: 25%;
+}
+.table-col-right {
+  width: 22%;
+  text-align: right;
+}
+.trial-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-60-background);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: var(--color-60-background);
+  }
+}
+.trial-killer-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.trial-portrait {
+  height: 80px;
+  aspect-ratio: 384 / 500;
+  object-fit: cover;
+}
+.trial-killer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.trial-killer-name {
+  color: var(--color-white);
+  font-size: var(--text-size-normal);
+  font-family: var(--font-bebas);
+  text-transform: uppercase;
+}
+.trial-perks-mini {
+  display: flex;
+  gap: 5px;
+}
+.perk-mini {
+  width: 60px;
+  aspect-ratio: 1/1;
+}
+.trial-addons-mini {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  border-left: 2px solid var(--color-60-background);
+  border-right: 2px solid var(--color-60-background);
+  padding: 0 0.5rem;
+}
+.addon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.addon-mini {
+  width: 45px;
+  aspect-ratio: 1/1;
+}
+.addon-plus {
+  color: var(--color-muted);
+}
+.trial-survivors-mini {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.survivor-status-mini {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.trial-grade-col {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}

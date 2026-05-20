@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
+import '../styles/TrialList.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import GradeBadgeDisplay from './GradeBadgeDisplay';
 
@@ -400,7 +401,7 @@ const ReviewChallengesPage = () => {
                             <GradeBadgeDisplay
                                 rawGrade={activeSeason.currentGrade}
                                 pips={activeSeason.currentPips}
-                                size="small"
+                                size="normal"
                             />
                             <div className="global-season-text">
                                 <h3 className="bebas-header-1 global-character-name">{activeSeason.characterName}</h3>

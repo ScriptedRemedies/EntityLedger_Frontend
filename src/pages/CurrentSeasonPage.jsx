@@ -283,6 +283,7 @@ const CurrentSeasonPage = () => {
             )}
 
             {/* Trial Results */}
+            {/* TODO: Style trial overlay */}
             {isViewingResults && (
                 <TrialResultsOverlay
                     season={activeSeason}
