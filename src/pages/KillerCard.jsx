@@ -48,17 +48,33 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance 
         if (isReviewMode) return null; // Review screens never have locks or prices
 
         if (isLocked) {
-            return <img src="/assets/icons/lock.png" className="card-overlay-icon" alt="Locked" />;
+            return (
+                <div className="card-overlay-dim">
+                    <img src="/assets/Image Overlays/locked.png" className="card-overlay-full" alt="Locked"/>
+                </div>
+            )
         }
         if (isCooldown) {
-            return <img src="/assets/icons/stopwatch.png" className="card-overlay-icon" alt="Cooldown" />;
+            return (
+                <div className="card-overlay-dim">
+                    <img src="/assets/Image Overlays/cooldown.png" className="card-overlay-full" alt="Cooldown"/>
+                </div>
+            )
         }
+
+        if (isDead) {
+            return <div className="text-overlay-diagonal">DEAD</div>;
+        }
+        if (isSold) {
+            return <div className="text-overlay-diagonal">SOLD</div>
+        }
+
         if (isPriced) {
             // If they are in debt, show the red SELL state on hover. Otherwise, just show the price.
             return (
-                <div className={`price-overlay ${mustSell ? 'sell-mode' : ''}`}>
-                    <span className="price-text">${killer.cost}</span>
-                    {mustSell && <span className="sell-text">SELL</span>}
+                <div className="financial-overlay">
+                    <div className="price-banner">${killer.cost}</div>
+                    {mustSell && <div className="sell-banner">SELL</div>}
                 </div>
             );
         }

@@ -6,6 +6,7 @@
   transition: all 0.2s ease;
   width: 160px;
   aspect-ratio: 384 / 500;
+  overflow: hidden;
 
   .killer-portrait {
     width: 100%;
@@ -15,84 +16,104 @@
     transition: filter 0.2s ease-in-out, opacity 0.2s ease;
   }
 
-  /* === REVIEW MODE STATES === */
-  &.state-deselected {
-    .killer-portrait {
-      filter: grayscale(100%) brightness(0.6);
-    }
-    &:hover .killer-portrait {
-      filter: grayscale(50%) brightness(0.8);
-    }
-  }
-
-  /* === ACTIVE GAME STATES === */
   &.state-available {
     .killer-portrait {
-      filter: grayscale(0%) brightness(1); // Full color!
+      filter: grayscale(0%) brightness(1);
     }
     &:hover {
-      border-color: rgba(255, 255, 255, 0.3); // Subtle white glow on hover
+      border-color: #fff;
     }
   }
 
   &.state-selected {
-    border-color: var(--color-IRI); // The Entity Red border
+    border-color: #fff;
     .killer-portrait {
       filter: grayscale(0%) brightness(1.1);
     }
   }
 
-  &.state-dead {
+  &.state-dead, &.state-sold {
     cursor: not-allowed;
     .killer-portrait {
-      filter: grayscale(100%) brightness(0.3); // Very dark and dead
+      filter: grayscale(100%) brightness(0.4);
     }
   }
 
-  &.state-sold {
-    cursor: not-allowed;
-    opacity: 0.5; // Faded out
+  &.state-deselected {
     .killer-portrait {
-      filter: grayscale(100%);
+      filter: grayscale(100%) brightness(0.6);
+    }
+    &:hover .killer-portraits {
+      filter: grayscale(50%) brightness(0.8);
     }
   }
 
-  /* === OVERLAYS === */
-  .card-overlay-icon {
+  .card-overlay-dim {
+    position: absolute;
+    inset: 0;
+    background: var(--color-60-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-overlay-full {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .text-overlay-diagonal {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 60%;
-    z-index: 10;
-    pointer-events: none; // Lets clicks pass through to the card
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-family: var(--font-bebas);
+    color: var(--color-IRI);
+    font-size: var(--title-size);
+    z-index: 2;
+    pointer-events: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   }
 
-  .price-overlay {
+  .financial-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 5px 0;
-    text-align: center;
+    height: 40px;
 
-    .price-text {
+    .price-banner {
+      width: 100%;
+      height: 100%;
+      background: var(--color-60-background);
       color: white;
       font-family: var(--font-bebas);
-      font-size: 24px;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .sell-text {
-      display: none; // Hidden by default
+    .sell-banner {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--color-full-background);
       color: var(--color-IRI);
       font-family: var(--font-bebas);
-      font-size: 24px;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
+  }
 
-    &.sell-mode:hover {
-      .price-text { display: none; }
-      .sell-text { display: block; } // Swaps to red SELL text on hover
-    }
+  &:hover .financial-overlay .sell-banner {
+    transform: translateY(0);
   }
 }

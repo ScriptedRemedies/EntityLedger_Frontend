@@ -271,6 +271,7 @@ const ReviewChallengesPage = () => {
                                     {/* TAB 1: TRIALS (List View) */}
                                     {tabView.display === 'Seasons' && selectedSeason && (
                                         <div className="trials-list-container">
+                                            {/* TODO: See about moving the trial list to a small component to put in the Current Season too */}
                                             <div className="trials-header">
                                                 <div className="trials-header-text">
                                                     <p className="inter-text-normal">{selectedSeason.dateRange}</p>
@@ -292,16 +293,20 @@ const ReviewChallengesPage = () => {
                                                 </div>
 
                                                 {trials.map(trial => {
+                                                    const killerDiedInTrial = trial.survivors?.some(
+                                                        res => res.outcome.toUpperCase() === 'ESCAPED'
+                                                    );
+                                                    const historicalStatus = killerDiedInTrial ? 'DEAD' : 'AVAILABLE';
+
                                                     return (
                                                         <div key={trial.id} onClick={() => setActiveTrialOverlay(trial)} className="trial-row">
 
                                                             <div className="trial-killer-info">
                                                                 <div className="trial-list-card-wrapper">
-                                                                    {/* TODO: Change mode to a different one that reflects the status of that killer */}
                                                                     <KillerCard
-                                                                        killer={{ ...trial.killer, killerName: trial.killer.name }}
+                                                                        killer={{ ...trial.killer, killerName: trial.killer.name, status: historicalStatus }}
                                                                         variantType={selectedSeason.variantType}
-                                                                        mode="review"
+                                                                        mode="active"
                                                                         isSelected={false}
                                                                     />
                                                                 </div>
@@ -381,6 +386,7 @@ const ReviewChallengesPage = () => {
                                     )}
 
                                     {/* TAB 3: STATS */}
+                                    {/* TODO: Fix the stats page, nothing is showing */}
                                     {tabView.display === 'Stats' && stats && seasons.length > 0 && (
                                         <div className="stats-container">
                                             <div>

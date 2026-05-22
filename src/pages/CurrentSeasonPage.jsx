@@ -118,9 +118,12 @@ const CurrentSeasonPage = () => {
             // 5. Conditionally append BLOOD_MONEY specific rules
             if (activeSeason.variantType === 'BLOOD_MONEY') {
                 payload.kills = killCount;
-                payload.gensLeft = 0;             // TODO: Add UI input for Blood Money Results
-                payload.closedHatch = false;      // TODO: Add UI input for Blood Money Results
-                payload.genBeforeHook = false;    // TODO: Add UI input for Blood Money Results
+                // TODO: Add UI input for Blood Money Results
+                payload.gensLeft = 0;
+                // TODO: Add UI input for Blood Money Results
+                payload.closedHatch = false;
+                // TODO: Add UI input for Blood Money Results
+                payload.genBeforeHook = false;
                 payload.lastGenCompleted = mappedSurvivors.includes('ESCAPED');
                 payload.gateOpened = mappedSurvivors.includes('ESCAPED');
             }
