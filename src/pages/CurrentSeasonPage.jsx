@@ -20,6 +20,7 @@ const CurrentSeasonPage = () => {
     const navigate = useNavigate();
     const { addToast } = useToast();
     const { seasonId } = useParams();
+    const [trialCount, setTrialCount] = useState(0);
 
     const navView = useFadeTransition(NAV_TABS[0]);
 
@@ -37,9 +38,14 @@ const CurrentSeasonPage = () => {
         try {
             const response = await api.get(`/seasons/active`);
             setActiveSeason(response.data);
-            console.log("Current Season Data:", response.data);
+
+            // Fetch the trials for this season to count them
+            if (response.data && response.data.seasonId) {
+                const trialsRes = await api.get(`/seasons/${response.data.seasonId}/trials`);
+                setTrialCount(trialsRes.data.length);
+            }
         } catch (error) {
-            console.error("Failed to fetch season:", error);
+            console.error("Failed to fetch season or trials:", error);
         }
     };
 
@@ -59,7 +65,13 @@ const CurrentSeasonPage = () => {
         );
     }
 
-    const defaultKiller = activeSeason.roster.find(k => k.killerName === activeSeason.characterName);
+    // Check the backend's variant state first. If null, fallback to the season's starting character.
+    const lastPlayedId = activeSeason.variantState?.lastPlayedKillerId;
+
+    const defaultKiller = lastPlayedId
+        ? activeSeason.roster.find(k => k.killerId.toString() === lastPlayedId.toString())
+        : activeSeason.roster.find(k => k.killerName === activeSeason.characterName);
+
     const currentKiller = selectedKiller || defaultKiller;
 
     // If they clicked someone, show that killer. If not, fallback to the backend's default.
@@ -120,7 +132,6 @@ const CurrentSeasonPage = () => {
             // 7. Provide specific feedback
             if (isKillerDead) {
                 addToast(`${currentKiller.killerName} was consumed by The Entity.`, "error");
-                setSelectedKiller(null);
             } else {
                 addToast("Trial complete! The Entity is pleased.", "success");
             }
@@ -129,6 +140,9 @@ const CurrentSeasonPage = () => {
             setIsViewingResults(false);
             setSelectedPerks([]);
             setSelectedAddons([]);
+            setSelectedKiller(null);
+
+            navView.triggerTransition(NAV_TABS[0]);
 
             await fetchSeasonData();
 
@@ -212,16 +226,18 @@ const CurrentSeasonPage = () => {
                                 {/* KILLER LIST */}
                                 {navView.display.id === 'KILLERS' && (
                                     <div className="killer-grid hide-scrollbar">
-                                        {activeSeason.roster.map(rosterItem => (
-                                            <KillerCard
-                                                key={rosterItem.killerId}
-                                                killer={rosterItem}
-                                                variantType={activeSeason.variantType}
-                                                isSelected={currentKiller?.killerId === rosterItem.killerId}
-                                                onSelect={() => setSelectedKiller(rosterItem)}
-                                                mode="active"
-                                            />
-                                        ))}
+                                        {[...activeSeason.roster]
+                                            .sort((a, b) => parseInt(a.killerId) - parseInt(b.killerId))
+                                            .map(rosterItem => (
+                                                <KillerCard
+                                                    key={rosterItem.killerId}
+                                                    killer={rosterItem}
+                                                    variantType={activeSeason.variantType}
+                                                    isSelected={currentKiller?.killerId === rosterItem.killerId}
+                                                    onSelect={() => setSelectedKiller(rosterItem)}
+                                                    mode="active"
+                                                />
+                                            ))}
                                     </div>
                                 )}
 
@@ -274,6 +290,7 @@ const CurrentSeasonPage = () => {
                     killer={currentKiller}
                     selectedPerks={selectedPerks}
                     selectedAddons={selectedAddons}
+                    trialCount={trialCount}
                     onCancel={() => setIsConfirmingTrial(false)}
                     onConfirm={() => {
                         setIsConfirmingTrial(false);
@@ -288,6 +305,7 @@ const CurrentSeasonPage = () => {
                 <TrialResultsOverlay
                     season={activeSeason}
                     killer={currentKiller}
+                    trialCount={trialCount}
                     onSubmit={handleTrialSubmit}
                 />
             )}

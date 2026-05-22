@@ -3,7 +3,7 @@ import GradeBadgeDisplay from './GradeBadgeDisplay';
 import { useToast } from '../hooks/ToastContext';
 import '../styles/TrialResults.scss';
 
-const TrialResultsOverlay = ({ season, killer, onSubmit }) => {
+const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
     const { addToast } = useToast();
 
     // --- STATE MANAGEMENT ---
@@ -78,7 +78,7 @@ const TrialResultsOverlay = ({ season, killer, onSubmit }) => {
 
                 <div className="results-header">
                     <p className="inter-text-normal">
-                        {season.variantType.replace('_', ' ')} - Trial #{season.trialsCompleted + 1 || 1}
+                        {season.variantType.replace('_', ' ')} - Trial #{trialCount + 1}
                     </p>
                     <h1 className="bebas-header-1 title-iri uppercase">RESULTS</h1>
                 </div>
@@ -101,13 +101,12 @@ const TrialResultsOverlay = ({ season, killer, onSubmit }) => {
                                     </div>
 
                                     {/* Hover Menu for Colors */}
-                                    {/* TODO: Fix the colors not showing */}
                                     <div className="emblem-hover-menu">
                                         {QUALITIES.map((q, qIndex) => (
                                             <div
                                                 key={q}
                                                 // Maps 'platinum' back to 'iri' just for the CSS colors
-                                                className={`color-pip color-${q === 'platinum' ? 'iri' : q}`}
+                                                className={`color-pip color-${q === 'IRIDESCENT' ? 'iri' : q.toLowerCase()}`}
                                                 onClick={() => handleEmblemChange(index, qIndex)}
                                                 title={q}
                                             ></div>

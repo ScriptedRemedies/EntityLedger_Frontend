@@ -6,6 +6,7 @@ import '../styles/ChallengesPage.scss';
 import '../styles/TrialList.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import GradeBadgeDisplay from './GradeBadgeDisplay';
+import KillerCard from './KillerCard.jsx';
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {
@@ -295,33 +296,53 @@ const ReviewChallengesPage = () => {
                                                         <div key={trial.id} onClick={() => setActiveTrialOverlay(trial)} className="trial-row">
 
                                                             <div className="trial-killer-info">
-                                                                <img src={`/assets/Killers/${trial.killer.name}.png`} alt={trial.killer.name} className="trial-portrait" />
+                                                                <div className="trial-list-card-wrapper">
+                                                                    {/* TODO: Change mode to a different one that reflects the status of that killer */}
+                                                                    <KillerCard
+                                                                        killer={{ ...trial.killer, killerName: trial.killer.name }}
+                                                                        variantType={selectedSeason.variantType}
+                                                                        mode="review"
+                                                                        isSelected={false}
+                                                                    />
+                                                                </div>
                                                                 <div className="trial-killer-details">
-                                                                    <span className="trial-killer-name">{trial.killer.name}</span>
-                                                                    <div className="trial-perks-mini">
-                                                                        {trial.perks?.map(p => <img key={p.id} src={`/assets/Perks/${p.name}.png`} className="perk-mini" alt={p.name} />)}
+                                                                    <p className="trial-killer-name">{trial.killer.name}</p>
+                                                                    <div className="trial-perks">
+                                                                        {[0, 1, 2, 3].map(index => {
+                                                                            // Grab the perk if it exists, otherwise it's undefined
+                                                                            const perk = trial.perks ? trial.perks[index] : null;
+                                                                            return (
+                                                                                <div key={index} className="trial-perk-slot">
+                                                                                    {perk && <img src={`/assets/Perks/${perk.name}.png`} className="trial-perk-image" alt={perk.name} />}
+                                                                                </div>
+                                                                            );
+                                                                        })}
                                                                     </div>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="trial-addons-mini">
-                                                                {/* NOTE: Using 'addOns' from JSON response */}
-                                                                {trial.addOns?.map((a, i) => (
-                                                                    <div key={a.id} className="addon-wrapper">
-                                                                        {i > 0 && <span className="addon-plus">+</span>}
-                                                                        <img src={`/assets/Addons/${trial.killer.name}/${a.name.replace('%', '')}.png`} className="addon-mini" alt={a.name} />
-                                                                    </div>
-                                                                ))}
+                                                            <div className="trial-addons">
+                                                                {[0, 1].map(index => {
+                                                                    const addon = trial.addOns ? trial.addOns[index] : null;
+                                                                    return (
+                                                                        <div key={index} className="addon-wrapper">
+                                                                            {index > 0 && <span className="addon-plus">+</span>}
+                                                                            <div className="trial-addon-slot">
+                                                                                {addon && <img src={`/assets/Addons/${trial.killer.name}/${addon.name.replace('%', '')}.png`} className="addon-image" alt={addon.name} />}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
 
-                                                            <div className="trial-survivors-mini">
+                                                            <div className="trial-survivors">
                                                                 {/* NOTE: Using 'survivors' and 'res.outcome' from JSON response */}
                                                                 {trial.survivors?.map((res, i) => (
-                                                                    <img key={i} src={`/assets/Survivor Status/${res.outcome.toLowerCase()}.png`} className="survivor-status-mini" alt={res.outcome} />
+                                                                    <img key={i} src={`/assets/Survivor Status/${res.outcome.toLowerCase()}.png`} className="trial-survivor-status" alt={res.outcome} />
                                                                 ))}
                                                             </div>
 
-                                                            <div className="trial-grade-col">
+                                                            <div className="trial-grade">
                                                                 <GradeBadgeDisplay
                                                                     rawGrade={trial.resultingGrade}
                                                                     pips={trial.resultingPips}
@@ -394,7 +415,7 @@ const ReviewChallengesPage = () => {
                 {activeSeason ? (
                     <>
                         <div className="global-actions">
-                            <button className="squareBtn" onClick={() => navigate(`/current-season/${activeSeason.id}`)}>Continue</button>
+                            <button className="squareBtn" onClick={() => navigate(`/current-season/${activeSeason.seasonId}`)}>Continue</button>
                         </div>
 
                         <div className="global-season-info">

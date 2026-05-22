@@ -20,6 +20,7 @@
     color: var(--color-white);
   }
 }
+// TODO: Fix the styles to the header, make sure it always matches the items below like an actual table
 .trials-header {
   display: flex;
   justify-content: space-between;
@@ -58,96 +59,129 @@
   font-size: var(--text-size-small);
   text-align: center;
   padding: 10px 5px;
-  background: var(--color-60-background);
+  background: black;
   position: sticky;
   top: 0;
   z-index: 10;
-}
-.table-col-1 {
-  width: 25%;
-}
-.table-col-center {
-  width: 25%;
-}
-.table-col-right {
-  width: 22%;
-  text-align: right;
-}
-.trial-row {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-60-background);
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 
-  &:hover {
-    background-color: var(--color-60-background);
+  .table-col-1 {
+    width: 25%;
+  }
+  .table-col-center {
+    width: 25%;
+  }
+  .table-col-right {
+    width: 22%;
+    text-align: right;
   }
 }
-.trial-killer-info {
+
+.trial-row {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.trial-portrait {
-  height: 80px;
-  aspect-ratio: 384 / 500;
-  object-fit: cover;
-}
-.trial-killer-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.trial-killer-name {
-  color: var(--color-white);
-  font-size: var(--text-size-normal);
-  font-family: var(--font-bebas);
-  text-transform: uppercase;
-}
-.trial-perks-mini {
-  display: flex;
-  gap: 5px;
-}
-.perk-mini {
-  width: 60px;
-  aspect-ratio: 1/1;
-}
-.trial-addons-mini {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  border-left: 2px solid var(--color-60-background);
-  border-right: 2px solid var(--color-60-background);
-  padding: 0 0.5rem;
-}
-.addon-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.addon-mini {
-  width: 45px;
-  aspect-ratio: 1/1;
-}
-.addon-plus {
-  color: var(--color-muted);
-}
-.trial-survivors-mini {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.survivor-status-mini {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-.trial-grade-col {
-  width: 25%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  gap: 10px;
+  align-items: end;
+
+  &:hover {
+    background: var(--color-60-background);
+    cursor: pointer;
+  }
+
+  .trial-killer-info {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+
+    .trial-list-card-wrapper {
+      width: 85px;
+      height: 110px;
+      pointer-events: none;
+
+      .killer-card {
+        width: 100%;
+        height: 100%;
+        min-height: unset;
+        min-width: unset;
+      }
+    }
+
+    .trial-killer-details {
+      .trial-killer-name {
+        font-size: var(--header-size-2);
+        font-family: var(--font-bebas);
+        color: var(--color-white);
+      }
+      .trial-perks {
+        display: flex;
+        padding-left: 5px;
+
+        .trial-perk-slot {
+          width: 50px;
+          height: 50px;
+          background-color: var(--color-60-background);
+          border: 1px solid var(--color-80-background);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transform: rotate(45deg);
+          margin: 10px 13px;
+
+          .trial-perk-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transform: rotate(-45deg) scale(1.35);
+          }
+        }
+      }
+    }
+  }
+
+  .trial-addons {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 18px;
+
+    .addon-wrapper {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+
+      .addon-plus {
+        font-size: var(--header-size-2);
+        color: var(--color-normal);
+      }
+      .trial-addon-slot {
+        width: 50px;
+        height: 50px;
+        background-color: var(--color-60-background);
+        border: 1px solid var(--color-80-background);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .addon-image {
+          width: 100%;
+          height: 100%;
+          max-width: unset;
+          object-fit: contain;
+        }
+      }
+    }
+  }
+
+  .trial-survivors {
+    display: flex;
+    margin-bottom: 15px;
+
+    .trial-survivor-status {
+      width: 40px;
+      max-width: unset;
+    }
+  }
+
+  .trial-grade {
+    margin-bottom: 15px;
+    flex: 1;
+  }
+
 }

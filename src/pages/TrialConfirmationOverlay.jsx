@@ -8,6 +8,7 @@ const TrialConfirmationOverlay = ({
                                       killer,
                                       selectedPerks = [],
                                       selectedAddons = [],
+                                      trialCount,
                                       onCancel,
                                       onConfirm
                                   }) => {
@@ -29,7 +30,7 @@ const TrialConfirmationOverlay = ({
                 <div className="confirm-header">
                     <GradeBadgeDisplay rawGrade={season.currentGrade} pips={season.currentPips} size="small" />
                     <span className="inter-text-normal text-normal uppercase">
-                        {season.variantType.replace('_', ' ')} - Trial #{season.trialsCompleted + 1 || 1}
+                        {season.variantType.replace('_', ' ')} - Trial #{trialCount + 1}
                     </span>
                 </div>
 

@@ -70,7 +70,7 @@
         width: 15px;
         height: 15px;
         border-radius: 50%;
-        border: 1px solid #fff;
+        border: 1px solid var(--color-muted);
 
         &.color-none { background: #333; }
         &.color-bronze { background: #cd7f32; }
