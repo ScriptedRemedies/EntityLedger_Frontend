@@ -38,6 +38,20 @@ const ReviewChallengesPage = () => {
     const [selectedSeason, setSelectedSeason] = useState(null);
     const [activeTrialOverlay, setActiveTrialOverlay] = useState(null);
 
+    // Maps for survivor result and emblems in trial details overlay
+    const SURVIVOR_DISPLAY_MAP = {
+        'SACRIFICED' : 'Sacrificed',
+        'KILLED' : 'Killed',
+        'ESCAPED' : 'Escaped',
+        'HATCH_ESCAPE' : 'Hatch'
+    }
+    const EMBLEM_DISPLAY_MAP = {
+        'GATEKEEPER' : 'Gatekeeper',
+        'DEVOUT' : 'Devout',
+        'MALICIOUS' : 'Malicious',
+        'CHASER' : 'Chaser'
+    }
+
     // --- Initial Data Fetch ---
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -311,6 +325,7 @@ const ReviewChallengesPage = () => {
                                                                     />
                                                                 </div>
                                                                 <div className="trial-killer-details">
+                                                                    {/* TODO: Add trial number before killer name */}
                                                                     <p className="trial-killer-name">{trial.killer.name}</p>
                                                                     <div className="trial-perks">
                                                                         {[0, 1, 2, 3].map(index => {
@@ -453,55 +468,77 @@ const ReviewChallengesPage = () => {
             {/* === TRIAL DETAILS OVERLAY === */}
             {activeTrialOverlay && (
                 <div className="trial-overlay hide-scrollbar animation-slide-in">
-                    <button onClick={() => setActiveTrialOverlay(null)} className="close-overlay-btn">✕</button>
-
                     <div className="overlay-header">
                         <div className="overlay-header-text">
                             <h2 className="bebas-header-1 title-white">{activeTrialOverlay.killer?.name || "Unknown Killer"}</h2>
-                            <p className="inter-text-small text-muted">Trial #{activeTrialOverlay.trialNumber}</p>
+                            <p className="inter-text-small">Trial #{activeTrialOverlay.trialNumber}</p>
                         </div>
+                        <div className="overlay-badge">
+                            <GradeBadgeDisplay
+                                rawGrade={activeTrialOverlay.resultingGrade}
+                                pips={activeTrialOverlay.resultingPips}
+                                size="small"
+                            />
+                        </div>
+                        <button onClick={() => setActiveTrialOverlay(null)} className="close-overlay-btn">✕</button>
                     </div>
 
                     {/* PERKS */}
                     <div className="overlay-section">
                         <h4 className="bebas-header-1 section-title">PERKS</h4>
-                        <div className="overlay-perks-grid">
-                            {/* FIX: Building path manually since iconUrl isn't in JSON */}
-                            {activeTrialOverlay.perks?.map(p => (
-                                <div key={p.id} className="overlay-item">
-                                    <img src={`/assets/Perks/${p.name}.png`} className="overlay-icon" alt={p.name} />
-                                    <span className="overlay-item-name">{p.name}</span>
-                                </div>
-                            ))}
+                        <div className="overlay-perks">
+                            {[0,1,2,3].map(index => {
+                                const perk = activeTrialOverlay.perks ? activeTrialOverlay.perks[index] : null;
+
+                                return(
+                                        <div key={index} className="overlay-item">
+                                            {perk ? (
+                                                <img src={`/assets/Perks/${perk.name}.png`} className="perk-icon" alt={perk.name} />
+                                            ) : (
+                                                <div className="empty-perk-icon"></div>
+                                            )}
+                                            <span className="overlay-item-name">{perk ? perk.name : 'Empty'}</span>
+                                        </div>
+                                    )
+                            })}
                         </div>
                     </div>
 
                     {/* ADD ONS */}
                     <div className="overlay-section">
                         <h4 className="bebas-header-1 section-title">ADD ONS</h4>
-                        <div className="overlay-addons-flex">
+                        <div className="overlay-addons">
                             {/* FIX: Using addOns and building path manually */}
-                            {activeTrialOverlay.addOns?.map((a, i) => (
-                                <div key={a.id} className="overlay-addon-wrapper">
-                                    {i > 0 && <span className="addon-plus">+</span>}
-                                    <div className="overlay-item">
-                                        <img src={`/assets/Addons/${activeTrialOverlay.killer.name}/${a.name.replace('%', '')}.png`} className="overlay-icon" alt={a.name} />
-                                        <span className="overlay-item-name">{a.name}</span>
-                                    </div>
-                                </div>
-                            ))}
+                            {[0,1].map(index => {
+                                const addon = activeTrialOverlay.addOns ? activeTrialOverlay.addOns[index] : null;
+                                return (
+                                        <div key={index} className="overlay-addon-wrapper">
+                                            {index > 0 && <span className="addon-plus">+</span>}
+                                            <div className="overlay-item">
+                                                {addon ? (
+                                                    <img src={`/assets/Addons/${activeTrialOverlay.killer.name}/${addon.name.replace('%', '')}.png`} className="addon-icon" alt={addon.name} />
+                                                ): (
+                                                    <div className="empty-addon-icon"></div>
+                                                )}
+                                                <span className="overlay-item-name">{addon ? addon.name: 'Empty'}</span>
+                                            </div>
+                                        </div>
+                                    )
+
+                            })}
                         </div>
                     </div>
 
                     {/* SURVIVOR RESULTS */}
                     <div className="overlay-section">
                         <h4 className="bebas-header-1 section-title uppercase">SURVIVOR RESULT</h4>
-                        <div className="overlay-flex-between">
-                            {/* FIX: Using survivors and res.outcome */}
+                        <div className="overlay-survivors">
                             {activeTrialOverlay.survivors?.map((res, i) => (
                                 <div key={i} className="overlay-item">
-                                    <img src={`/assets/Survivor Status/${res.outcome.toLowerCase()}.png`} className="overlay-icon-sm" alt={res.outcome} />
-                                    <span className="overlay-item-name">{res.outcome}</span>
+                                    <img src={`/assets/Survivor Status/${res.outcome.toLowerCase()}.png`} className="survivor-icon" alt={res.outcome} />
+                                    <span className="overlay-item-name">
+                                        {SURVIVOR_DISPLAY_MAP[res.outcome] || res.outcome}
+                                    </span>
                                 </div>
                             ))}
                         </div>
@@ -512,14 +549,15 @@ const ReviewChallengesPage = () => {
                         <h4 className="bebas-header-1 section-title uppercase">
                             EMBLEMS {activeTrialOverlay.pipProgression > 0 ? `+${activeTrialOverlay.pipProgression} PIPS` : ''}
                         </h4>
-                        <div className="overlay-flex-between">
-                            {/* FIX: Dynamic path for emblems based on JSON */}
+                        <div className="overlay-emblems">
                             {activeTrialOverlay.emblems?.map((emb, i) => {
                                 const path = `/assets/Emblems/${emb.category}_${emb.type}.png`;
                                 return (
                                     <div key={i} className="overlay-item">
-                                        <img src={path} className="overlay-icon drop-shadow" alt={emb.category} />
-                                        <span className="overlay-item-name">{emb.category}</span>
+                                        <img src={path} className="overlay-icon emblem-icon" alt={emb.category} />
+                                        <span className="overlay-item-name">
+                                            {EMBLEM_DISPLAY_MAP[emb.category] || emb.category}
+                                        </span>
                                     </div>
                                 );
                             })}
