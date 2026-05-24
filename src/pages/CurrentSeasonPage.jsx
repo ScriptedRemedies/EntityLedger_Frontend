@@ -10,10 +10,13 @@ import StandardLoadout from "./variant-loadouts/StandardLoadout.jsx";
 import GradeBadgeDisplay from './GradeBadgeDisplay';
 import TrialConfirmationOverlay from './TrialConfirmationOverlay';
 import TrialResultsOverlay from './TrialResultsOverlay';
+import TrialListTable from './TrialListTable';
+import TrialDetailsOverlay from './TrialDetailsOverlay';
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
-    { id: 'LOADOUT', name: 'Loadout' }
+    { id: 'LOADOUT', name: 'Loadout' },
+    { id: 'TRIALS', name: 'Trials' }
 ];
 
 const CurrentSeasonPage = () => {
@@ -27,6 +30,9 @@ const CurrentSeasonPage = () => {
     const [activeSeason, setActiveSeason] = useState(null);
 
     const [selectedKiller, setSelectedKiller] = useState(null);
+
+    const [trials, setTrials] = useState([]);
+    const [activeTrialOverlay, setActiveTrialOverlay] = useState(null);
 
     const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
     const [selectedPerks, setSelectedPerks] = useState([]);
@@ -43,6 +49,7 @@ const CurrentSeasonPage = () => {
             if (response.data && response.data.seasonId) {
                 const trialsRes = await api.get(`/seasons/${response.data.seasonId}/trials`);
                 setTrialCount(trialsRes.data.length);
+                setTrials(trialsRes.data);
             }
         } catch (error) {
             console.error("Failed to fetch season or trials:", error);
@@ -188,7 +195,6 @@ const CurrentSeasonPage = () => {
                     <div className="nav-fog-bg"></div>
                 </div>
 
-                {/* TODO: Add a trials overview so users don't have to go back to review challenges */}
                 <div className="nav-icons-list hide-scrollbar">
                     {NAV_TABS.map((tab) => (
                         <div
@@ -250,6 +256,15 @@ const CurrentSeasonPage = () => {
                                         {renderLoadoutView()}
                                     </div>
                                 )}
+
+                                {/* TRIALS */}
+                                {navView.display.id === 'TRIALS' && (
+                                    <TrialListTable
+                                        trials={trials}
+                                        variantType={activeSeason.variantType}
+                                        onRowClick={setActiveTrialOverlay}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>
@@ -285,6 +300,12 @@ const CurrentSeasonPage = () => {
                     alt={displayCharacterName}
                 />
             </div>
+
+            {/* Trial Details Overlay */}
+            <TrialDetailsOverlay
+                trial={activeTrialOverlay}
+                onClose={() => setActiveTrialOverlay(null)}
+            />
 
             {/* Trial Confirmation */}
             {isConfirmingTrial && (

@@ -1,3 +1,6 @@
+/* ==================== */
+/* TRIAL LIST TABLE     */
+/* ==================== */
 .trials-list-container {
   display: flex;
   flex-direction: column;
@@ -75,7 +78,6 @@
     text-align: right;
   }
 }
-
 .trial-row {
   display: flex;
   gap: 10px;
@@ -184,4 +186,135 @@
     flex: 1;
   }
 
+}
+
+/* ==================== */
+/* TRIAL DETAILS OVERLAY*/
+/* ==================== */
+.trial-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100%;
+  background-color: var(--color-full-background);
+  z-index: 50;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.overlay-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 20px;
+  background: url('/assets/fog.png') center;
+  padding: 5px 10px;
+
+  .overlay-header-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .overlay-badge {
+    justify-self: end;
+  }
+
+  .close-overlay-btn {
+
+    color: var(--color-white);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+
+    &:hover {
+      color: var(--color-white);
+    }
+  }
+}
+.overlay-section {
+  padding: 5px 10px;
+
+  .overlay-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 5px;
+
+    .overlay-item-name {
+      font-size: var(--text-size-small);
+      color: var(--color-muted);
+    }
+  }
+
+  // PERKS
+  .overlay-perks {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+
+    .perk-icon {
+      width: 90px;
+      height: 90px;
+    }
+    .empty-perk-icon {
+      width: 54px;
+      height: 54px;
+      background: var(--color-muted);
+      border: 2px solid var(--color-normal);
+      transform: rotate(45deg);
+      margin: 18px 0;
+    }
+  }
+
+  // ADDONS
+  .overlay-addons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    .overlay-addon-wrapper {
+      display: flex;
+      gap: 5px;
+
+      .addon-plus {
+        position: relative;
+        top: 25px;
+        right: 18px;
+      }
+
+      .addon-icon {
+        width: 70px;
+      }
+
+      .empty-addon-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--color-muted);
+        border: 2px solid var(--color-normal);
+      }
+    }
+  }
+
+  // SURVIVOR RESULTS
+  .survivor-icon {
+    width: 50px;
+  }
+
+  // EMBLEMS
+  .overlay-emblems {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+
+    .emblem-icon {
+      width: 70px;
+      height: 70px;
+    }
+  }
+}
+.overlay-survivors {
+  display: flex;
+  justify-content: space-between;
 }
