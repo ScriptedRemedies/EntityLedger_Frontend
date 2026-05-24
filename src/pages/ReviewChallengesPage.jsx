@@ -318,27 +318,111 @@ const ReviewChallengesPage = () => {
                                     )}
 
                                     {/* TAB 3: STATS */}
-                                    {/* TODO: Fix the stats page, nothing is showing */}
                                     {tabView.display === 'Stats' && stats && seasons.length > 0 && (
-                                        <div className="stats-container">
-                                            <div>
-                                                <h3 className="inter-text-small stats-section-title">Core Performance Metrics</h3>
-                                                <div className="stats-grid">
-                                                    <div className="stat-card">
-                                                        <div className="stat-info">
-                                                            <span className="stat-label">Trials Played</span>
-                                                            <span className="stat-value">{stats.trialsPlayed}</span>
+                                        <div className="stats-container pb-10">
+
+                                            <div className="mb-6">
+                                                <h1 className="bebas-header-1 title-white">{variantView.display.name} REPORT</h1>
+                                                <p className="inter-text-normal">Statistics pulled from every game in this challenge.</p>
+                                            </div>
+
+                                            {/* CORE METRICS */}
+                                            <div className="stats-section mb-8">
+                                                <h3 className="bebas-header-2 stats-section-title">CORE PERFORMANCE METRICS</h3>
+                                                <div className="stats-grid-cols">
+
+                                                    {/* Left Column */}
+                                                    <div className="stats-col">
+                                                        <div className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-label">Trials Completed</span>
+                                                                <span className="stat-value">{stats.matchesPlayed}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-label">4K Rate</span>
+                                                                <span className="stat-value">{stats.fourKRate}%</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-label">Losses</span>
+                                                                <span className="stat-value">{stats.lossRate}%</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-label">2K-3K Via Exit Gates</span>
+                                                                <span className="stat-value">{stats.twoToThreeKillsWithGates}</span>
+                                                            </div>
+                                                            <img src="/assets/Survivor Status/escaped.png" className="stat-icon" alt="Gate" />
                                                         </div>
                                                     </div>
-                                                    <div className="stat-card">
-                                                        <div className="stat-info">
-                                                            <span className="stat-label">Kill Rate</span>
-                                                            <span className="stat-value">{stats.killRate}%</span>
+
+                                                    {/* Right Column */}
+                                                    <div className="stats-col">
+                                                        <div className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-label">Kill Rate</span>
+                                                                <span className="stat-value">{stats.killRate}%</span>
+                                                            </div>
+                                                            <img src="/assets/Survivor Status/sacrificed.png" className="stat-icon" alt="Sacrificed" />
                                                         </div>
-                                                        <img src="/assets/icons/skull.png" className="stat-icon" alt="" />
+                                                        <div className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-label">Pip Progression</span>
+                                                                <span className="stat-value">{stats.pipProgression > 0 ? `+${stats.pipProgression}` : stats.pipProgression} Pips</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-label">Hatch Escapes</span>
+                                                                <span className="stat-value">{stats.hatchEscapeRate}%</span>
+                                                            </div>
+                                                            <img src="/assets/Survivor Status/hatch_escape.png" className="stat-icon" alt="Hatch" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* META & LOADOUT TENDENCIES */}
+                                            <div className="stats-section mb-8">
+                                                <h3 className="bebas-header-2 stats-section-title">META & LOADOUT TENDENCIES</h3>
+                                                <div className="stats-grid">
+                                                    {stats.topPerks?.map((perk, i) => (
+                                                        <div key={i} className="stat-card">
+                                                            <div className="stat-info">
+                                                                <span className="stat-value inter-text-normal text-normal">{perk.name}</span>
+                                                                <span className="stat-label">{perk.pickRate}% Pick Rate</span>
+                                                            </div>
+                                                            <div className="stat-perk-diamond">
+                                                                <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* EMBLEMS */}
+                                            <div className="stats-section">
+                                                <h3 className="bebas-header-2 stats-section-title">EMBLEMS</h3>
+                                                <div className="stats-grid">
+                                                    {stats.iridescentEmblems?.map((emblem, i) => (
+                                                        <div key={i} className="stat-card">
+                                                            <div className="stat-info">
+                                                                {/* Formats GATEKEEPER to Gatekeeper */}
+                                                                <span className="stat-value inter-text-normal text-normal capitalize">
+                                                                    {emblem.category.charAt(0) + emblem.category.slice(1).toLowerCase()}
+                                                                </span>
+                                                                <span className="stat-label">{emblem.rate}%</span>
+                                                            </div>
+                                                            <img src={`/assets/Emblems/${emblem.category}_IRIDESCENT.png`} className="stat-emblem-icon drop-shadow" alt={emblem.category} />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
                                         </div>
                                     )}
                                 </div>

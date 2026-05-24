@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GradeBadgeDisplay from './GradeBadgeDisplay';
 import { useToast } from '../hooks/ToastContext';
 import '../styles/TrialResults.scss';
@@ -12,6 +12,11 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
 
     // Survivors: Array of 4. Values: null, 'sacrificed', 'killed', 'disconnected', 'escaped'
     const [survivors, setSurvivors] = useState([null, null, null, null]);
+
+    // Grade change animation states
+    const [displayGrade, setDisplayGrade] = useState(season.currentGrade);
+    const [displayPips, setDisplayPips] = useState(season.currentPips);
+    const [animationClass, setAnimationClass] = useState('fade-in');
 
     // --- PIP MATH LOGIC ---
     const totalPoints = emblems.reduce((sum, val) => sum + val, 0);
@@ -48,8 +53,95 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
     else if (totalPoints < 16) pipChange = 1;
     else pipChange = 2; // Perfect 16 points
 
-    // Calculate Live Grade Preview (Simplified visual math)
-    const previewPips = Math.max(0, season.currentPips + pipChange);
+    const GRADE_PROGRESSION = [
+        "ASH_IV", "ASH_III", "ASH_II", "ASH_I",
+        "BRONZE_IV", "BRONZE_III", "BRONZE_II", "BRONZE_I",
+        "SILVER_IV", "SILVER_III", "SILVER_II", "SILVER_I",
+        "GOLD_IV", "GOLD_III", "GOLD_II", "GOLD_I",
+        "IRIDESCENT_IV", "IRIDESCENT_III", "IRIDESCENT_II", "IRIDESCENT_I"
+    ];
+
+    const getMaxPips = (grade) => {
+        if (!grade) return 5;
+        if (grade.startsWith("ASH")) return 3;
+        if (grade.startsWith("BRONZE")) return 4;
+        return 5; // Silver, Gold, and Iri
+    };
+
+    let previewGrade = season.currentGrade;
+    let previewPips = season.currentPips + pipChange;
+    let gradeIndex = GRADE_PROGRESSION.indexOf(previewGrade);
+
+    // Calculate Live Grade Preview
+    useEffect(() => {
+        let finalGrade = season.currentGrade;
+        let finalPips = season.currentPips + pipChange;
+        let gradeIndex = GRADE_PROGRESSION.indexOf(finalGrade);
+
+        // 1. Calculate the true mathematical outcome
+        if (finalPips < 0) {
+            finalPips = 0;
+        } else {
+            let maxPips = getMaxPips(finalGrade);
+            while (finalPips >= maxPips && gradeIndex < GRADE_PROGRESSION.length - 1) {
+                finalPips -= maxPips;
+                gradeIndex++;
+                finalGrade = GRADE_PROGRESSION[gradeIndex];
+                maxPips = getMaxPips(finalGrade);
+            }
+            if (gradeIndex === GRADE_PROGRESSION.length - 1 && finalPips > maxPips) {
+                finalPips = maxPips;
+            }
+        }
+
+        const currentDisplayIndex = GRADE_PROGRESSION.indexOf(displayGrade);
+        const finalGradeIndex = GRADE_PROGRESSION.indexOf(finalGrade);
+
+        // 2. ORCHESTRATE THE ANIMATION
+        if (finalGradeIndex > currentDisplayIndex) {
+            // Step A: Fill the final pip of the current badge
+            setDisplayPips(getMaxPips(displayGrade));
+
+            // Step B: Wait 600ms, then begin the fade-out
+            const fadeOutTimer = setTimeout(() => {
+                setAnimationClass('fade-out');
+            }, 600);
+
+            // Step C: Wait 800ms (600ms + 200ms for the fade out to finish) to swap the badge and fade back in
+            const swapTimer = setTimeout(() => {
+                setDisplayGrade(finalGrade);
+                setDisplayPips(finalPips);
+                setAnimationClass('fade-in');
+            }, 800);
+
+            // Cleanup both timers
+            return () => {
+                clearTimeout(fadeOutTimer);
+                clearTimeout(swapTimer);
+            };
+        }
+        else if (finalGradeIndex < currentDisplayIndex) {
+            // === DOWNGRADE (Reverting) ===
+            // Step A: Instantly start fading out the current badge
+            setAnimationClass('fade-out');
+
+            // Step B: Wait 200ms for the fade-out to finish, then swap the data and fade in
+            const revertTimer = setTimeout(() => {
+                setDisplayGrade(finalGrade);
+                setDisplayPips(finalPips);
+                setAnimationClass('fade-in');
+            }, 200);
+
+            return () => clearTimeout(revertTimer);
+        }
+        else {
+            // Normal pip change (No badge swap, no fade-in)
+            setDisplayGrade(finalGrade);
+            setDisplayPips(finalPips);
+            setAnimationClass('fade-in');
+        }
+
+    }, [pipChange, season.currentGrade, displayGrade]);
 
     // --- HANDLERS ---
     const handleEmblemChange = (index, quality) => {
@@ -135,8 +227,8 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                     </div>
 
                     {/* LIVE GRADE PREVIEW */}
-                    <div className="live-grade-preview">
-                        <GradeBadgeDisplay rawGrade={season.currentGrade} pips={previewPips} size="normal" />
+                    <div className={`live-grade-preview ${animationClass}`}>
+                        <GradeBadgeDisplay rawGrade={displayGrade} pips={displayPips} size="normal" />
                     </div>
                 </div>
 
