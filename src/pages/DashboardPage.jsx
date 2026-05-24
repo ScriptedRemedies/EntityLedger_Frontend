@@ -111,7 +111,6 @@ const DashboardPage = () => {
                 {/* Bottom Section: Version Info */}
                 <div className="bottom-section">
                     {/* TODO: Add tutorial modal button here */}
-                    {/* TODO: Make the background of the version button the fog image */}
                     <button
                         onClick={() => setIsVersionModalOpen(true)}
                         className="inter-text-small version-btn"

@@ -151,7 +151,7 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                             <div key={colIndex} className="survivor-col">
                                 <h4 className="bebas-header-2 text-white text-center mb-4">SURVIVOR #{colIndex + 1}</h4>
 
-                                {['sacrificed', 'hatch', 'escaped'].map(status => {
+                                {['sacrificed', 'hatch_escape', 'escaped'].map(status => {
                                     const isSelected = survivors[colIndex] === status;
                                     return (
                                         <img

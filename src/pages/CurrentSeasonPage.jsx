@@ -230,7 +230,7 @@ const CurrentSeasonPage = () => {
                                 <h1 className="bebas-header-1 title-white">{navView.display.name}</h1>
                             </div>
 
-                            <div className="tab-content-wrapper hide-scrollbar">
+                            <div className="tab-content-wrapper hide-scrollbar" style={navView.display.id === 'TRIALS' ? {display: 'flex', flexDirection: 'column', overflowY: 'hidden'} : {}}>
 
                                 {/* KILLER LIST */}
                                 {navView.display.id === 'KILLERS' && (
@@ -324,7 +324,6 @@ const CurrentSeasonPage = () => {
             )}
 
             {/* Trial Results */}
-            {/* TODO: Style trial overlay */}
             {isViewingResults && (
                 <TrialResultsOverlay
                     season={activeSeason}

@@ -44,7 +44,6 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance 
 
     // --- OVERLAY RENDERING ---
     const renderOverlay = () => {
-        // TODO: Put actual overlays as styles
         if (isReviewMode) return null; // Review screens never have locks or prices
 
         if (isLocked) {

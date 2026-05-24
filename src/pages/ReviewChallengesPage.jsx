@@ -273,7 +273,6 @@ const ReviewChallengesPage = () => {
                                     {/* TAB 1: TRIALS (List View) */}
                                     {tabView.display === 'Seasons' && selectedSeason && (
                                         <div className="trials-list-container">
-                                            {/* TODO: See about moving the trial list to a small component to put in the Current Season too */}
                                             <div className="trials-header">
                                                 <div className="trials-header-text">
                                                     <p className="inter-text-normal">{selectedSeason.dateRange}</p>
