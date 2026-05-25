@@ -20,7 +20,7 @@ const GradeBadgeDisplay = ({ rawGrade = "ASH_IV", pips = 0, size = "normal" }) =
 
             {/* PIPS DISPLAY */}
             {rawGrade !== 'IRIDESCENT_I' && (
-                <div className="pips-container">
+                <div className={`pips-container ${badgeTier === 'IRIDESCENT' ? 'iri-spacing' : ''}`}>
                     {Array.from({ length: maxPips }).map((_, index) => {
                         const isFilled = index < pips;
                         return (

@@ -61,7 +61,7 @@
   &:hover {
     background-color: var(--color-full-background);
     color: var(--color-white);
-    border-color: var(--color-IRI);
+    border-color: var(--color-IRIDESCENT);
   }
 }
 
@@ -238,7 +238,7 @@
   }
 
   h3 {
-    color: var(--color-IRI);
+    color: var(--color-IRIDESCENT);
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
     font-size: 1.5rem;
@@ -251,7 +251,7 @@
   }
 
   a {
-    color: var(--color-IRI);
+    color: var(--color-IRIDESCENT);
     text-decoration: none;
     transition: color 0.3s ease;
 

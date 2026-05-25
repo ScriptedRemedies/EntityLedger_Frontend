@@ -27,6 +27,10 @@
       margin-top: -8px;
       margin-bottom: 10px;
 
+      &.iri-spacing {
+        margin-top: 2px;
+      }
+
       .pip {
         width: 8px;
         height: 8px;
@@ -56,6 +60,10 @@
       display: flex;
       gap: 4px;
       margin-top: -5px;
+
+      &.iri-spacing {
+        margin-top: 0px;
+      }
 
       .pip {
         width: 6px;

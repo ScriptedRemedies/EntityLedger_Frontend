@@ -181,20 +181,20 @@
     transform: translate(-50%, -50%) rotate(-45deg);
     width: 12px;
     height: 12px;
-    border-top: 2px solid var(--color-IRI);
-    border-left: 2px solid var(--color-IRI);
+    border-top: 2px solid var(--color-IRIDESCENT);
+    border-left: 2px solid var(--color-IRIDESCENT);
     transition: opacity 0.3s ease;
   }
 
   &:hover {
     color: var(--color-white);
     background-image:
-            linear-gradient(var(--color-IRI), var(--color-IRI)),
-            linear-gradient(var(--color-IRI), var(--color-IRI));
+            linear-gradient(var(--color-IRIDESCENT), var(--color-IRIDESCENT)),
+            linear-gradient(var(--color-IRIDESCENT), var(--color-IRIDESCENT));
 
     &::before {
-      border-top-color: var(--color-IRI);
-      border-left-color: var(--color-IRI);
+      border-top-color: var(--color-IRIDESCENT);
+      border-left-color: var(--color-IRIDESCENT);
     }
     &::after { opacity: 1; }
   }
@@ -223,13 +223,17 @@
     transform: translateY(-50%);
     width: 3px;
     height: 50%;
-    background-color: var(--color-IRI);
+    background-color: var(--color-IRIDESCENT);
   }
 
   &:hover {
     background: linear-gradient(to left, rgba(139, 40, 40, 0.4) 0%, transparent 100%);
     color: #e0e0e0;
   }
+}
+.season-recap-btn {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* ==================== */
@@ -320,7 +324,7 @@
     padding: 20px;
 
     .season-result-title {
-      color: var(--color-IRI);
+      color: var(--color-IRIDESCENT);
       text-align: center;
     }
   }
@@ -373,7 +377,7 @@
   text-transform: uppercase;
 }
 .season-result-title {
-  color: var(--color-IRI);
+  color: var(--color-IRIDESCENT);
   text-align: center;
   line-height: 1;
 }
@@ -420,7 +424,6 @@
   gap: 0.25rem;
 }
 
-
 /* ==================== */
 /* TAB: STATS           */
 /* ==================== */
@@ -455,7 +458,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-left: 2px solid var(--color-IRI);
+  border-left: 2px solid var(--color-IRIDESCENT);
 }
 .stat-info {
   display: flex;
@@ -491,7 +494,6 @@
     transform: rotate(-45deg) scale(1.3);
   }
 }
-
 .stat-emblem-icon {
   height: 50px;
   width: 50px;
@@ -597,7 +599,7 @@
   color: var(--color-white);
 }
 .global-days-left {
-  color: var(--color-IRI);
+  color: var(--color-IRIDESCENT);
 }
 .global-character-bg {
   position: absolute;
@@ -667,7 +669,7 @@
   transition: color 0.3s ease;
 
   &:hover {
-    color: var(--color-IRI);
+    color: var(--color-IRIDESCENT);
   }
 }
 .collapsible-content {
@@ -692,7 +694,7 @@
   li {
     padding: 0.25rem 0; /* Translated from py-1 */
     &::marker {
-      color: var(--color-IRI);
+      color: var(--color-IRIDESCENT);
     }
   }
 }
@@ -713,7 +715,7 @@
 
   li {
     &::marker {
-      color: var(--color-IRI);
+      color: var(--color-IRIDESCENT);
     }
   }
 }

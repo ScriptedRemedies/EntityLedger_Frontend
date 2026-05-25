@@ -6,9 +6,9 @@ import '../styles/ChallengesPage.scss';
 import '../styles/TrialComponent.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import GradeBadgeDisplay from './GradeBadgeDisplay';
-import KillerCard from './KillerCard.jsx';
 import TrialListTable from './TrialListTable';
 import TrialDetailsOverlay from './TrialDetailsOverlay';
+import SeasonRecapOverlay from './SeasonRecapOverlay';
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {
@@ -39,6 +39,7 @@ const ReviewChallengesPage = () => {
     // View states
     const [selectedSeason, setSelectedSeason] = useState(null);
     const [activeTrialOverlay, setActiveTrialOverlay] = useState(null);
+    const [showRecapOverlay, setShowRecapOverlay] = useState(false);
 
     // --- Initial Data Fetch ---
     useEffect(() => {
@@ -279,6 +280,11 @@ const ReviewChallengesPage = () => {
                                                     <p className="inter-text-normal">
                                                         {STATUS_MESSAGES[selectedSeason.status] || "UNKNOWN STATUS"}
                                                     </p>
+                                                    {selectedSeason.status !== 'IN_PROGRESS' && (
+                                                        <button className="season-recap-btn" onClick={() => setShowRecapOverlay(true)}>
+                                                            View Season Recap
+                                                        </button>
+                                                    )}
                                                 </div>
                                                 <div className="trials-header-badge">
                                                     <GradeBadgeDisplay rawGrade={selectedSeason.currentGradeRaw} pips={selectedSeason.seasonPips} />
@@ -471,6 +477,16 @@ const ReviewChallengesPage = () => {
                 trial={activeTrialOverlay}
                 onClose={() => setActiveTrialOverlay(null)}
             />
+
+            {/* === SEASON RECAP OVERLAY === */}
+            {showRecapOverlay && selectedSeason && (
+                <SeasonRecapOverlay
+                    season={{ ...selectedSeason, currentGrade: selectedSeason.currentGradeRaw }}
+                    recapData={{ status: selectedSeason.status, finalTrials: trials }}
+                    actionText="Back"
+                    onAction={() => setShowRecapOverlay(false)}
+                />
+            )}
         </div>
     );
 };

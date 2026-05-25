@@ -12,6 +12,7 @@ import TrialConfirmationOverlay from './TrialConfirmationOverlay';
 import TrialResultsOverlay from './TrialResultsOverlay';
 import TrialListTable from './TrialListTable';
 import TrialDetailsOverlay from './TrialDetailsOverlay';
+import SeasonRecapOverlay from './SeasonRecapOverlay'
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -38,6 +39,7 @@ const CurrentSeasonPage = () => {
     const [selectedPerks, setSelectedPerks] = useState([]);
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [isViewingResults, setIsViewingResults] = useState(false);
+    const [seasonRecap, setSeasonRecap] = useState(null);
 
     const fetchSeasonData = async () => {
         if (!seasonId) return;
@@ -136,8 +138,8 @@ const CurrentSeasonPage = () => {
             }
 
             // 6. Send to Backend
-            console.log("PAYLOAD BEING SENT TO BACKEND:", JSON.stringify(payload, null, 2));
-            await api.post(`/trials`, payload);
+            const response = await api.post(`/trials`, payload);
+            const trialResult = response.data;
 
             // 7. Provide specific feedback
             if (isKillerDead) {
@@ -146,15 +148,29 @@ const CurrentSeasonPage = () => {
                 addToast("Trial complete! The Entity is pleased.", "success");
             }
 
-            // 8. Clean up UI & Refresh Data
-            setIsViewingResults(false);
+            // 8. Clean up UI
+            // (Removed setIsViewingResults from here so the overlay stays visible while loading!)
             setSelectedPerks([]);
             setSelectedAddons([]);
             setSelectedKiller(null);
 
-            navView.triggerTransition(NAV_TABS[0]);
+            // 9. CHECK FOR TERMINAL STATE (The Trap)
+            if (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE') {
+                const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
 
-            await fetchSeasonData();
+                setSeasonRecap({
+                    status: trialResult.seasonStatus,
+                    finalTrials: finalTrialsRes.data
+                });
+
+                // Cross-fade: Hide the results ONLY AFTER the recap data is locked and loaded
+                setIsViewingResults(false);
+            } else {
+                // Normal flow - Season is still active
+                setIsViewingResults(false);
+                navView.triggerTransition(NAV_TABS[0]);
+                await fetchSeasonData();
+            }
 
         } catch (error) {
             console.error("Failed to submit trial:", error);
@@ -330,6 +346,16 @@ const CurrentSeasonPage = () => {
                     killer={currentKiller}
                     trialCount={trialCount}
                     onSubmit={handleTrialSubmit}
+                />
+            )}
+
+            {/* Season Recap Overlay (Terminal State) */}
+            {seasonRecap && (
+                <SeasonRecapOverlay
+                    season={activeSeason}
+                    recapData={seasonRecap}
+                    actionText="Return to Dashboard"
+                    onAction={() => navigate('/dashboard')}
                 />
             )}
         </div>

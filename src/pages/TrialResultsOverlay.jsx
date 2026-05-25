@@ -15,11 +15,12 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
 
     // Grade change animation states
     const [displayGrade, setDisplayGrade] = useState(season.currentGrade);
-    const [displayPips, setDisplayPips] = useState(season.currentPips);
+    const [displayPips, setDisplayPips] = useState(Number(season.currentPips) || 0);
     const [animationClass, setAnimationClass] = useState('fade-in');
 
     // --- PIP MATH LOGIC ---
     const totalPoints = emblems.reduce((sum, val) => sum + val, 0);
+    const hasInteracted = totalPoints > 0 || survivors.some(s => s !== null);
 
     const EMBLEM_CATEGORIES = ['GATEKEEPER', 'DEVOUT', 'MALICIOUS', 'CHASER'];
 
@@ -46,12 +47,60 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
         });
     };
 
-    // Standard DbD Pip Logic (16 point scale)
+    // === DYNAMIC DBD PIP LOGIC ===
     let pipChange = 0;
-    if (totalPoints < 9) pipChange = -1;
-    else if (totalPoints < 14) pipChange = 0;
-    else if (totalPoints < 16) pipChange = 1;
-    else pipChange = 2; // Perfect 16 points
+    let safetyThreshold = 9;
+    let plusOneThreshold = 14;
+    let plusTwoThreshold = 16;
+
+    const badgeTier = season.currentGrade ? season.currentGrade.split("_")[0] : "ASH";
+
+    if (hasInteracted) {
+        if (badgeTier === "ASH") {
+            safetyThreshold = 0;
+            plusOneThreshold = 9;
+            plusTwoThreshold = 14;
+            if (totalPoints < plusOneThreshold) pipChange = 0; // Can't depip in Ash
+            else if (totalPoints < plusTwoThreshold) pipChange = 1;
+            else pipChange = 2;
+        } else if (badgeTier === "BRONZE") {
+            safetyThreshold = 9;
+            plusOneThreshold = 14;
+            plusTwoThreshold = 16;
+            if (totalPoints < safetyThreshold) pipChange = -1;
+            else if (totalPoints < plusOneThreshold) pipChange = 0;
+            else if (totalPoints < plusTwoThreshold) pipChange = 1;
+            else pipChange = 2;
+        } else if (badgeTier === "SILVER") {
+            safetyThreshold = 10;
+            plusOneThreshold = 14;
+            plusTwoThreshold = 16;
+            if (totalPoints < safetyThreshold) pipChange = -1;
+            else if (totalPoints < plusOneThreshold) pipChange = 0;
+            else if (totalPoints < plusTwoThreshold) pipChange = 1;
+            else pipChange = 2;
+        } else if (badgeTier === "GOLD") {
+            safetyThreshold = 11;
+            plusOneThreshold = 14;
+            plusTwoThreshold = 16;
+            if (totalPoints < safetyThreshold) pipChange = -1;
+            else if (totalPoints < plusOneThreshold) pipChange = 0;
+            else if (totalPoints < plusTwoThreshold) pipChange = 1;
+            else pipChange = 2;
+        } else {
+            // IRIDESCENT
+            safetyThreshold = 12;
+            plusOneThreshold = 15;
+            plusTwoThreshold = 16;
+            if (totalPoints < safetyThreshold) pipChange = -1;
+            else if (totalPoints < plusOneThreshold) pipChange = 0;
+            else if (totalPoints < plusTwoThreshold) pipChange = 1;
+            else pipChange = 2;
+        }
+    } else {
+        pipChange = 0;
+    }
+
 
     const GRADE_PROGRESSION = [
         "ASH_IV", "ASH_III", "ASH_II", "ASH_I",
@@ -75,7 +124,7 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
     // Calculate Live Grade Preview
     useEffect(() => {
         let finalGrade = season.currentGrade;
-        let finalPips = season.currentPips + pipChange;
+        let finalPips = (Number(season.currentPips) || 0) + pipChange;
         let gradeIndex = GRADE_PROGRESSION.indexOf(finalGrade);
 
         // 1. Calculate the true mathematical outcome
@@ -189,7 +238,7 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                             return (
                                 <div key={index} className="emblem-wrapper">
                                     <div className="emblem-display">
-                                        <img src={imagePath} alt={`${category} ${currentQuality}`} />
+                                        <img src={imagePath} alt={`${category} ${currentQuality}`} title={category} />
                                     </div>
 
                                     {/* Hover Menu for Colors */}
@@ -216,13 +265,17 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                                 <div key={i} className={`pip-segment ${i < totalPoints ? 'filled' : 'empty'}`}></div>
                             ))}
                         </div>
-                        {/* Threshold Diamonds (9 = safety, 14 = +1, 16 = +2) */}
+                        {/* Dynamic Threshold Diamonds */}
                         <div className="pip-markers">
-                            {/* 0 is always reached, but we keep the logic consistent! */}
-                            <div className={`marker marker-0 ${totalPoints >= 0 ? 'reached' : ''}`}>♦</div>
-                            <div className={`marker marker-9 ${totalPoints >= 9 ? 'reached' : ''}`}>♦</div>
-                            <div className={`marker marker-14 ${totalPoints >= 14 ? 'reached' : ''}`}>♦</div>
-                            <div className={`marker marker-16 ${totalPoints >= 16 ? 'reached' : ''}`}>♦</div>
+                            <div className={`marker ${totalPoints >= 0 ? 'reached' : ''}`} style={{ left: '0%' }}>♦</div>
+
+                            {/* Ash doesn't have a depip threshold, so we hide the safety diamond */}
+                            {badgeTier !== "ASH" && (
+                                <div className={`marker ${totalPoints >= safetyThreshold ? 'reached' : ''}`} style={{ left: `${(safetyThreshold / 16) * 100}%` }}>♦</div>
+                            )}
+
+                            <div className={`marker ${totalPoints >= plusOneThreshold ? 'reached' : ''}`} style={{ left: `${(plusOneThreshold / 16) * 100}%` }}>♦</div>
+                            <div className={`marker ${totalPoints >= plusTwoThreshold ? 'reached' : ''}`} style={{ left: `${(plusTwoThreshold / 16) * 100}%` }}>♦</div>
                         </div>
                     </div>
 

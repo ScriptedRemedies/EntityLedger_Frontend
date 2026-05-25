@@ -76,7 +76,7 @@
         &.color-bronze { background: #cd7f32; }
         &.color-silver { background: #c0c0c0; }
         &.color-gold { background: #ffd700; }
-        &.color-iri { background: var(--color-IRI); }
+        &.color-iri { background: var(--color-IRIDESCENT); }
 
         &:hover { transform: scale(1.2); }
       }
@@ -105,7 +105,7 @@
       border-right: 1px solid #000;
       transition: background-color 0.3s ease;
 
-      &.filled { background-color: var(--color-IRI); }
+      &.filled { background-color: var(--color-IRIDESCENT); }
     }
   }
 
@@ -123,7 +123,7 @@
       transition: color 0.3s ease;
 
       &.reached {
-        color: var(--color-IRI);
+        color: var(--color-IRIDESCENT);
       }
     }
     .marker-0 { left: 0%; }
