@@ -183,8 +183,7 @@ const StandardLoadout = ({
                                 className={`inventory-item ${activeInventory === 'ADDONS' ? 'square-slot' : 'diamond-slot'} ${isSelected ? 'selected' : ''}`}
                             >
                                 <div className={activeInventory === 'PERKS' ? 'diamond-content' : ''}>
-                                    {/* Use the clean variable here! */}
-                                    <img src={imagePath} alt={item.name} />
+                                    <img src={imagePath} alt={item.name} title={item.name} />
                                 </div>
                                 {isSelected && <div className="active-check"></div>}
                             </div>
