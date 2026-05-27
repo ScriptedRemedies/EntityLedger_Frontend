@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import GradeBadgeDisplay from './GradeBadgeDisplay';
-import { useToast } from '../hooks/ToastContext';
-import '../styles/TrialResults.scss';
+import GradeBadgeDisplay from '../small-components/GradeBadgeDisplay.jsx';
+import { useToast } from '../../hooks/ToastContext.jsx';
+import '../../styles/overlays/TrialResults.scss';
 
 const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
     const { addToast } = useToast();

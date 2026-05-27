@@ -1,7 +1,7 @@
 import React from 'react';
-import GradeBadgeDisplay from './GradeBadgeDisplay';
+import GradeBadgeDisplay from './GradeBadgeDisplay.jsx';
 import KillerCard from './KillerCard.jsx';
-import '../styles/TrialComponent.scss';
+import '../../styles/small-components/TrialComponent.scss';
 
 const TrialListTable = ({ trials, variantType, onRowClick }) => {
     return (

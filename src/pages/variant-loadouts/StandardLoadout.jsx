@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
-import '../../styles/Loadouts.scss';
+import '../../styles/variant-loadouts/Loadouts.scss';
 
 const StandardLoadout = ({
                              currentKiller,

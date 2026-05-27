@@ -37,7 +37,7 @@
         border-radius: 50%;
 
         &.empty {
-          background-color: transparent;
+          background-color: var(--color-60-background);
         }
       }
     }
@@ -62,7 +62,7 @@
       margin-top: -5px;
 
       &.iri-spacing {
-        margin-top: 0px;
+        margin-top: 0;
       }
 
       .pip {
@@ -71,7 +71,7 @@
         border-radius: 50%;
 
         &.empty {
-          background-color: transparent;
+          background-color: var(--color-60-background);
         }
       }
     }

@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
-import '../styles/TrialComponent.scss';
+import '../styles/small-components/TrialComponent.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
-import GradeBadgeDisplay from './GradeBadgeDisplay';
-import TrialListTable from './TrialListTable';
-import TrialDetailsOverlay from './TrialDetailsOverlay';
-import SeasonRecapOverlay from './SeasonRecapOverlay';
+import GradeBadgeDisplay from './small-components/GradeBadgeDisplay.jsx';
+import TrialListTable from './small-components/TrialListTable.jsx';
+import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
+import SeasonRecapOverlay from './overlays/SeasonRecapOverlay';
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {

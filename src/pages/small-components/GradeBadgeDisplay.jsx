@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/GradeBadgeDisplay.scss';
+import '../../styles/small-components/GradeBadgeDisplay.scss';
 
 const GradeBadgeDisplay = ({ rawGrade = "ASH_IV", pips = 0, size = "normal" }) => {
     const gradeParts = rawGrade.split("_");

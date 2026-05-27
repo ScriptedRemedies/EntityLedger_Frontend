@@ -1,7 +1,7 @@
 import React from 'react';
-import GradeBadgeDisplay from './GradeBadgeDisplay';
-import '../styles/TrialConfirmation.scss';
-import '../styles/ChallengesPage.scss';
+import GradeBadgeDisplay from '../small-components/GradeBadgeDisplay';
+import '../../styles/overlays/TrialConfirmation.scss';
+import '../../styles/ChallengesPage.scss';
 
 const TrialConfirmationOverlay = ({
                                       season,

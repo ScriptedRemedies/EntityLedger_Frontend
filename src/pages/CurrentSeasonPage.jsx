@@ -5,14 +5,14 @@ import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
-import KillerCard from "./KillerCard.jsx";
+import KillerCard from "./small-components/KillerCard.jsx";
 import StandardLoadout from "./variant-loadouts/StandardLoadout.jsx";
-import GradeBadgeDisplay from './GradeBadgeDisplay';
-import TrialConfirmationOverlay from './TrialConfirmationOverlay';
-import TrialResultsOverlay from './TrialResultsOverlay';
-import TrialListTable from './TrialListTable';
-import TrialDetailsOverlay from './TrialDetailsOverlay';
-import SeasonRecapOverlay from './SeasonRecapOverlay'
+import GradeBadgeDisplay from './small-components/GradeBadgeDisplay.jsx';
+import TrialConfirmationOverlay from './overlays/TrialConfirmationOverlay';
+import TrialResultsOverlay from './overlays/TrialResultsOverlay.jsx';
+import TrialListTable from './small-components/TrialListTable.jsx';
+import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
+import SeasonRecapOverlay from './overlays/SeasonRecapOverlay'
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },

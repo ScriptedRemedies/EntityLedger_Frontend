@@ -5,7 +5,7 @@ import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import {useToast} from "../hooks/ToastContext.jsx";
-import KillerCard from "./KillerCard.jsx";
+import KillerCard from "./small-components/KillerCard.jsx";
 
 const StartChallengePage = () => {
     const navigate = useNavigate();

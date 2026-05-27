@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/KillerCard.scss';
+import '../../styles/small-components/KillerCard.scss';
 
 // Added 'mode' prop with a default of 'active'
 const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance = 0, mode = 'active' }) => {
@@ -49,14 +49,14 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance 
         if (isLocked) {
             return (
                 <div className="card-overlay-dim">
-                    <img src="/assets/Image Overlays/locked.png" className="card-overlay-full" alt="Locked"/>
+                    <img src="/assets/Image%20Overlays/locked.png" className="card-overlay-full" alt="Locked"/>
                 </div>
             )
         }
         if (isCooldown) {
             return (
                 <div className="card-overlay-dim">
-                    <img src="/assets/Image Overlays/cooldown.png" className="card-overlay-full" alt="Cooldown"/>
+                    <img src="/assets/Image%20Overlays/cooldown.png" className="card-overlay-full" alt="Cooldown"/>
                 </div>
             )
         }

@@ -1,6 +1,6 @@
 import React from 'react';
-import GradeBadgeDisplay from './GradeBadgeDisplay';
-import '../styles/TrialComponent.scss';
+import GradeBadgeDisplay from '../small-components/GradeBadgeDisplay';
+import '../../styles/small-components/TrialComponent.scss';
 
 // Maps for survivor result and emblems
 const SURVIVOR_DISPLAY_MAP = {
