@@ -51,9 +51,10 @@ const ReviewChallengesPage = () => {
                 }
             } catch (error) {
                 if (error.response && error.response.status === 404) {
-                    console.log("No active season found or season expired.");
+                    // TODO: Set error
                     setActiveSeason(null);
                 } else {
+                    // TODO: Set error
                     console.error("Failed to load global season data", error);
                 }
             } finally {
@@ -81,7 +82,6 @@ const ReviewChallengesPage = () => {
                 ]);
 
                 const rawSeasons = Array.isArray(seasonsRes.data) ? seasonsRes.data : [];
-                const romanToNum = { "I": "1", "II": "2", "III": "3", "IV": "4" };
 
                 const GRADE_PROGRESSION = [
                     "ASH_IV", "ASH_III", "ASH_II", "ASH_I",
@@ -93,8 +93,6 @@ const ReviewChallengesPage = () => {
 
                 const formattedSeasons = rawSeasons.map(season => {
                     const currentGradeRaw = season.currentGrade || "ASH_IV";
-                    const gradeParts = currentGradeRaw.split("_");
-                    const badgeStr = `${gradeParts[0].toLowerCase()}-${romanToNum[gradeParts[1]] || '4'}`;
 
                     const currentIndex = GRADE_PROGRESSION.indexOf(currentGradeRaw);
                     const nextGradeName = currentIndex !== -1 && currentIndex < GRADE_PROGRESSION.length - 1
@@ -125,6 +123,7 @@ const ReviewChallengesPage = () => {
                 setSeasons(formattedSeasons);
                 setStats(statsRes.data);
             } catch (error) {
+                // TODO: Set error
                 console.error("Failed to load variant details", error);
                 setSeasons([]);
             }
@@ -140,8 +139,8 @@ const ReviewChallengesPage = () => {
             try {
                 const trialsRes = await api.get(`/seasons/${selectedSeason.id}/trials`);
                 setTrials(trialsRes.data);
-                console.log("DEBUG: Trials Fetched from Backend:", trialsRes.data);
             } catch (error) {
+                // TODO: Handle error
                 console.error("Failed to load trial history", error);
             }
         };
@@ -164,16 +163,6 @@ const ReviewChallengesPage = () => {
                 </div>
             </div>
         );
-    }
-
-    let badge = "", gradeNum = "";
-    if (activeSeason && activeSeason.currentGrade) {
-        [badge, gradeNum] = activeSeason.currentGrade.split("_");
-    }
-
-    let selectedBadge = "", selectedGradeNum = "";
-    if (selectedSeason && selectedSeason.currentGrade) {
-        [selectedBadge, selectedGradeNum] = selectedSeason.currentGrade.split("_");
     }
 
     return (
