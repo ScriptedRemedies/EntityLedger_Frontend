@@ -13,6 +13,7 @@ import TrialResultsOverlay from './overlays/TrialResultsOverlay.jsx';
 import TrialListTable from './small-components/TrialListTable.jsx';
 import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay'
+import AdeptLoadout from "./variant-loadouts/AdeptLoadout.jsx";
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -92,7 +93,6 @@ const CurrentSeasonPage = () => {
         ? currentKiller.killerName
         : activeSeason.characterName;
 
-    // --- TRIAL SUBMISSION LOGIC ---
     // --- TRIAL SUBMISSION LOGIC ---
     const handleTrialSubmit = async (resultsPayload) => {
         try {
@@ -180,14 +180,16 @@ const CurrentSeasonPage = () => {
 
     const renderLoadoutView = () => {
         switch (activeSeason.variantType) {
-            case 'CHAOS_SHUFFLE':
+            case 'ADEPT':
                 return (
-                    {/*
-                    <ChaosShuffleLoadout
+                    <AdeptLoadout
+                        currentKiller={currentKiller}
                         selectedPerks={selectedPerks}
                         setSelectedPerks={setSelectedPerks}
+                        selectedAddons={selectedAddons}
+                        setSelectedAddons={setSelectedAddons}
+                        season={activeSeason}
                     />
-                    */}
                 );
             default: // STANDARD
                 return (
