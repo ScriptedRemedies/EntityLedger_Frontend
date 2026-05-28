@@ -13,7 +13,8 @@ const AdeptLoadout = ({
     const [allPerks, setAllPerks] = useState([]);
     const [killerAddons, setKillerAddons] = useState([]);
 
-    const [activeInventory, setActiveInventory] = useState('PERKS');
+    // Default to ADDONS since PERKS are permanently locked for Adept
+    const [activeInventory, setActiveInventory] = useState('ADDONS');
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 15;
@@ -55,7 +56,6 @@ const AdeptLoadout = ({
     useEffect(() => {
         if (!isAshGrade && selectedAddons.length > 0) {
             setSelectedAddons([]);
-            setActiveInventory('PERKS');
         }
     }, [isAshGrade, selectedAddons, setSelectedAddons]);
 
@@ -67,14 +67,8 @@ const AdeptLoadout = ({
                 if (prev.length < 2) return [...prev, item];
                 return prev;
             });
-        } else if (type === 'PERKS') {
-            setSelectedPerks(prev => {
-                if (prev.find(p => p.id === item.id)) return prev.filter(p => p.id !== item.id);
-                // ADEPT RULE: Max 3 Perks
-                if (prev.length < 3) return [...prev, item];
-                return prev;
-            });
         }
+        // Perks are fully automated now, no manual toggle logic needed!
     };
 
     const activeData = activeInventory === 'ADDONS' ? killerAddons : allPerks;
@@ -86,7 +80,7 @@ const AdeptLoadout = ({
     const currentItems = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     return (
-        <div className="standard-loadout">
+        <div className="standard-loadout adept-loadout">
             <div className="equipped-section">
                 {/* ADD-ONS ROW */}
                 <div className="loadout-row">
@@ -101,7 +95,9 @@ const AdeptLoadout = ({
                             return (
                                 <div key={index} className="addon-slot square-slot">
                                     {addon && <img src={`/assets/Addons/${currentKiller.killerName}/${addon.name}.png`} alt={addon.name} />}
-                                    {!isAshGrade && !addon && <div className="locked-indicator" style={{color: 'red', fontSize: '24px'}}>X</div>}
+                                    {!isAshGrade && !addon && <div>
+                                        <img className="locked-slot" src="/assets/Image Overlays/locked.png" alt=""/>
+                                    </div>}
                                 </div>
                             );
                         })}
@@ -111,24 +107,24 @@ const AdeptLoadout = ({
                 {/* PERKS ROW */}
                 <div className="loadout-row">
                     <h3 className="inter-text-normal text-muted">Perks</h3>
-                    <div className="slots-container perks-container" onClick={() => setActiveInventory('PERKS')}>
-                        {/* ADEPT RULE: Strictly map only 3 perk slots [0, 1, 2] */}
+                    {/* The onClick is completely removed, locking the view to Add-ons only */}
+                    <div className="slots-container perks-container" style={{ cursor: 'not-allowed' }}>
                         {[0, 1, 2].map(index => {
                             const perk = selectedPerks[index];
                             return (
                                 <div key={index} className="perk-slot diamond-slot">
                                     {perk && (
-                                        <div className="diamond-content">
-                                            <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                        <div className="diamond-content" title={perk.name}>
+                                            <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>
                                         </div>
                                     )}
                                 </div>
                             );
                         })}
                         {/* Render a locked 4th slot for visual feedback */}
-                        <div className="perk-slot diamond-slot" style={{opacity: 0.3}}>
+                        <div className="perk-slot diamond-slot" style={{pointerEvents: 'none'}}>
                             <div className="diamond-content flex items-center justify-center">
-                                <span style={{color: 'red', fontSize: '24px', transform: 'rotate(-45deg)'}}>X</span>
+                                <img className="locked-slot" src="/assets/Image Overlays/locked.png" alt=""/>
                             </div>
                         </div>
                     </div>
@@ -157,9 +153,13 @@ const AdeptLoadout = ({
                 <div className="divider-line"></div>
 
                 <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
-                    {activeInventory === 'ADDONS' && !isAshGrade ? (
+                    {activeInventory === 'PERKS' ? (
                         <div className="col-span-full flex justify-center py-10">
-                            <p className="text-muted inter-text-normal">Add-ons are strictly forbidden at Bronze grade and higher in the Adept Challenge.</p>
+                            <p className="text-muted inter-text-normal text-center">Adept perks are automatically locked to your selected killer and cannot be changed.</p>
+                        </div>
+                    ) : activeInventory === 'ADDONS' && !isAshGrade ? (
+                        <div className="col-span-full flex justify-center py-10">
+                            <p className="text-muted inter-text-normal text-center">Add-ons are strictly forbidden at Bronze grade and higher in the Adept Challenge.</p>
                         </div>
                     ) : (
                         currentItems.map(item => {
@@ -187,7 +187,7 @@ const AdeptLoadout = ({
                     )}
                 </div>
 
-                {totalPages > 1 && activeInventory === 'PERKS' && (
+                {totalPages > 1 && activeInventory === 'ADDONS' && isAshGrade && (
                     <div className="pagination-controls">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
                             <button

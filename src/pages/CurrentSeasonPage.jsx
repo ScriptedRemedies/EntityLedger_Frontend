@@ -42,6 +42,9 @@ const CurrentSeasonPage = () => {
     const [isViewingResults, setIsViewingResults] = useState(false);
     const [seasonRecap, setSeasonRecap] = useState(null);
 
+    // Adept specific state
+    const [allPerks, setAllPerks] = useState([]);
+
     const fetchSeasonData = async () => {
         if (!seasonId) return;
         try {
@@ -64,6 +67,42 @@ const CurrentSeasonPage = () => {
         fetchSeasonData();
     }, [seasonId]);
 
+    // Preload in the background but only if it's an adept run
+    useEffect(() => {
+        if (activeSeason?.variantType === 'ADEPT') {
+            const fetchPerks = async () => {
+                try {
+                    const response = await api.get('/reference-data/perks');
+                    setAllPerks(response.data);
+                } catch (err) {
+                    console.error("Failed to preload perks for Adept variant:", err);
+                }
+            };
+            fetchPerks();
+        }
+    }, [activeSeason?.variantType]);
+
+    // Check the backend's variant state first. If null, fallback to the season's starting character.
+    const lastPlayedId = activeSeason?.variantState?.lastPlayedKillerId;
+
+    const defaultKiller = lastPlayedId
+        ? activeSeason?.roster.find(k => k.killerId.toString() === lastPlayedId.toString())
+        : activeSeason?.roster.find(k => k.killerName === activeSeason?.characterName);
+
+    const currentKiller = selectedKiller || defaultKiller;
+
+    // --- MOVED THE AUTO-EQUIP HERE ---
+    // Now that currentKiller is officially declared, we can safely depend on it!
+    useEffect(() => {
+        if (activeSeason?.variantType === 'ADEPT' && currentKiller && allPerks.length > 0) {
+            const adeptPerks = allPerks.filter(p =>
+                p.killerName === currentKiller.killerName ||
+                p.killer?.name === currentKiller.killerName
+            );
+            setSelectedPerks(adeptPerks);
+        }
+    }, [currentKiller, allPerks, activeSeason?.variantType]);
+
     // Loading Guard
     if (!activeSeason) {
         return (
@@ -74,15 +113,6 @@ const CurrentSeasonPage = () => {
             </div>
         );
     }
-
-    // Check the backend's variant state first. If null, fallback to the season's starting character.
-    const lastPlayedId = activeSeason.variantState?.lastPlayedKillerId;
-
-    const defaultKiller = lastPlayedId
-        ? activeSeason.roster.find(k => k.killerId.toString() === lastPlayedId.toString())
-        : activeSeason.roster.find(k => k.killerName === activeSeason.characterName);
-
-    const currentKiller = selectedKiller || defaultKiller;
 
     // If they clicked someone, show that killer. If not, fallback to the backend's default.
     const displayImageUrl = currentKiller
@@ -127,11 +157,8 @@ const CurrentSeasonPage = () => {
             // 5. Conditionally append BLOOD_MONEY specific rules
             if (activeSeason.variantType === 'BLOOD_MONEY') {
                 payload.kills = killCount;
-                // TODO: Add UI input for Blood Money Results
                 payload.gensLeft = 0;
-                // TODO: Add UI input for Blood Money Results
                 payload.closedHatch = false;
-                // TODO: Add UI input for Blood Money Results
                 payload.genBeforeHook = false;
                 payload.lastGenCompleted = mappedSurvivors.includes('ESCAPED');
                 payload.gateOpened = mappedSurvivors.includes('ESCAPED');
@@ -149,7 +176,6 @@ const CurrentSeasonPage = () => {
             }
 
             // 8. Clean up UI
-            // (Removed setIsViewingResults from here so the overlay stays visible while loading!)
             setSelectedPerks([]);
             setSelectedAddons([]);
             setSelectedKiller(null);

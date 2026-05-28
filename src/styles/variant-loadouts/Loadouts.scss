@@ -187,3 +187,10 @@
     }
   }
 }
+
+.adept-loadout {
+  .locked-slot {
+    width: 30px !important;
+    filter: grayscale(70%);
+  }
+}
