@@ -291,22 +291,17 @@ export const VARIANTS = [
                 id: 7,
                 title: "BONUS TOKENS",
                 bullets: [
-                    "4K with 5 Gens Left",
-                    "4K with 4 Gens Left"
+                    "+2 Tokens, 4K with 5 Gens Left",
+                    "+1 Token, 4K with 4 Gens Left"
                 ]
             },
             {
                 id: 8,
-                title: "PENALTIES",
-                description: "If a player forgets to randomize their perks and loads into a match with a custom build, that killer is immediately considered dead and the trial counts as a loss."
-            },
-            {
-                id: 9,
                 title: "GAMEPLAY",
                 description: "You cannot quit or turn off the game to saver a killer if a match goes poorly. Severe hacking, lag-switching, or teaming from survivors is an exception in which the killer would not die if the match resulted in a loss."
             },
             {
-                id: 10,
+                id: 9,
                 title: "CHALLENGE FAILURE",
                 description: "Challenge results in a failure if player does not have any killers left before reaching Iridescent I."
             }
