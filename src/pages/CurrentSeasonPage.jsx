@@ -6,14 +6,13 @@ import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
 import KillerCard from "./small-components/KillerCard.jsx";
-import StandardLoadout from "./variant-loadouts/StandardLoadout.jsx";
 import GradeBadgeDisplay from './small-components/GradeBadgeDisplay.jsx';
 import TrialConfirmationOverlay from './overlays/TrialConfirmationOverlay';
 import TrialResultsOverlay from './overlays/TrialResultsOverlay.jsx';
 import TrialListTable from './small-components/TrialListTable.jsx';
 import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay'
-import AdeptLoadout from "./variant-loadouts/AdeptLoadout.jsx";
+import MasterLoadout from "./small-components/MasterLoadout.jsx";
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -205,29 +204,16 @@ const CurrentSeasonPage = () => {
     };
 
     const renderLoadoutView = () => {
-        switch (activeSeason.variantType) {
-            case 'ADEPT':
-                return (
-                    <AdeptLoadout
-                        currentKiller={currentKiller}
-                        selectedPerks={selectedPerks}
-                        setSelectedPerks={setSelectedPerks}
-                        selectedAddons={selectedAddons}
-                        setSelectedAddons={setSelectedAddons}
-                        season={activeSeason}
-                    />
-                );
-            default: // STANDARD
-                return (
-                    <StandardLoadout
-                        currentKiller={currentKiller}
-                        selectedPerks={selectedPerks}
-                        setSelectedPerks={setSelectedPerks}
-                        selectedAddons={selectedAddons}
-                        setSelectedAddons={setSelectedAddons}
-                    />
-                );
-        }
+        return (
+            <MasterLoadout
+                currentKiller={currentKiller}
+                selectedPerks={selectedPerks}
+                setSelectedPerks={setSelectedPerks}
+                selectedAddons={selectedAddons}
+                setSelectedAddons={setSelectedAddons}
+                season={activeSeason}
+            />
+        )
     };
 
     return (

@@ -1,4 +1,4 @@
-.standard-loadout {
+.loadout {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -25,6 +25,11 @@
     h3 {
       text-transform: uppercase;
       font-size: var(--font-size-small);
+    }
+
+    .locked-indicator {
+      opacity: 0.7;
+      filter: grayscale(70%);
     }
   }
 
@@ -113,7 +118,6 @@
   }
 
   /* === FIXED INVENTORY GRID === */
-  /* === FIXED INVENTORY GRID === */
   .inventory-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -185,12 +189,5 @@
         color: var(--color-white);
       }
     }
-  }
-}
-
-.adept-loadout {
-  .locked-slot {
-    width: 30px !important;
-    filter: grayscale(70%);
   }
 }
