@@ -359,16 +359,11 @@ export const VARIANTS = [
             },
             {
                 id: 8,
-                title: "PENALTIES",
-                description: "If a player accidentally equipes a perk or add-ong that was already used in a previous match, the run is instantly forfeited."
-            },
-            {
-                id: 9,
                 title: "GAMEPLAY",
                 description: "You cannot quit or turn off the game to saver a killer if a match goes poorly. Severe hacking, lag-switching, or teaming from survivors is an exception in which the killer would not die if the match resulted in a loss."
             },
             {
-                id: 10,
+                id: 9,
                 title: "CHALLENGE FAILURE",
                 description: "The challenge results in a failure if a survivor escapes through an exit gate (and you have no Mulligans to use), is you violate the Marathon Timer by taking too long of a break, or if you accidentally use a locked-out perk or add-on."
             }
