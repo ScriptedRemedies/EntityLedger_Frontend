@@ -38,6 +38,7 @@ const TrialDetailsOverlay = ({ trial, onClose }) => {
             </div>
 
             {/* PERKS */}
+            {/* TODO: Make the perks locked if they are locked in the UI */}
             <div className="overlay-section">
                 <h4 className="bebas-header-1 section-title">PERKS</h4>
                 <div className="overlay-perks">
@@ -59,6 +60,7 @@ const TrialDetailsOverlay = ({ trial, onClose }) => {
             </div>
 
             {/* ADD ONS */}
+            {/* TODO: Make the addons locked if they are locked in the UI */}
             <div className="overlay-section">
                 <h4 className="bebas-header-1 section-title">ADD ONS</h4>
                 <div className="overlay-addons">

@@ -49,6 +49,7 @@ const TrialConfirmationOverlay = ({
                     </div>
 
                     {/* PERKS */}
+                    {/* TODO: Make the perks locked if they are locked in the UI */}
                     <div className="confirm-column mx-8">
                         <h3 className="bebas-header-2 mb-3">PERKS</h3>
                         <div className="confirm-flex-row">
@@ -71,6 +72,7 @@ const TrialConfirmationOverlay = ({
                     </div>
 
                     {/* ADD ONS */}
+                    {/* TODO: Make the addons locked if they are locked in the UI */}
                     <div className="confirm-column">
                         <h3 className="bebas-header-2 mb-6">ADDONS</h3>
                         <div className="confirm-flex-row align-center">

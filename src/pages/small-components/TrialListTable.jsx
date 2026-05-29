@@ -33,6 +33,7 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                             </div>
                             <div className="trial-killer-details">
                                 <p className="trial-killer-name"><span className="inter-text-normal">Trial #{trial.trialNumber} |</span> {trial.killer.name}</p>
+                                {/* TODO: make the last slot the locked slot if it was locked in the loadout */}
                                 <div className="trial-perks">
                                     {[0, 1, 2, 3].map(index => {
                                         const perk = trial.perks ? trial.perks[index] : null;
@@ -46,6 +47,7 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                             </div>
                         </div>
 
+                        {/* TODO: Make the addons locked if they are locked in the UI */}
                         <div className="trial-addons">
                             {[0, 1].map(index => {
                                 const addon = trial.addOns ? trial.addOns[index] : null;
