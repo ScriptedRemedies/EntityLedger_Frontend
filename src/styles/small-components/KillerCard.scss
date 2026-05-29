@@ -39,6 +39,13 @@
     }
   }
 
+  &.state-cooldown {
+    cursor: not-allowed;
+    .killer-portrait {
+      filter: grayscale(50%) brightness(0.6);
+    }
+  }
+
   &.state-deselected {
     .killer-portrait {
       filter: grayscale(100%) brightness(0.6);
@@ -58,9 +65,10 @@
   }
 
   .card-overlay-full {
-    width: 100%;
+    width: 80%;
     height: auto;
     object-fit: contain;
+    filter: grayscale(70%);
   }
 
   .text-overlay-diagonal {

@@ -13,6 +13,11 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
     // Survivors: Array of 4. Values: null, 'sacrificed', 'killed', 'disconnected', 'escaped'
     const [survivors, setSurvivors] = useState([null, null, null, null]);
 
+    // Generator State
+    const [gensLeft, setGensLeft] = useState(0);
+    const [hoverGens, setHoverGens] = useState(0);
+    const needsGens = ['BLOOD_MONEY', 'AFTERBURN', 'CHAOS_SHUFFLE'].includes(season.variantType);
+
     // Grade change animation states
     const [displayGrade, setDisplayGrade] = useState(season.currentGrade);
     const [displayPips, setDisplayPips] = useState(Number(season.currentPips) || 0);
@@ -43,7 +48,8 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
             emblems: structuredEmblems, // Now passing detailed objects instead of just [0,0,0,0]
             totalPoints,
             pipChange,
-            survivors
+            survivors,
+            gensLeft
         });
     };
 
@@ -287,6 +293,39 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
 
                 {/* SURVIVOR STATUS GRID */}
                 <div className="survivor-status-section">
+
+                    {/* Gens Left Selection */}
+                    {needsGens && (
+                        <div className="gens-section" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div className="survivor-header-bar" style={{ width: '100%', marginBottom: '15px' }}>
+                                <span className="inter-text-small uppercase">Generators Remaining</span>
+                            </div>
+                            <div className="flex gap-4">
+                                {[1, 2, 3, 4, 5].map(num => {
+                                    // Highlight if it's less than or equal to the current hover, OR the locked-in selection
+                                    const isHighlighted = num <= (hoverGens || gensLeft);
+                                    return (
+                                        <img
+                                            key={num}
+                                            src="/assets/Survivor Status/gens.png"
+                                            alt={`Gen ${num}`}
+                                            onMouseEnter={() => setHoverGens(num)}
+                                            onMouseLeave={() => setHoverGens(0)}
+                                            onClick={() => setGensLeft(num)}
+                                            style={{
+                                                width: '45px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                filter: isHighlighted ? 'brightness(1)' : 'brightness(0.3) grayscale(100%)',
+                                                transform: isHighlighted ? 'scale(1.1)' : 'scale(1)'
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="survivor-header-bar">
                         <span className="inter-text-small uppercase">Survivor Status</span>
                     </div>

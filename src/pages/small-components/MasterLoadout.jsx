@@ -8,7 +8,8 @@ const MasterLoadout = ({
                            setSelectedPerks,
                            selectedAddons,
                            setSelectedAddons,
-                           season
+                           season,
+                           setUsedReRollToken
                        }) => {
 
     // ==========================================
@@ -17,13 +18,15 @@ const MasterLoadout = ({
     const variantType = season?.variantType || 'STANDARD';
     const currentGrade = season?.currentGrade || 'ASH_IV';
     const isAshGrade = currentGrade.startsWith("ASH");
+    const isChaos = variantType === 'CHAOS_SHUFFLE';
 
     const rules = {
         maxPerks: variantType === 'ADEPT' ? 3 : 4,
         maxAddons: 2, // Standard across most variants
         perksLocked: variantType === 'ADEPT', // Can the user manually change perks?
-        addonsLocked: variantType === 'ADEPT' && !isAshGrade, // Can the user manually change addons?
-        defaultTab: variantType === 'ADEPT' ? 'ADDONS' : 'PERKS'
+        addonsLocked: (variantType === 'ADEPT' && !isAshGrade) || isChaos, // Can the user manually change addons?
+        defaultTab: variantType === 'ADEPT' ? 'ADDONS' : 'PERKS',
+        hasInventory: !isChaos
     };
 
     // ==========================================
@@ -35,6 +38,27 @@ const MasterLoadout = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 15;
+
+    // --- CHAOS SHUFFLE STATE ---
+    // Read from localStorage first, fallback to the backend values
+    const [localTokens, setLocalTokens] = useState(() => {
+        const saved = localStorage.getItem('chaos_tokens');
+        return saved !== null ? parseInt(saved) : (season?.variantState?.reRollTokens || 0);
+    });
+    const [hasRolled, setHasRolled] = useState(() => localStorage.getItem('chaos_hasRolled') === 'true');
+    const [hasReRolled, setHasReRolled] = useState(() => localStorage.getItem('chaos_hasReRolled') === 'true');
+    const [isRolling, setIsRolling] = useState(false);
+    const initialFlip = localStorage.getItem('chaos_hasRolled') === 'true';
+    const [flippedSlots, setFlippedSlots] = useState([initialFlip, initialFlip, initialFlip, initialFlip]);
+
+    useEffect(() => {
+        if (isChaos) {
+            const savedPerks = localStorage.getItem('chaos_perks');
+            if (savedPerks) {
+                setSelectedPerks(JSON.parse(savedPerks));
+            }
+        }
+    }, [isChaos, setSelectedPerks]);
 
     useEffect(() => {
         const fetchPerks = async () => {
@@ -105,6 +129,49 @@ const MasterLoadout = ({
         }
     };
 
+    // --- CHAOS SHUFFLE ROLLER LOGIC ---
+    const executeRoll = (isReRoll) => {
+        if (isReRoll) {
+            if (localTokens <= 0 || hasReRolled) return;
+            const newTokens = localTokens - 1;
+
+            // Deduct token and save to local
+            setLocalTokens(newTokens);
+            localStorage.setItem('chaos_tokens', newTokens.toString());
+
+            if (setUsedReRollToken) setUsedReRollToken(true);
+
+            // Lock out future re-rolls and save to local
+            setHasReRolled(true);
+            localStorage.setItem('chaos_hasReRolled', 'true');
+        }
+
+        // Instantly change button text, block spamming, and save
+        setHasRolled(true);
+        localStorage.setItem('chaos_hasRolled', 'true');
+        setIsRolling(true);
+
+        // Hide all perks instantly to prepare for the new flip
+        setFlippedSlots([false, false, false, false]);
+
+        // Grab 4 completely random, unique perks
+        const shuffled = [...allPerks].sort(() => 0.5 - Math.random());
+        const picked = shuffled.slice(0, 4);
+        setSelectedPerks(picked);
+
+        // FIX 3: SAVE THE ACTUAL PERKS SO THEY SURVIVE LOGOUTS/REFRESHES
+        localStorage.setItem('chaos_perks', JSON.stringify(picked));
+
+        // Stagger the flip animations exactly like DbD offerings
+        setTimeout(() => setFlippedSlots([true, false, false, false]), 150);
+        setTimeout(() => setFlippedSlots([true, true, false, false]), 450);
+        setTimeout(() => setFlippedSlots([true, true, true, false]), 750);
+        setTimeout(() => setFlippedSlots([true, true, true, true]), 1050);
+
+        // Unlock the button after the last flip finishes
+        setTimeout(() => setIsRolling(false), 1400);
+    };
+
     // ==========================================
     // 5. RENDER HELPERS
     // ==========================================
@@ -128,9 +195,16 @@ const MasterLoadout = ({
                         {[0, 1].map(index => {
                             const addon = selectedAddons[index];
                             return (
-                                <div key={index} className="addon-slot square-slot">
-                                    {addon && <img src={`/assets/Addons/${currentKiller?.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />}
-                                    {rules.addonsLocked && !addon && <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="AddOn Slot Locked" />}
+                                <div key={index} className="addon-wrapper flex flex-col items-center">
+
+                                    <div className="addon-slot square-slot">
+                                        {addon && <img src={`/assets/Addons/${currentKiller?.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />}
+                                        {rules.addonsLocked && !addon && <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="AddOn Slot Locked" />}
+                                    </div>
+                                    <p className="inter-text-small text-muted text-center">
+                                        {addon ? addon.name : ""}
+                                    </p>
+
                                 </div>
                             );
                         })}
@@ -149,18 +223,31 @@ const MasterLoadout = ({
                             const isSlotLocked = index >= rules.maxPerks;
                             const perk = selectedPerks[index];
 
+                            // Check visibility state to trigger the animation
+                            const isVisible = isChaos ? flippedSlots[index] : true;
+
                             return (
-                                <div key={index} className="perk-slot diamond-slot" style={{ pointerEvents: rules.perksLocked ? 'none' : 'auto'}}>
-                                    {perk && !isSlotLocked && (
-                                        <div className="diamond-content" title={perk.name}>
-                                            <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>
-                                        </div>
-                                    )}
-                                    {isSlotLocked && (
-                                        <div className="diamond-content flex items-center justify-center">
-                                            <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Perk Slot Locked" />
-                                        </div>
-                                    )}
+                                <div key={index} className="perk-wrapper">
+                                    <div className="perk-slot diamond-slot"
+                                         style={{pointerEvents: rules.perksLocked ? 'none' : 'auto'}}>
+                                        {perk && !isSlotLocked && (
+                                            <div className={`diamond-content ${isChaos && isVisible ? 'flip-in-y' : ''} ${isChaos && !isVisible ? 'hidden-opacity' : ''}`}>
+                                                <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>
+                                            </div>
+                                        )}
+                                        {isSlotLocked && (
+                                            <div className="diamond-content flex items-center justify-center">
+                                                <img className="locked-indicator"
+                                                     src="/assets/Image Overlays/locked.png" alt="Perk Slot Locked"/>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="item-name inter-text-small text-center"
+                                        style={{
+                                            opacity: (isChaos && !isVisible) ? 0 : 1
+                                        }}>
+                                        {perk ? perk.name : ""}
+                                    </p>
                                 </div>
                             );
                         })}
@@ -168,83 +255,118 @@ const MasterLoadout = ({
                 </div>
             </div>
 
-            {/* === INVENTORY SECTION === */}
-            <div className="inventory-section">
-                <div className="inventory-header">
-                    <div className="text">
-                        <h2 className="inter-text-normal">Inventory</h2>
-                        <p className="inter-text-small text-muted">
-                            {activeInventory === 'ADDONS' ? 'Add-ons' : 'Perks'}
-                            {(activeInventory === 'ADDONS' && rules.addonsLocked) || (activeInventory === 'PERKS' && rules.perksLocked) ? " (Locked)" : ""}
-                        </p>
+            {/* === DYNAMIC BOTTOM SECTION === */}
+            {isChaos && (
+                <div className="inventory-section flex flex-col items-center justify-center">
+                    <div className="divider-line"></div>
+
+                    <h2 className="bebas-header-1 title-white text-3xl mb-2">The Entity's Roulette</h2>
+                    <div className="token-container">
+                        {localTokens > 0 ? (
+                            Array.from({ length: localTokens }).map((_, index) => (
+                                <img
+                                    key={index}
+                                    src="/assets/Variants/ReRollToken.png"
+                                    alt="ReRoll Token"
+                                    className="reRollTokenImage fade-in"
+                                    style={{ marginLeft: index > 0 ? '-60px' : '0', zIndex: index }}/>
+                            ))
+                        ) : (
+                            <span>No Tokens remaining.</span>
+                        )}
                     </div>
-                    {!(rules.perksLocked && rules.addonsLocked) && (
-                        <input
-                            type="text"
-                            className="inventory-search"
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            disabled={(activeInventory === 'ADDONS' && rules.addonsLocked) || (activeInventory === 'PERKS' && rules.perksLocked)}
-                        />
-                    )}
+                    <p className="inter-text-normal mb-6">Available Re-rolls: <span className="text-white">{localTokens}</span></p>
 
+                    <button
+                        className="roll-btn"
+                        onClick={() => executeRoll(hasRolled)}
+                        disabled={isRolling || hasReRolled || (hasRolled && localTokens === 0)}
+                        style={{ width: '250px', opacity: (isRolling || hasReRolled || (hasRolled && localTokens === 0)) ? 0.5 : 1 }}
+                    >
+                        {hasRolled ? 'Re-Roll' : 'Roll For Perks'}
+                    </button>
                 </div>
+            )}
 
-                <div className="divider-line"></div>
-
-                <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
-                    {/* Empty State Checks */}
-                    {activeInventory === 'PERKS' && rules.perksLocked ? (
-                        <div className="col-span-full flex justify-center py-10">
-                            <p className="text-muted inter-text-normal text-center">Perks are automatically locked for the {variantType} challenge.</p>
+            {/* Standard Inventory */}
+            {rules.hasInventory && (
+                <div className="inventory-section">
+                    <div className="inventory-header">
+                        <div className="text">
+                            <h2 className="inter-text-normal">Inventory</h2>
+                            <p className="inter-text-small text-muted">
+                                {activeInventory === 'ADDONS' ? 'Add-ons' : 'Perks'}
+                                {(activeInventory === 'ADDONS' && rules.addonsLocked) || (activeInventory === 'PERKS' && rules.perksLocked) ? " (Locked)" : ""}
+                            </p>
                         </div>
-                    ) : activeInventory === 'ADDONS' && rules.addonsLocked ? (
-                        <div className="col-span-full flex justify-center py-10">
-                            <p className="text-muted inter-text-normal text-center">Add-ons are strictly forbidden at your current grade.</p>
-                        </div>
-                    ) : (
-                        /* Normal Inventory Mapping */
-                        currentItems.map(item => {
-                            const isSelected = activeInventory === 'ADDONS'
-                                ? selectedAddons.some(a => a.id === item.id)
-                                : selectedPerks.some(p => p.id === item.id);
+                        {!(rules.perksLocked && rules.addonsLocked) && (
+                            <input
+                                type="text"
+                                className="inventory-search"
+                                placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                disabled={(activeInventory === 'ADDONS' && rules.addonsLocked) || (activeInventory === 'PERKS' && rules.perksLocked)}
+                            />
+                        )}
 
-                            const imagePath = activeInventory === 'ADDONS'
-                                ? `/assets/Addons/${currentKiller?.killerName}/${item.name.replace('%', '')}.png`
-                                : `/assets/Perks/${item.name}.png`;
+                    </div>
 
-                            return (
-                                <div
-                                    key={item.id}
-                                    onClick={() => handleToggleItem(item, activeInventory)}
-                                    className={`inventory-item ${activeInventory === 'ADDONS' ? 'square-slot' : 'diamond-slot'} ${isSelected ? 'selected' : ''}`}
-                                >
-                                    <div className={activeInventory === 'PERKS' ? 'diamond-content' : ''}>
-                                        <img src={imagePath} alt={item.name} title={item.name} />
+                    <div className="divider-line"></div>
+
+                    <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
+                        {/* Empty State Checks */}
+                        {activeInventory === 'PERKS' && rules.perksLocked ? (
+                            <div className="col-span-full flex justify-center py-10">
+                                <p className="text-muted inter-text-normal text-center">Perks are automatically locked for the {variantType} challenge.</p>
+                            </div>
+                        ) : activeInventory === 'ADDONS' && rules.addonsLocked ? (
+                            <div className="col-span-full flex justify-center py-10">
+                                <p className="text-muted inter-text-normal text-center">Add-ons are strictly forbidden at your current grade.</p>
+                            </div>
+                        ) : (
+                            /* Normal Inventory Mapping */
+                            currentItems.map(item => {
+                                const isSelected = activeInventory === 'ADDONS'
+                                    ? selectedAddons.some(a => a.id === item.id)
+                                    : selectedPerks.some(p => p.id === item.id);
+
+                                const imagePath = activeInventory === 'ADDONS'
+                                    ? `/assets/Addons/${currentKiller?.killerName}/${item.name.replace('%', '')}.png`
+                                    : `/assets/Perks/${item.name}.png`;
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => handleToggleItem(item, activeInventory)}
+                                        className={`inventory-item ${activeInventory === 'ADDONS' ? 'square-slot' : 'diamond-slot'} ${isSelected ? 'selected' : ''}`}
+                                    >
+                                        <div className={activeInventory === 'PERKS' ? 'diamond-content' : ''}>
+                                            <img src={imagePath} alt={item.name} title={item.name} />
+                                        </div>
+                                        {isSelected && <div className="active-check"></div>}
                                     </div>
-                                    {isSelected && <div className="active-check"></div>}
-                                </div>
-                            );
-                        })
+                                );
+                            })
+                        )}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && !(activeInventory === 'ADDONS' && rules.addonsLocked) && !(activeInventory === 'PERKS' && rules.perksLocked) && (
+                        <div className="pagination-controls">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
+                                >
+                                    {pageNum}
+                                </button>
+                            ))}
+                        </div>
                     )}
                 </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && !(activeInventory === 'ADDONS' && rules.addonsLocked) && !(activeInventory === 'PERKS' && rules.perksLocked) && (
-                    <div className="pagination-controls">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-                            <button
-                                key={pageNum}
-                                onClick={() => setCurrentPage(pageNum)}
-                                className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
-                            >
-                                {pageNum}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
+            )}
         </div>
     );
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import '../../styles/small-components/KillerCard.scss';
 
 // Added 'mode' prop with a default of 'active'
-const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance = 0, mode = 'active' }) => {
+const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance = 0, mode = 'active', isVariantCooldown = false }) => {
 
     // --- MODE CHECKS ---
     const isReviewMode = mode === 'review';
@@ -10,7 +10,7 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance 
     // --- STATE LOGIC (Only applies if we are in an active game) ---
     const isDead = !isReviewMode && killer.status === 'DEAD';
     const isLocked = !isReviewMode && killer.status === 'LOCKED';
-    const isCooldown = !isReviewMode && killer.status === 'COOLDOWN';
+    const isCooldown = !isReviewMode && (killer.status === 'COOLDOWN' || isVariantCooldown);
     const isSold = !isReviewMode && killer.status === 'SOLD';
 
     // Financial logic for Blood Money / Afterburn
@@ -39,6 +39,7 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance 
         if (isSelected) cardClasses += 'state-selected ';
         else if (isDead) cardClasses += 'state-dead ';
         else if (isSold) cardClasses += 'state-sold ';
+        else if (isCooldown) cardClasses += 'state-cooldown ';
         else cardClasses += 'state-available '; // Normal active state
     }
 
@@ -55,8 +56,8 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance 
         }
         if (isCooldown) {
             return (
-                <div className="card-overlay-dim">
-                    <img src="/assets/Image%20Overlays/cooldown.png" className="card-overlay-full" alt="Cooldown"/>
+                <div className="card-overlay-dim" title="Killer is on Cooldown.">
+                    <img src="/assets/Image Overlays/cooldown.png" className="card-overlay-full" alt="Cooldown"/>
                 </div>
             )
         }

@@ -41,6 +41,8 @@ const CurrentSeasonPage = () => {
     const [isViewingResults, setIsViewingResults] = useState(false);
     const [seasonRecap, setSeasonRecap] = useState(null);
 
+    const [usedReRollTokens, setUsedReRollTokens] = useState(false);
+
     // Adept specific state
     const [allPerks, setAllPerks] = useState([]);
 
@@ -83,10 +85,19 @@ const CurrentSeasonPage = () => {
 
     // Check the backend's variant state first. If null, fallback to the season's starting character.
     const lastPlayedId = activeSeason?.variantState?.lastPlayedKillerId;
+    const cooldownId = activeSeason?.variantState?.cooldownKillerId;
 
-    const defaultKiller = lastPlayedId
+    let defaultKiller = lastPlayedId
         ? activeSeason?.roster.find(k => k.killerId.toString() === lastPlayedId.toString())
         : activeSeason?.roster.find(k => k.killerName === activeSeason?.characterName);
+
+    if (!defaultKiller || defaultKiller.status === 'DEAD' || defaultKiller.status === 'SOLD' || defaultKiller.killerId.toString() === cooldownId) {
+        defaultKiller = activeSeason?.roster?.find(k =>
+            k.status !== 'DEAD' &&
+            k.status !== 'SOLD' &&
+            k.killerId.toString() !== cooldownId
+        ) || activeSeason?.roster[0]; // Fallback so UI doesn't crash if everyone is dead
+    }
 
     const currentKiller = selectedKiller || defaultKiller;
 
@@ -146,6 +157,7 @@ const CurrentSeasonPage = () => {
                 perkIds: selectedPerks.filter(Boolean).map(p => p.id),
                 addOnIds: selectedAddons.filter(Boolean).map(a => a.id),
                 survivorOutcomes: mappedSurvivors,
+                usedReRollToken: localStorage.getItem('chaos_hasReRolled') === 'true',
                 emblems: resultsPayload.emblems.map(e => ({
                     category: e.category,
                     quality: e.quality,
@@ -154,9 +166,11 @@ const CurrentSeasonPage = () => {
             };
 
             // 5. Conditionally append BLOOD_MONEY specific rules
-            if (activeSeason.variantType === 'BLOOD_MONEY') {
+            if (['BLOOD_MONEY', 'CHAOS_SHUFFLE'].includes(activeSeason.variantType)) {
                 payload.kills = killCount;
-                payload.gensLeft = 0;
+                payload.gensLeft = resultsPayload.gensLeft || 0; // <--- Dynamically grab the overlay data!
+
+                // Keep these for Blood Money compatibility
                 payload.closedHatch = false;
                 payload.genBeforeHook = false;
                 payload.lastGenCompleted = mappedSurvivors.includes('ESCAPED');
@@ -178,6 +192,12 @@ const CurrentSeasonPage = () => {
             setSelectedPerks([]);
             setSelectedAddons([]);
             setSelectedKiller(null);
+            // Unsetting the chaos shuffle items from local storage
+            if (typeof setUsedReRollTokens !== 'undefined') setUsedReRollTokens(false);
+            localStorage.removeItem('chaos_tokens');
+            localStorage.removeItem('chaos_hasRolled');
+            localStorage.removeItem('chaos_hasReRolled');
+            localStorage.removeItem('chaos_perks');
 
             // 9. CHECK FOR TERMINAL STATE (The Trap)
             if (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE') {
@@ -203,6 +223,23 @@ const CurrentSeasonPage = () => {
         }
     };
 
+    const handleStartTrialClick = () => {
+        // If it's Chaos Shuffle, ensure they have actually rolled for perks
+        if (activeSeason?.variantType === 'CHAOS_SHUFFLE') {
+            const hasRolled = localStorage.getItem('chaos_hasRolled') === 'true';
+
+            if (!hasRolled) {
+                addToast("You must roll for your perks before starting the trial!", "error");
+                // Switch to the loadout tab automatically to show them where to go
+                navView.triggerTransition(NAV_TABS[1]);
+                return;
+            }
+        }
+
+        // If they pass the check (or aren't playing Chaos Shuffle), proceed normally
+        setIsConfirmingTrial(true);
+    };
+
     const renderLoadoutView = () => {
         return (
             <MasterLoadout
@@ -212,6 +249,7 @@ const CurrentSeasonPage = () => {
                 selectedAddons={selectedAddons}
                 setSelectedAddons={setSelectedAddons}
                 season={activeSeason}
+                setUsedReRollToken={setUsedReRollTokens}
             />
         )
     };
@@ -275,6 +313,7 @@ const CurrentSeasonPage = () => {
                                                     isSelected={currentKiller?.killerId === rosterItem.killerId}
                                                     onSelect={() => setSelectedKiller(rosterItem)}
                                                     mode="active"
+                                                    isVariantCooldown={activeSeason?.variantState?.cooldownKillerId === rosterItem.killerId.toString()}
                                                 />
                                             ))}
                                     </div>
@@ -303,7 +342,7 @@ const CurrentSeasonPage = () => {
 
             {/* === RIGHT PANEL === */}
             <div className="right-panel">
-                <button className="squareBtn" onClick={() => setIsConfirmingTrial(true)}>
+                <button className="squareBtn" onClick={handleStartTrialClick}>
                     Start Trial
                 </button>
 

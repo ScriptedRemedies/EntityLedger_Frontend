@@ -6,6 +6,7 @@
   gap: 10px;
 
   /* === EQUIPPED SECTION === */
+  // TODO: Change the spacing and width of the perks and addons along with their matching text to completely fill that space
   .equipped-section {
     display: flex;
     justify-content: space-around;
@@ -18,6 +19,10 @@
     .diamond-slot {
       width: 60px;
       height: 60px;
+    }
+    .item-name {
+      width: 80px;
+      transition: opacity 0.5s ease-out;
     }
   }
 
@@ -36,13 +41,20 @@
   .slots-container {
     display: flex;
     gap: 20px;
-    align-items: center;
+    align-items: flex-start;
     cursor: pointer;
   }
 
   .perks-container {
-    gap: 25px; // Extra gap for diamonds
-    padding-left: 15px; // Pushes the first diamond off the left wall
+    gap: 25px;
+    padding-left: 15px;
+    align-items: flex-start;
+  }
+
+  .perk-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
   }
 
   .divider-line {
@@ -97,6 +109,30 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+
+    // For both the re-roll tokens and the revive token
+    .token-container {
+      display: flex;
+      gap: 10px;
+
+      .reRollTokenImage {
+        height: 100px;
+        object-fit: contain;
+      }
+    }
+
+    .roll-btn {
+      padding: 10px;
+      background: var(--color-60-background);
+      border: 2px solid black;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-iri-60);
+        border-color: var(--color-IRIDESCENT);
+        color: white;
+      }
+    }
   }
   .inventory-search {
     width: 300px;
@@ -190,4 +226,31 @@
       }
     }
   }
+}
+
+/* --- CHAOS SHUFFLE FLIP ANIMATION --- */
+@keyframes offeringFlip {
+  0% {
+    transform: perspective(400px) rotateY(90deg) rotate(-45deg) scale(1.4);
+    opacity: 0;
+  }
+  40% {
+    transform: perspective(400px) rotateY(-10deg) rotate(-45deg) scale(1.4);
+  }
+  70% {
+    transform: perspective(400px) rotateY(10deg) rotate(-45deg) scale(1.4);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(400px) rotateY(0deg) rotate(-45deg) scale(1.4);
+    opacity: 1;
+  }
+}
+
+.flip-in-y {
+  animation: offeringFlip 0.5s ease-out forwards;
+}
+
+.hidden-opacity {
+  opacity: 0;
 }

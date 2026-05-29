@@ -74,7 +74,7 @@ const ReviewChallengesPage = () => {
 
         const fetchVariantData = async () => {
             try {
-                const variantName = variantView.display.name.toUpperCase();
+                const variantName = variantView.display.name.toUpperCase().replace(' ', '_');
 
                 const [seasonsRes, statsRes] = await Promise.all([
                     api.get(`/seasons/variant/${variantName}`),
@@ -443,7 +443,7 @@ const ReviewChallengesPage = () => {
                             />
                             <div className="global-season-text">
                                 <h3 className="bebas-header-1 global-character-name">{activeSeason.characterName}</h3>
-                                <p className="inter-text-small">{activeSeason.variantType}</p>
+                                <p className="inter-text-small">{activeSeason.variantType.replace('_', ' ')}</p>
                                 <p className="inter-text-small global-days-left">{activeSeason.daysLeft} Days Left</p>
                             </div>
                         </div>
