@@ -1,15 +1,14 @@
 import React from 'react';
 import '../../styles/small-components/KillerCard.scss';
 
-// Added 'mode' prop with a default of 'active'
-const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance = 0, mode = 'active', isVariantCooldown = false }) => {
+const KillerCard = ({ killer, variantType, isSelected, onSelect, onSell, currentBalance = 0, mode = 'active', isVariantCooldown = false, isUnaffordable = false }) => {
 
     // --- MODE CHECKS ---
     const isReviewMode = mode === 'review';
 
     // --- STATE LOGIC (Only applies if we are in an active game) ---
     const isDead = !isReviewMode && killer.status === 'DEAD';
-    const isLocked = !isReviewMode && killer.status === 'LOCKED';
+    const isLockedDb = !isReviewMode && killer.status === 'LOCKED';
     const isCooldown = !isReviewMode && (killer.status === 'COOLDOWN' || isVariantCooldown);
     const isSold = !isReviewMode && killer.status === 'SOLD';
 
@@ -18,75 +17,94 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, currentBalance 
     const mustSell = isFinancialVariant && currentBalance < 0;
     const isPriced = isFinancialVariant && !isDead && !isSold && !isReviewMode;
 
+    // --- NEW: Dynamic Lock for Unaffordable Killers ---
+    // If they can't afford it, it functionally acts as a locked card
+    const isLocked = isLockedDb || (!isReviewMode && isUnaffordable && !isSelected);
+
     // --- CLICK HANDLER ---
     const handleClick = () => {
-        // In an active game, prevent clicking dead/locked/sold killers
-        if (!isReviewMode && (isDead || isLocked || isCooldown || isSold)) {
+
+        // 1. BANKRUPTCY OVERRIDE (Fires First)
+        if (!isReviewMode && mustSell) {
+            // You still cannot sell a killer that is already dead or sold
+            if (isDead || isSold) return;
+
+            const confirmed = window.confirm(`Are you sure you want to sell ${killer.killerName} for $${killer.cost}? This action cannot be undone.`);
+            if (confirmed && onSell) {
+                onSell(killer);
+            }
             return;
         }
+
+        // 2. NORMAL PLAY MODE RESTRICTIONS
+        if (!isReviewMode && (isDead || isLockedDb || isCooldown || isSold || isLocked)) {
+            return;
+        }
+
         onSelect();
     };
 
     // --- DYNAMIC CLASSES ---
-    // We build the CSS classes based on the calculated states
     let cardClasses = 'killer-card ';
 
     if (isReviewMode) {
-        // Simple states for the Start Challenge / Review pages
         cardClasses += isSelected ? 'state-selected' : 'state-deselected';
     } else {
-        // Complex states for the Current Season page
-        if (isSelected) cardClasses += 'state-selected ';
-        else if (isDead) cardClasses += 'state-dead ';
-        else if (isSold) cardClasses += 'state-sold ';
-        else if (isCooldown) cardClasses += 'state-cooldown ';
-        else cardClasses += 'state-available '; // Normal active state
+        if (isDead) cardClasses += 'state-dead';
+        else if (isSold) cardClasses += 'state-sold';
+        else if (isCooldown) cardClasses += 'state-cooldown';
+        else if (isLocked) cardClasses += 'state-locked';
+        else if (isSelected) cardClasses += 'state-selected';
+        else cardClasses += 'state-available';
     }
 
-    // --- OVERLAY RENDERING ---
     const renderOverlay = () => {
-        if (isReviewMode) return null; // Review screens never have locks or prices
+        const overlays = [];
 
+        // 1. Core Status Overlays
         if (isLocked) {
-            return (
-                <div className="card-overlay-dim">
-                    <img src="/assets/Image%20Overlays/locked.png" className="card-overlay-full" alt="Locked"/>
+            overlays.push(
+                <div key="locked" className="card-overlay-dim">
+                    <img src="/assets/Image Overlays/locked.png" className="card-overlay-full" alt="Locked"/>
                 </div>
-            )
-        }
-        if (isCooldown) {
-            return (
-                <div className="card-overlay-dim" title="Killer is on Cooldown.">
+            );
+        } else if (isCooldown) {
+            overlays.push(
+                <div key="cooldown" className="card-overlay-dim" title="Killer is on Cooldown.">
                     <img src="/assets/Image Overlays/cooldown.png" className="card-overlay-full" alt="Cooldown"/>
                 </div>
-            )
+            );
+        } else if (isDead) {
+            overlays.push(<div key="dead" className="text-overlay-diagonal">DEAD</div>);
+        } else if (isSold) {
+            overlays.push(<div key="sold" className="text-overlay-diagonal">SOLD</div>);
         }
 
-        if (isDead) {
-            return <div className="text-overlay-diagonal">DEAD</div>;
-        }
-        if (isSold) {
-            return <div className="text-overlay-diagonal">SOLD</div>
-        }
-
+        // 2. Financial Overlay (Stacks on top of the dim/padlock background)
         if (isPriced) {
-            // If they are in debt, show the red SELL state on hover. Otherwise, just show the price.
-            return (
-                <div className="financial-overlay">
+            overlays.push(
+                <div key="priced" className={`financial-overlay ${mustSell ? 'can-slide' : ''}`}>
                     <div className="price-banner">${killer.cost}</div>
                     {mustSell && <div className="sell-banner">SELL</div>}
                 </div>
             );
         }
-        return null;
+
+        return overlays;
     };
 
     return (
-        <div onClick={handleClick} className={`killer-card ${cardClasses}`}>
+        <div
+            onClick={handleClick}
+            className={cardClasses}
+            style={{ cursor: (isLocked && !mustSell) ? 'not-allowed' : 'pointer' }}
+        >
             <img
                 src={`/assets/Killers/${killer.killerName}.png`}
                 alt={killer.killerName}
                 className="killer-portrait"
+                // Applies the grey filter dynamically without needing an extra SCSS block
+                style={{ filter: isLocked ? 'grayscale(100%) brightness(0.5)' : '' }}
             />
             {renderOverlay()}
         </div>

@@ -16,7 +16,11 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
     // Generator State
     const [gensLeft, setGensLeft] = useState(0);
     const [hoverGens, setHoverGens] = useState(0);
-    const needsGens = ['BLOOD_MONEY', 'AFTERBURN', 'CHAOS_SHUFFLE'].includes(season.variantType);
+    const needsGens = ['BLOOD_MONEY', 'AFTERBURN', 'CHAOS_SHUFFLE', 'IRON_MAN'].includes(season.variantType);
+
+    const isBloodMoney = season.variantType === 'BLOOD_MONEY';
+    const [closedHatch, setClosedHatch] = useState(false);
+    const [genBeforeHook, setGenBeforeHook] = useState(false);
 
     // Grade change animation states
     const [displayGrade, setDisplayGrade] = useState(season.currentGrade);
@@ -49,7 +53,9 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
             totalPoints,
             pipChange,
             survivors,
-            gensLeft
+            gensLeft,
+            closedHatch,
+            genBeforeHook
         });
     };
 
@@ -301,6 +307,7 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                                 <span className="inter-text-small uppercase">Generators Remaining</span>
                             </div>
                             <div className="flex gap-4">
+                                {/* TODO: Add option to un-click the first gen to get back to 0 gens */}
                                 {[1, 2, 3, 4, 5].map(num => {
                                     // Highlight if it's less than or equal to the current hover, OR the locked-in selection
                                     const isHighlighted = num <= (hoverGens || gensLeft);
@@ -323,6 +330,43 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                                     );
                                 })}
                             </div>
+                        </div>
+                    )}
+
+                    {/* Gen B4 Hook & Close Hatch triggers */}
+                    {isBloodMoney && (
+                        <div className="bonus-penalty-section" style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '30px' }}>
+                            <button
+                                onClick={() => setClosedHatch(!closedHatch)}
+                                style={{
+                                    backgroundColor: closedHatch ? 'var(--color-GOLD)' : 'transparent',
+                                    border: '1px solid var(--color-GOLD)',
+                                    color: closedHatch ? '#000' : 'var(--color-GOLD)',
+                                    padding: '8px 16px',
+                                    fontFamily: 'var(--font-bebas)',
+                                    fontSize: '18px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                + CLOSED HATCH
+                            </button>
+
+                            <button
+                                onClick={() => setGenBeforeHook(!genBeforeHook)}
+                                style={{
+                                    backgroundColor: genBeforeHook ? 'var(--color-IRIDESCENT)' : 'transparent',
+                                    border: '1px solid var(--color-IRIDESCENT)',
+                                    color: genBeforeHook ? '#000' : 'var(--color-IRIDESCENT)',
+                                    padding: '8px 16px',
+                                    fontFamily: 'var(--font-bebas)',
+                                    fontSize: '18px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                - GEN BEFORE 1ST HOOK
+                            </button>
                         </div>
                     )}
 

@@ -158,6 +158,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
 
             <div className="recap-content-box">
 
+                {/* TODO: Change header to change based on variant (Iron Man fail condition, instead of "Roster Decimated" you can say someting else) */}
                 {/* 1. HEADER & NAVIGATION */}
                 <div className="recap-header">
                     <h1 className={`bebas-header-1 ${headerColor}`}>{headerTitle}</h1>
@@ -179,6 +180,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                 {/* 2. SINGLE PANE BODY */}
                 <div className="recap-body-single hide-scrollbar">
 
+                    {/* TODO: Change stats based on variant needs */}
                     {/* === VIEW: STATS === */}
                     {activeTab === 'Stats' && (
                         <div className="fade-in">
@@ -300,6 +302,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                         </div>
                     )}
 
+                    {/* TODO: Fix the trials doing a double scroll */}
                     {/* === VIEW: TRIALS === */}
                     {activeTab === 'Trials' && (
                         <div className="fade-in pb-10">

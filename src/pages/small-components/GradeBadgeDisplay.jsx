@@ -2,7 +2,8 @@ import React from 'react';
 import '../../styles/small-components/GradeBadgeDisplay.scss';
 
 const GradeBadgeDisplay = ({ rawGrade = "ASH_IV", pips = 0, size = "normal" }) => {
-    const gradeParts = rawGrade.split("_");
+    const safeGrade = rawGrade || "ASH_IV";
+    const gradeParts = safeGrade.split("_");
     const badgeTier = gradeParts[0];
     const romanNum = gradeParts[1] || 'IV';
 

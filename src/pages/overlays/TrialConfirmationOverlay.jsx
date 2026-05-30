@@ -57,15 +57,13 @@ const TrialConfirmationOverlay = ({
                             {[0, 1, 2, 3].map(index => {
                                 const perk = selectedPerks[index];
                                 return (
-                                    <>
-                                        <div
-                                            key={index}
-                                            className="staggered-fade confirm-slot diamond-slot"
-                                            style={{animationDelay: `${perkStartDelay + (index * 0.2)}s`}}
-                                        >
-                                            {perk && <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>}
-                                        </div>
-                                    </>
+                                    <div
+                                        key={index}
+                                        className="staggered-fade confirm-slot diamond-slot"
+                                        style={{animationDelay: `${perkStartDelay + (index * 0.2)}s`}}
+                                    >
+                                        {perk && <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>}
+                                    </div>
                                 );
                             })}
                         </div>

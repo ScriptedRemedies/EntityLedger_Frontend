@@ -9,7 +9,9 @@ const MasterLoadout = ({
                            selectedAddons,
                            setSelectedAddons,
                            season,
-                           setUsedReRollToken
+                           setUsedReRollToken,
+                           usedPerks = [],
+                           usedAddOns = []
                        }) => {
 
     // ==========================================
@@ -19,12 +21,21 @@ const MasterLoadout = ({
     const currentGrade = season?.currentGrade || 'ASH_IV';
     const isAshGrade = currentGrade.startsWith("ASH");
     const isChaos = variantType === 'CHAOS_SHUFFLE';
+    const isIronMan = variantType === 'IRON_MAN';
+    const isBloodMoney = variantType === 'BLOOD_MONEY';
+
+    // --- BLOOD MONEY CALCULATIONS ---
+    const startingBalance = season?.variantState?.balance || 0;
+    const killerCost = currentKiller?.cost || 0;
+    const loadoutCost = selectedPerks.reduce((sum, p) => sum + (p?.cost || 0), 0) +
+        selectedAddons.reduce((sum, a) => sum + (a?.cost || 0), 0);
+    const currentBalance = startingBalance - killerCost - loadoutCost;
 
     const rules = {
         maxPerks: variantType === 'ADEPT' ? 3 : 4,
-        maxAddons: 2, // Standard across most variants
-        perksLocked: variantType === 'ADEPT', // Can the user manually change perks?
-        addonsLocked: (variantType === 'ADEPT' && !isAshGrade) || isChaos, // Can the user manually change addons?
+        maxAddons: 2,
+        perksLocked: variantType === 'ADEPT',
+        addonsLocked: (variantType === 'ADEPT' && !isAshGrade) || isChaos,
         defaultTab: variantType === 'ADEPT' ? 'ADDONS' : 'PERKS',
         hasInventory: !isChaos
     };
@@ -40,7 +51,6 @@ const MasterLoadout = ({
     const ITEMS_PER_PAGE = 15;
 
     // --- CHAOS SHUFFLE STATE ---
-    // Read from localStorage first, fallback to the backend values
     const [localTokens, setLocalTokens] = useState(() => {
         const saved = localStorage.getItem('chaos_tokens');
         return saved !== null ? parseInt(saved) : (season?.variantState?.reRollTokens || 0);
@@ -96,11 +106,11 @@ const MasterLoadout = ({
         }
     }, [variantType, currentKiller, allPerks, setSelectedPerks]);
 
-    // Force clear addons if they become locked (e.g. Adept ranking up to Bronze)
+    // Force clear addons if they become locked
     useEffect(() => {
         if (rules.addonsLocked && selectedAddons.length > 0) {
             setSelectedAddons([]);
-            setActiveInventory('PERKS'); // Kick them out of the addons tab if they were in it
+            setActiveInventory('PERKS');
         }
     }, [rules.addonsLocked, selectedAddons, setSelectedAddons]);
 
@@ -135,40 +145,30 @@ const MasterLoadout = ({
             if (localTokens <= 0 || hasReRolled) return;
             const newTokens = localTokens - 1;
 
-            // Deduct token and save to local
             setLocalTokens(newTokens);
             localStorage.setItem('chaos_tokens', newTokens.toString());
-
             if (setUsedReRollToken) setUsedReRollToken(true);
 
-            // Lock out future re-rolls and save to local
             setHasReRolled(true);
             localStorage.setItem('chaos_hasReRolled', 'true');
         }
 
-        // Instantly change button text, block spamming, and save
         setHasRolled(true);
         localStorage.setItem('chaos_hasRolled', 'true');
         setIsRolling(true);
-
-        // Hide all perks instantly to prepare for the new flip
         setFlippedSlots([false, false, false, false]);
 
-        // Grab 4 completely random, unique perks
         const shuffled = [...allPerks].sort(() => 0.5 - Math.random());
         const picked = shuffled.slice(0, 4);
         setSelectedPerks(picked);
 
-        // FIX 3: SAVE THE ACTUAL PERKS SO THEY SURVIVE LOGOUTS/REFRESHES
         localStorage.setItem('chaos_perks', JSON.stringify(picked));
 
-        // Stagger the flip animations exactly like DbD offerings
         setTimeout(() => setFlippedSlots([true, false, false, false]), 150);
         setTimeout(() => setFlippedSlots([true, true, false, false]), 450);
         setTimeout(() => setFlippedSlots([true, true, true, false]), 750);
         setTimeout(() => setFlippedSlots([true, true, true, true]), 1050);
 
-        // Unlock the button after the last flip finishes
         setTimeout(() => setIsRolling(false), 1400);
     };
 
@@ -196,12 +196,16 @@ const MasterLoadout = ({
                             const addon = selectedAddons[index];
                             return (
                                 <div key={index} className="addon-wrapper flex flex-col items-center">
-
-                                    <div className="addon-slot square-slot">
+                                    <div className="addon-slot square-slot" style={{ position: 'relative', overflow: 'hidden' }}>
                                         {addon && <img src={`/assets/Addons/${currentKiller?.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />}
                                         {rules.addonsLocked && !addon && <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="AddOn Slot Locked" />}
+                                        {isBloodMoney && addon && (
+                                            <div className="loadout-financial-overlay">
+                                                <div className="price-banner">${addon.cost}</div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <p className="inter-text-small text-muted text-center">
+                                    <p className="inter-text-small text-muted text-center" style={{ width: '80px', marginTop: '15px', lineHeight: '1.2' }}>
                                         {addon ? addon.name : ""}
                                     </p>
 
@@ -222,14 +226,11 @@ const MasterLoadout = ({
                         {[0, 1, 2, 3].map(index => {
                             const isSlotLocked = index >= rules.maxPerks;
                             const perk = selectedPerks[index];
-
-                            // Check visibility state to trigger the animation
                             const isVisible = isChaos ? flippedSlots[index] : true;
 
                             return (
-                                <div key={index} className="perk-wrapper">
-                                    <div className="perk-slot diamond-slot"
-                                         style={{pointerEvents: rules.perksLocked ? 'none' : 'auto'}}>
+                                <div key={index} className="perk-wrapper flex flex-col items-center">
+                                    <div className="perk-slot diamond-slot" style={{ pointerEvents: rules.perksLocked ? 'none' : 'auto', position: 'relative', overflow: 'hidden' }}>
                                         {perk && !isSlotLocked && (
                                             <div className={`diamond-content ${isChaos && isVisible ? 'flip-in-y' : ''} ${isChaos && !isVisible ? 'hidden-opacity' : ''}`}>
                                                 <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>
@@ -237,15 +238,18 @@ const MasterLoadout = ({
                                         )}
                                         {isSlotLocked && (
                                             <div className="diamond-content flex items-center justify-center">
-                                                <img className="locked-indicator"
-                                                     src="/assets/Image Overlays/locked.png" alt="Perk Slot Locked"/>
+                                                <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Perk Slot Locked"/>
+                                            </div>
+                                        )}
+
+                                        {isBloodMoney && perk && (
+                                            <div className="loadout-financial-overlay perk-mode">
+                                                <div className="price-banner">${perk.cost}</div>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="item-name inter-text-small text-center"
-                                        style={{
-                                            opacity: (isChaos && !isVisible) ? 0 : 1
-                                        }}>
+                                    <p className="item-name inter-text-small text-center text-muted"
+                                       style={{ width: '80px', marginTop: '15px', lineHeight: '1.2', opacity: (isChaos && !isVisible) ? 0 : 1 }}>
                                         {perk ? perk.name : ""}
                                     </p>
                                 </div>
@@ -257,28 +261,30 @@ const MasterLoadout = ({
 
             {/* === DYNAMIC BOTTOM SECTION === */}
             {isChaos && (
-                <div className="inventory-section flex flex-col items-center justify-center">
-                    <div className="divider-line"></div>
-
+                <div className="inventory-section flex flex-col items-center justify-center py-12">
                     <h2 className="bebas-header-1 title-white text-3xl mb-2">The Entity's Roulette</h2>
-                    <div className="token-container">
-                        {localTokens > 0 ? (
-                            Array.from({ length: localTokens }).map((_, index) => (
-                                <img
-                                    key={index}
-                                    src="/assets/Variants/ReRollToken.png"
-                                    alt="ReRoll Token"
-                                    className="reRollTokenImage fade-in"
-                                    style={{ marginLeft: index > 0 ? '-60px' : '0', zIndex: index }}/>
-                            ))
-                        ) : (
-                            <span>No Tokens remaining.</span>
-                        )}
+
+                    <div className="flex flex-col items-center mb-6">
+                        <p className="inter-text-normal text-muted mb-2">Available Re-rolls</p>
+                        <div className="token-container flex h-12 items-center justify-center">
+                            {localTokens > 0 ? (
+                                Array.from({ length: localTokens }).map((_, index) => (
+                                    <img
+                                        key={index}
+                                        src="/assets/Variants/ReRollToken.png"
+                                        alt="ReRoll Token"
+                                        className="reRollTokenImage fade-in"
+                                        style={{ width: '35px', objectFit: 'contain', marginLeft: index > 0 ? '-17px' : '0', zIndex: index }}
+                                    />
+                                ))
+                            ) : (
+                                <span className="inter-text-small text-muted">No tokens remaining</span>
+                            )}
+                        </div>
                     </div>
-                    <p className="inter-text-normal mb-6">Available Re-rolls: <span className="text-white">{localTokens}</span></p>
 
                     <button
-                        className="roll-btn"
+                        className="squareBtn"
                         onClick={() => executeRoll(hasRolled)}
                         disabled={isRolling || hasReRolled || (hasRolled && localTokens === 0)}
                         style={{ width: '250px', opacity: (isRolling || hasReRolled || (hasRolled && localTokens === 0)) ? 0.5 : 1 }}
@@ -309,13 +315,11 @@ const MasterLoadout = ({
                                 disabled={(activeInventory === 'ADDONS' && rules.addonsLocked) || (activeInventory === 'PERKS' && rules.perksLocked)}
                             />
                         )}
-
                     </div>
 
                     <div className="divider-line"></div>
 
                     <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
-                        {/* Empty State Checks */}
                         {activeInventory === 'PERKS' && rules.perksLocked ? (
                             <div className="col-span-full flex justify-center py-10">
                                 <p className="text-muted inter-text-normal text-center">Perks are automatically locked for the {variantType} challenge.</p>
@@ -325,11 +329,18 @@ const MasterLoadout = ({
                                 <p className="text-muted inter-text-normal text-center">Add-ons are strictly forbidden at your current grade.</p>
                             </div>
                         ) : (
-                            /* Normal Inventory Mapping */
                             currentItems.map(item => {
                                 const isSelected = activeInventory === 'ADDONS'
                                     ? selectedAddons.some(a => a.id === item.id)
                                     : selectedPerks.some(p => p.id === item.id);
+
+                                // Check if the current item is in the used arrays passed from the parent
+                                const isUsed = isIronMan && (activeInventory === 'ADDONS'
+                                    ? usedAddOns.includes(item.id.toString())
+                                    : usedPerks.includes(item.id.toString()));
+
+                                const isUnaffordable = isBloodMoney && !isSelected && item.cost > currentBalance;
+                                const isLocked = isUsed || isUnaffordable;
 
                                 const imagePath = activeInventory === 'ADDONS'
                                     ? `/assets/Addons/${currentKiller?.killerName}/${item.name.replace('%', '')}.png`
@@ -338,20 +349,48 @@ const MasterLoadout = ({
                                 return (
                                     <div
                                         key={item.id}
-                                        onClick={() => handleToggleItem(item, activeInventory)}
+                                        onClick={() => !isLocked && handleToggleItem(item, activeInventory)}
                                         className={`inventory-item ${activeInventory === 'ADDONS' ? 'square-slot' : 'diamond-slot'} ${isSelected ? 'selected' : ''}`}
+                                        style={{ cursor: isUsed ? 'not-allowed' : 'pointer' }}
                                     >
-                                        <div className={activeInventory === 'PERKS' ? 'diamond-content' : ''}>
+                                        <div className={`${activeInventory === 'PERKS' ? 'diamond-content' : ''}`} style={{ filter: isLocked ? 'grayscale(100%) brightness(0.5)' : 'none' }}>
                                             <img src={imagePath} alt={item.name} title={item.name} />
                                         </div>
                                         {isSelected && <div className="active-check"></div>}
+
+                                        {/* Renders the padlock over the item if it has already been used */}
+                                        {isLocked && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                inset: 0,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                zIndex: 10,
+                                                transform: activeInventory === 'PERKS' ? 'rotate(-45deg)' : 'none'
+                                            }}>
+                                                <img
+                                                    src="/assets/Image Overlays/locked.png"
+                                                    alt="Locked"
+                                                    style={{
+                                                        width: activeInventory === 'PERKS' ? '70%' : '50%',
+                                                        opacity: 0.8
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {isBloodMoney && (
+                                            <div className={`loadout-financial-overlay ${activeInventory === 'PERKS' ? 'perk-mode' : ''}`}>
+                                                <div className="price-banner">${item.cost}</div>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })
                         )}
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && !(activeInventory === 'ADDONS' && rules.addonsLocked) && !(activeInventory === 'PERKS' && rules.perksLocked) && (
                         <div className="pagination-controls">
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (

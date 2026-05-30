@@ -28,6 +28,36 @@ const ReviewChallengesPage = () => {
     // Global active season for the right-side character display
     const [activeSeason, setActiveSeason] = useState(null);
 
+    const [timeLeft, setTimeLeft] = useState(null);
+    const [isTimerDanger, setIsTimerDanger] = useState(false);
+
+    useEffect(() => {
+        if (activeSeason?.variantType !== 'IRON_MAN') return;
+        const lastEndTimeStr = activeSeason?.variantState?.lastTrialEndTime;
+        if (!lastEndTimeStr) return;
+
+        const timerInterval = setInterval(() => {
+            const lastEndTime = new Date(lastEndTimeStr).getTime();
+            const now = new Date().getTime();
+            const diffMs = now - lastEndTime;
+            const maxMs = 75 * 60 * 1000; // 75 minutes
+            const remainingMs = maxMs - diffMs;
+
+            if (remainingMs <= 0) {
+                setTimeLeft('00:00');
+                setIsTimerDanger(true);
+                clearInterval(timerInterval);
+            } else {
+                const mins = Math.floor(remainingMs / 60000);
+                const secs = Math.floor((remainingMs % 60000) / 1000);
+                setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+                setIsTimerDanger(mins < 5); // Turns red when under 5 minutes
+            }
+        }, 1000);
+
+        return () => clearInterval(timerInterval);
+    }, [activeSeason]);
+
     // Dedicated loading state
     const [isLoading, setIsLoading] = useState(true);
 
@@ -445,6 +475,30 @@ const ReviewChallengesPage = () => {
                                 <h3 className="bebas-header-1 global-character-name">{activeSeason.characterName}</h3>
                                 <p className="inter-text-small">{activeSeason.variantType.replace('_', ' ')}</p>
                                 <p className="inter-text-small global-days-left">{activeSeason.daysLeft} Days Left</p>
+
+                                {/* Timer for Iron Man */}
+                                {activeSeason.variantType === 'IRON_MAN' && timeLeft && (
+                                    <h2 className={`bebas-header-1 text-5xl ${isTimerDanger ? 'text-red-500' : 'text-white'}`}>
+                                        {timeLeft}
+                                    </h2>
+                                )}
+
+                                {/* Mulligan Token indicator for Iron Man Variant */}
+                                {activeSeason.variantType === 'IRON_MAN' && (
+                                    <div
+                                        className="mulligan-indicator flex items-center gap-2 fade-in"
+                                        style={{ opacity: activeSeason?.variantState?.mulliganCount > 0 ? 1 : 0.4 }}
+                                    >
+                                        <img
+                                            src="/assets/Variants/ReRollToken.png"
+                                            alt="Mulligan Token"
+                                            style={{ width: '22px', objectFit: 'contain' }}
+                                        />
+                                        <p className="inter-text-small m-0 text-white">
+                                            {activeSeason?.variantState?.mulliganCount > 0 ? 'Mulligan Available' : 'No Mulligan'}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
