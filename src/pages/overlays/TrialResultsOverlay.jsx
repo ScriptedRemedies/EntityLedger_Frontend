@@ -337,22 +337,6 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                     {isBloodMoney && (
                         <div className="bonus-penalty-section" style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '30px' }}>
                             <button
-                                onClick={() => setClosedHatch(!closedHatch)}
-                                style={{
-                                    backgroundColor: closedHatch ? 'var(--color-GOLD)' : 'transparent',
-                                    border: '1px solid var(--color-GOLD)',
-                                    color: closedHatch ? '#000' : 'var(--color-GOLD)',
-                                    padding: '8px 16px',
-                                    fontFamily: 'var(--font-bebas)',
-                                    fontSize: '18px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                + CLOSED HATCH
-                            </button>
-
-                            <button
                                 onClick={() => setGenBeforeHook(!genBeforeHook)}
                                 style={{
                                     backgroundColor: genBeforeHook ? 'var(--color-IRIDESCENT)' : 'transparent',

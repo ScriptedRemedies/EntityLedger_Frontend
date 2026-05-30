@@ -55,6 +55,7 @@ const CurrentSeasonPage = () => {
                 setTrialCount(trialsRes.data.length);
                 setTrials(trialsRes.data);
             }
+            console.log(response.data.roster);
         } catch (error) {
             console.error("Failed to fetch season or trials:", error);
         }
@@ -124,37 +125,66 @@ const CurrentSeasonPage = () => {
     const lastPlayedId = activeSeason?.variantState?.lastPlayedKillerId;
     const cooldownId = activeSeason?.variantState?.cooldownKillerId;
 
-    let defaultKiller = lastPlayedId
-        ? activeSeason?.roster.find(k => k.killerId.toString() === lastPlayedId.toString())
-        : activeSeason?.roster.find(k => k.killerName === activeSeason?.characterName);
-
-    // Dynamic checks for standard cooldowns vs Iron Man roster cycling
-    const isDefaultInvalid = !defaultKiller ||
-        defaultKiller.status === 'DEAD' ||
-        defaultKiller.status === 'SOLD' ||
-        (isIronMan ? playedKillers.includes(defaultKiller.killerId.toString()) : defaultKiller.killerId.toString() === cooldownId);
-
-    if (isDefaultInvalid) {
-        defaultKiller = activeSeason?.roster?.find(k =>
-            k.status !== 'DEAD' &&
-            k.status !== 'SOLD' &&
-            (isIronMan ? !playedKillers.includes(k.killerId.toString()) : k.killerId.toString() !== cooldownId)
-        ) || activeSeason?.roster[0];
-    }
-
-    const currentKiller = selectedKiller || defaultKiller;
-
-    // --- BLOOD MONEY CALCULATIONS ---
+    // 1. Initial Independent Variables
     const isBloodMoney = activeSeason?.variantType === 'BLOOD_MONEY';
+    const isFinancialVariant = isBloodMoney || activeSeason?.variantType === 'AFTERBURN';
     const startingBalance = activeSeason?.variantState?.balance || 0;
-    const killerCost = currentKiller?.cost || 0;
 
-    // Sum up the cost of equipped loadout items
     const loadoutCost = selectedPerks.reduce((sum, p) => sum + (p?.cost || 0), 0) +
         selectedAddons.reduce((sum, a) => sum + (a?.cost || 0), 0);
 
+    // 2. Define playable killers, EXPLICITLY sorted by ID to maintain a consistent visual "First Available" order
+    const playableKillers = [...(activeSeason?.roster || [])]
+        .sort((a, b) => parseInt(a.killerId) - parseInt(b.killerId))
+        .filter(k =>
+            k.status !== 'DEAD' && k.status !== 'SOLD' &&
+            (isIronMan ? !playedKillers.includes(k.killerId.toString()) : k.killerId.toString() !== cooldownId)
+        );
+
+    // 3. Identify the "Last Played" killer
+    // Iron Man uses variantState. Other variants rely on the backend's characterName tracking.
+    const lastPlayed = playableKillers.find(k =>
+        lastPlayedId ? k.killerId.toString() === lastPlayedId.toString() : k.killerName === activeSeason?.characterName
+    );
+
+    // 4. Determine default killer based on exact hierarchy rules
+    let defaultKiller = null;
+    let isBankrupt = false;
+
+    if (isFinancialVariant) {
+        const cheapestKiller = [...playableKillers].sort((a, b) => a.cost - b.cost)[0];
+        const canAffordCheapest = cheapestKiller && (startingBalance - loadoutCost - cheapestKiller.cost >= 0);
+
+        // Bankrupt if in debt, or cannot even afford the absolute cheapest option
+        isBankrupt = (startingBalance - loadoutCost < 0) || !canAffordCheapest;
+
+        if (isBankrupt) {
+            defaultKiller = null; // Force "Sell Mode"
+        } else {
+            // Priority 1: Last played killer (if playable AND affordable)
+            const canAffordLastPlayed = lastPlayed && (startingBalance - loadoutCost - lastPlayed.cost >= 0);
+
+            if (canAffordLastPlayed) {
+                defaultKiller = lastPlayed;
+            } else {
+                // Priority 2: Next available killer (First available from left to right that is affordable)
+                const firstAvailable = playableKillers.find(k => (startingBalance - loadoutCost - k.cost >= 0));
+
+                // Priority 3: The Cheapest Killer (Acts as the penalty selection if coming out of bankruptcy)
+                defaultKiller = firstAvailable || cheapestKiller || null;
+            }
+        }
+    } else {
+        // Standard non-financial variants: Priority 1 (Last Played) -> Priority 2 (First Available)
+        defaultKiller = lastPlayed || playableKillers[0] || null;
+    }
+
+    // 5. Safely set Current Killer
+    const currentKiller = selectedKiller || defaultKiller;
+
+    // 6. Calculate Final Financials for the Header and UI State
+    const killerCost = currentKiller?.cost || 0;
     const projectedBalance = startingBalance - killerCost - loadoutCost;
-    const isBankrupt = projectedBalance < 0;
 
     useEffect(() => {
         if (activeSeason?.variantType === 'ADEPT' && currentKiller && allPerks.length > 0) {
@@ -437,6 +467,7 @@ const CurrentSeasonPage = () => {
                                                     currentBalance={projectedBalance} // <--- Triggers the SELL overlay if negative!
                                                     isVariantCooldown={isIronMan ? playedKillers.includes(rosterItem.killerId.toString()) : activeSeason?.variantState?.cooldownKillerId === rosterItem.killerId.toString()}
                                                     isUnaffordable={isBloodMoney && rosterItem.cost > startingBalance}
+                                                    isBankrupt={isBankrupt}
                                                 />
                                             ))}
                                     </div>

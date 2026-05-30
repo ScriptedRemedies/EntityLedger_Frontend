@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/small-components/KillerCard.scss';
 
-const KillerCard = ({ killer, variantType, isSelected, onSelect, onSell, currentBalance = 0, mode = 'active', isVariantCooldown = false, isUnaffordable = false }) => {
+const KillerCard = ({ killer, variantType, isSelected, onSelect, onSell, currentBalance = 0, mode = 'active', isVariantCooldown = false, isUnaffordable = false, isBankrupt = false }) => {
 
     // --- MODE CHECKS ---
     const isReviewMode = mode === 'review';
@@ -14,12 +14,12 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, onSell, current
 
     // Financial logic for Blood Money / Afterburn
     const isFinancialVariant = variantType === 'BLOOD_MONEY' || variantType === 'AFTERBURN';
-    const mustSell = isFinancialVariant && currentBalance < 0;
+    const mustSell = isFinancialVariant && isBankrupt;
     const isPriced = isFinancialVariant && !isDead && !isSold && !isReviewMode;
 
     // --- NEW: Dynamic Lock for Unaffordable Killers ---
     // If they can't afford it, it functionally acts as a locked card
-    const isLocked = isLockedDb || (!isReviewMode && isUnaffordable && !isSelected);
+    const isLocked = isLockedDb || (!isReviewMode && isUnaffordable && !isSelected && !mustSell && !isDead && !isSold);
 
     // --- CLICK HANDLER ---
     const handleClick = () => {
@@ -61,23 +61,23 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, onSell, current
     const renderOverlay = () => {
         const overlays = [];
 
-        // 1. Core Status Overlays
-        if (isLocked) {
-            overlays.push(
-                <div key="locked" className="card-overlay-dim">
-                    <img src="/assets/Image Overlays/locked.png" className="card-overlay-full" alt="Locked"/>
-                </div>
-            );
+        // 1. Core Status Overlays (Prioritizing Permanent States First)
+        if (isDead) {
+            overlays.push(<div key="dead" className="text-overlay-diagonal">DEAD</div>);
+        } else if (isSold) {
+            overlays.push(<div key="sold" className="text-overlay-diagonal">SOLD</div>);
         } else if (isCooldown) {
             overlays.push(
                 <div key="cooldown" className="card-overlay-dim" title="Killer is on Cooldown.">
                     <img src="/assets/Image Overlays/cooldown.png" className="card-overlay-full" alt="Cooldown"/>
                 </div>
             );
-        } else if (isDead) {
-            overlays.push(<div key="dead" className="text-overlay-diagonal">DEAD</div>);
-        } else if (isSold) {
-            overlays.push(<div key="sold" className="text-overlay-diagonal">SOLD</div>);
+        } else if (isLocked) {
+            overlays.push(
+                <div key="locked" className="card-overlay-dim">
+                    <img src="/assets/Image Overlays/locked.png" className="card-overlay-full" alt="Locked"/>
+                </div>
+            );
         }
 
         // 2. Financial Overlay (Stacks on top of the dim/padlock background)
