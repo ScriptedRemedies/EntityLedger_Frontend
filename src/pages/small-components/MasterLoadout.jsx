@@ -22,7 +22,7 @@ const MasterLoadout = ({
     const isAshGrade = currentGrade.startsWith("ASH");
     const isChaos = variantType === 'CHAOS_SHUFFLE';
     const isIronMan = variantType === 'IRON_MAN';
-    const isBloodMoney = variantType === 'BLOOD_MONEY';
+    const isFinancialVariant = variantType === 'BLOOD_MONEY' || variantType === 'AFTERBURN';
 
     // --- BLOOD MONEY CALCULATIONS ---
     const startingBalance = season?.variantState?.balance || 0;
@@ -74,11 +74,25 @@ const MasterLoadout = ({
         const fetchPerks = async () => {
             try {
                 const response = await api.get('/reference-data/perks');
-                setAllPerks(response.data);
+                let fetchedPerks = response.data;
+
+                // --- Erase Dead/Sold Perks in Afterburn ---
+                if (variantType === 'AFTERBURN') {
+                    const deadAndSoldNames = season?.variantState?.deadAndSoldKillerNames || [];
+                    if (deadAndSoldNames.length > 0) {
+                        fetchedPerks = fetchedPerks.filter(p => {
+                            // Account for DTO differences (either killerName or killer.name)
+                            const pName = p.killerName || p.killer?.name;
+                            return !deadAndSoldNames.includes(pName);
+                        });
+                    }
+                }
+
+                setAllPerks(fetchedPerks);
             } catch (err) { console.error("Failed to fetch perks:", err); }
         };
         fetchPerks();
-    }, []);
+    }, [variantType, season?.variantState?.deadAndSoldKillerNames]);
 
     useEffect(() => {
         const fetchAddons = async () => {
@@ -199,7 +213,7 @@ const MasterLoadout = ({
                                     <div className="addon-slot square-slot" style={{ position: 'relative', overflow: 'hidden' }}>
                                         {addon && <img src={`/assets/Addons/${currentKiller?.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />}
                                         {rules.addonsLocked && !addon && <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="AddOn Slot Locked" />}
-                                        {isBloodMoney && addon && (
+                                        {isFinancialVariant && addon && (
                                             <div className="loadout-financial-overlay">
                                                 <div className="price-banner">${addon.cost}</div>
                                             </div>
@@ -242,7 +256,7 @@ const MasterLoadout = ({
                                             </div>
                                         )}
 
-                                        {isBloodMoney && perk && (
+                                        {isFinancialVariant && perk && (
                                             <div className="loadout-financial-overlay perk-mode">
                                                 <div className="price-banner">${perk.cost}</div>
                                             </div>
@@ -339,7 +353,7 @@ const MasterLoadout = ({
                                     ? usedAddOns.includes(item.id.toString())
                                     : usedPerks.includes(item.id.toString()));
 
-                                const isUnaffordable = isBloodMoney && !isSelected && item.cost > currentBalance;
+                                const isUnaffordable = isFinancialVariant && !isSelected && item.cost > currentBalance;
                                 const isLocked = isUsed || isUnaffordable;
 
                                 const imagePath = activeInventory === 'ADDONS'
@@ -380,7 +394,7 @@ const MasterLoadout = ({
                                             </div>
                                         )}
 
-                                        {isBloodMoney && (
+                                        {isFinancialVariant && (
                                             <div className={`loadout-financial-overlay ${activeInventory === 'PERKS' ? 'perk-mode' : ''}`}>
                                                 <div className="price-banner">${item.cost}</div>
                                             </div>

@@ -18,7 +18,7 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
     const [hoverGens, setHoverGens] = useState(0);
     const needsGens = ['BLOOD_MONEY', 'AFTERBURN', 'CHAOS_SHUFFLE', 'IRON_MAN'].includes(season.variantType);
 
-    const isBloodMoney = season.variantType === 'BLOOD_MONEY';
+    const isFinancialVariant = season.variantType === 'BLOOD_MONEY' || season.variantType === 'AFTERBURN';
     const [closedHatch, setClosedHatch] = useState(false);
     const [genBeforeHook, setGenBeforeHook] = useState(false);
 
@@ -334,8 +334,29 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
                     )}
 
                     {/* Gen B4 Hook & Close Hatch triggers */}
-                    {isBloodMoney && (
+                    {isFinancialVariant && (
                         <div className="bonus-penalty-section" style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '30px' }}>
+
+                            {/* TODO: Fix button styles */}
+                            {season.variantType === 'AFTERBURN' && (
+                                <button
+                                    onClick={() => setClosedHatch(!closedHatch)}
+                                    style={{
+                                        backgroundColor: closedHatch ? 'var(--color-IRIDESCENT)' : 'transparent',
+                                        border: '1px solid var(--color-IRIDESCENT)',
+                                        color: closedHatch ? '#000' : 'var(--color-IRIDESCENT)',
+                                        padding: '8px 16px',
+                                        fontFamily: 'var(--font-bebas)',
+                                        fontSize: '18px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    + CLOSED HATCH
+                                </button>
+                            )}
+
+                            {/* TODO: Fix button styles */}
                             <button
                                 onClick={() => setGenBeforeHook(!genBeforeHook)}
                                 style={{

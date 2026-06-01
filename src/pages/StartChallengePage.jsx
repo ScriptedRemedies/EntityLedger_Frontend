@@ -4,8 +4,10 @@ import '../styles/ChallengesPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
-import {useToast} from "../hooks/ToastContext.jsx";
+import { useToast } from "../hooks/ToastContext.jsx";
 import KillerCard from "./small-components/KillerCard.jsx";
+// --- NEW: Import your SeasonCard (Adjust path if necessary) ---
+import SeasonCard from "./small-components/SeasonCard.jsx";
 
 const StartChallengePage = () => {
     const navigate = useNavigate();
@@ -17,6 +19,9 @@ const StartChallengePage = () => {
 
     const [masterKillerList, setMasterKillerList] = useState([]);
     const [pastBloodMoneyRuns, setPastBloodMoneyRuns] = useState([]);
+
+    // --- NEW: State to hold the roster of the selected past run ---
+    const [selectedPastRoster, setSelectedPastRoster] = useState([]);
 
     const [seasonPayload, setSeasonPayload] = useState({
         startingGrade: 'ASH_IV',
@@ -61,6 +66,18 @@ const StartChallengePage = () => {
         }
     }, [variantView.display]);
 
+    // --- NEW: Extract the roster when a past season is clicked ---
+    useEffect(() => {
+        if (variantView.display?.id === 'AFTERBURN' && seasonPayload.inheritedSeasonId) {
+            const run = pastBloodMoneyRuns.find(r => r.id === seasonPayload.inheritedSeasonId);
+            if (run) {
+                // Depending on your Spring Boot serialization, it might be 'rosters' or 'roster'
+                const rosterData = run.rosters || run.roster || [];
+                setSelectedPastRoster(rosterData);
+            }
+        }
+    }, [seasonPayload.inheritedSeasonId, pastBloodMoneyRuns, variantView.display]);
+
     // --- Variant Switching Logic ---
     useEffect(() => {
         if (!variantView.display) return;
@@ -87,18 +104,20 @@ const StartChallengePage = () => {
     // --- Submit to Backend ---
     const submitChallenge = async () => {
         try {
+            const cleanUnlockedIds = variantView.display.id === 'AFTERBURN'
+                ? selectedPastRoster.filter(r => r.status === 'AVAILABLE').map(r => r.killer?.id || r.killerId)
+                : seasonPayload.unlockedKillerIds;
+
             const requestBody = {
                 variantType: variantView.display.id,
                 startingGrade: seasonPayload.startingGrade,
                 inheritedSeasonId: seasonPayload.inheritedSeasonId,
-                unlockedKillerIds: seasonPayload.unlockedKillerIds
+                unlockedKillerIds: cleanUnlockedIds
             };
 
             const response = await api.post('/seasons', requestBody);
 
             addToast("Challenge successfully created!", "success");
-
-            // Navigate to the newly created placeholder page
             navigate(`/current-season/${response.data.id}`);
 
         } catch (error) {
@@ -157,7 +176,7 @@ const StartChallengePage = () => {
                                 </div>
                             </div>
 
-                            <div className="tab-content-wrapper hide-scrollbar mt-6">
+                            <div className="tab-content-wrapper hide-scrollbar mt-3">
                                 <div key={tabView.display} className={`tab-content ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
 
                                     {/* TAB 1: RULES */}
@@ -186,28 +205,35 @@ const StartChallengePage = () => {
                                     {tabView.display === 'Killers' && (
                                         <div className="killers-container">
 
+                                            {/* --- NEW: Horizontal Scrollable Season Cards --- */}
                                             {variantView.display.id === 'AFTERBURN' && (
                                                 <div className="afterburn-options-container">
                                                     <h3 className="bebas-header-1 title-white">SELECT BLOOD MONEY SAVE</h3>
-                                                    <p className="inter-text-small text-normal mb-2">Choose a completed Blood Money run to inherit your remaining killers and funds.</p>
+                                                    <p className="inter-text-small text-normal">Choose a completed Blood Money run to inherit your remaining killers and funds.</p>
 
                                                     {pastBloodMoneyRuns.length === 0 ? (
                                                         <div className="error-box">
                                                             No completed Blood Money runs found. You must complete a Blood Money season before attempting Afterburn.
                                                         </div>
                                                     ) : (
-                                                        <select
-                                                            className="season-select-dropdown"
-                                                            value={seasonPayload.inheritedSeasonId || ''}
-                                                            onChange={(e) => setSeasonPayload({...seasonPayload, inheritedSeasonId: e.target.value})}
-                                                        >
-                                                            <option value="" disabled>Select a past season...</option>
-                                                            {pastBloodMoneyRuns.map(run => (
-                                                                <option key={run.id} value={run.id}>
-                                                                    Blood Money - Ended {new Date(run.endDate).toLocaleDateString()}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                        <div className="flex overflow-x-auto gap-6  hide-scrollbar w-full">
+                                                            {pastBloodMoneyRuns.map(run => {
+                                                                const isSelected = seasonPayload.inheritedSeasonId === run.id;
+                                                                return (
+                                                                    <div
+                                                                        key={run.id}
+                                                                        onClick={() => setSeasonPayload({ ...seasonPayload, inheritedSeasonId: run.id })}
+                                                                        className="cursor-pointer transition-all duration-200 ease-in-out"
+                                                                        style={{
+                                                                            width: '202px', // Matches the SeasonCard's native CSS width
+                                                                            border: `1px solid ${isSelected ? 'white' : 'transparent'}`,
+                                                                        }}
+                                                                    >
+                                                                        <SeasonCard season={run} onClick={() => {}} hideOverlay={true} />
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     )}
                                                 </div>
                                             )}
@@ -215,27 +241,62 @@ const StartChallengePage = () => {
                                             <div className="killer-selection-header">
                                                 <div>
                                                     <h1 className="bebas-header-1 title-white">KILLERS</h1>
-                                                    <p className="inter-text-small text-normal mt-1">Select the killers you currently own. The Entity will only draw from this pool.</p>
+                                                    {variantView.display.id === 'AFTERBURN' ? (
+                                                        <p className="inter-text-small text-normal">Review the surviving roster from your selected Blood Money run.</p>
+                                                    ) : (
+                                                        <p className="inter-text-small text-normal">Select the killers you currently own. The Entity will only draw from this pool.</p>
+                                                    )}
                                                 </div>
-                                                <div className="killer-actions">
-                                                    <button onClick={() => setSeasonPayload(prev => ({...prev, unlockedKillerIds: masterKillerList.map(k => k.id)}))}>Select All</button>
-                                                    <button onClick={() => setSeasonPayload(prev => ({...prev, unlockedKillerIds: []}))}>Deselect All</button>
-                                                </div>
+
+                                                {/* --- NEW: Hide action buttons if in Afterburn --- */}
+                                                {variantView.display.id !== 'AFTERBURN' && (
+                                                    <div className="killer-actions">
+                                                        <button onClick={() => setSeasonPayload(prev => ({...prev, unlockedKillerIds: masterKillerList.map(k => k.id)}))}>Select All</button>
+                                                        <button onClick={() => setSeasonPayload(prev => ({...prev, unlockedKillerIds: []}))}>Deselect All</button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="killer-grid hide-scrollbar">
-                                                {masterKillerList.map(killer => {
-                                                    const isSelected = seasonPayload.unlockedKillerIds.includes(killer.id);
-                                                    return (
-                                                        <KillerCard
-                                                            key={killer.id}
-                                                            killer={{ ...killer, killerName: killer.name }}
-                                                            mode="review"
-                                                            isSelected={isSelected}
-                                                            onSelect={() => handleToggleKiller(killer.id)}
-                                                        />
-                                                    );
-                                                })}
+                                                {variantView.display.id === 'AFTERBURN' ? (
+                                                    // --- NEW: Display the Past Season Roster ---
+                                                    (!seasonPayload.inheritedSeasonId) ? (
+                                                        <></>
+                                                    ) : (
+                                                        selectedPastRoster.length > 0 ? selectedPastRoster.map(rosterItem => {
+                                                            // Handle nested objects depending on how your backend serializes the roster
+                                                            const kInfo = rosterItem.killer || rosterItem;
+                                                            return (
+                                                                <KillerCard
+                                                                    key={kInfo.id || kInfo.killerId}
+                                                                    killer={{
+                                                                        killerName: kInfo.name || kInfo.killerName,
+                                                                        cost: kInfo.cost,
+                                                                        status: rosterItem.status // Pass the historical status!
+                                                                    }}
+                                                                    variantType="BLOOD_MONEY" // Forces prices to show
+                                                                    mode="active"             // Forces DEAD/SOLD styling to show
+                                                                    isSelected={rosterItem.status === 'AVAILABLE'} // Available killers look selected
+                                                                    onSelect={() => {}}       // Disabled interaction
+                                                                />
+                                                            );
+                                                        }) : <p className="inter-text-normal text-muted mt-4">Loading roster...</p>
+                                                    )
+                                                ) : (
+                                                    // --- STANDARD: Master Killer List ---
+                                                    masterKillerList.map(killer => {
+                                                        const isSelected = seasonPayload.unlockedKillerIds.includes(killer.id);
+                                                        return (
+                                                            <KillerCard
+                                                                key={killer.id}
+                                                                killer={{ ...killer, killerName: killer.name }}
+                                                                mode="review"
+                                                                isSelected={isSelected}
+                                                                onSelect={() => handleToggleKiller(killer.id)}
+                                                            />
+                                                        );
+                                                    })
+                                                )}
                                             </div>
 
                                         </div>
@@ -262,6 +323,13 @@ const StartChallengePage = () => {
 
                         <div className="modal-scroll-area hide-scrollbar">
                             <h3 className="bebas-header-1">Variant: <span className="title-iri modal-variant-name">{variantView.display.name}</span></h3>
+                            {(variantView.display.id === 'BLOOD_MONEY' || variantView.display.id === 'AFTERBURN') && (
+                                <p className="bebas-header-1">Starting Balance: <span className="title-iri modal-variant-name">
+                                    ${variantView.display.id === 'BLOOD_MONEY'
+                                        ? 20
+                                        : pastBloodMoneyRuns.find(run => run.id === seasonPayload.inheritedSeasonId)?.variantState?.balance || 0}
+                                </span></p>
+                            )}
                             <p className="bebas-header-1">Rules Summary: <span className="modal-variant-name">{variantView.display.rulesDescription}</span></p>
                             <ul className="rules-summary-list">
                                 {variantView.display.rulesSummary.map((rule, index) => (
@@ -274,17 +342,27 @@ const StartChallengePage = () => {
                                     className="inter-text-normal title-white collapsible-btn"
                                     onClick={() => setIsKillerListExpanded(!isKillerListExpanded)}
                                 >
-                                    <span>Included Killers ({seasonPayload.unlockedKillerIds.length})</span>
+                                    <span>Included Killers ({variantView.display.id === 'AFTERBURN' ? selectedPastRoster.filter(r => r.status === 'AVAILABLE').length : seasonPayload.unlockedKillerIds.length})</span>
                                     <span>{isKillerListExpanded ? '▲' : '▼'}</span>
                                 </button>
 
                                 <div className={`collapsible-content ${isKillerListExpanded ? 'expanded' : ''}`}>
                                     <ul className="killer-summary-list">
-                                        {masterKillerList
-                                            .filter(k => seasonPayload.unlockedKillerIds.includes(k.id))
-                                            .map(k => (
-                                                <li key={k.id} className="inter-text-small text-normal">{k.name}</li>
-                                            ))}
+                                        {variantView.display.id === 'AFTERBURN' ? (
+                                            selectedPastRoster
+                                                .filter(r => r.status === 'AVAILABLE')
+                                                .map(r => (
+                                                    <li key={r.killer?.id || r.killerId} className="inter-text-small text-normal">
+                                                        {r.killer?.name || r.killerName}
+                                                    </li>
+                                                ))
+                                        ) : (
+                                            masterKillerList
+                                                .filter(k => seasonPayload.unlockedKillerIds.includes(k.id))
+                                                .map(k => (
+                                                    <li key={k.id} className="inter-text-small text-normal">{k.name}</li>
+                                                ))
+                                        )}
                                     </ul>
                                 </div>
                             </div>

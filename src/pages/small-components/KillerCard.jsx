@@ -29,8 +29,7 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, onSell, current
             // You still cannot sell a killer that is already dead or sold
             if (isDead || isSold) return;
 
-            const confirmed = window.confirm(`Are you sure you want to sell ${killer.killerName} for $${killer.cost}? This action cannot be undone.`);
-            if (confirmed && onSell) {
+            if (onSell) {
                 onSell(killer);
             }
             return;

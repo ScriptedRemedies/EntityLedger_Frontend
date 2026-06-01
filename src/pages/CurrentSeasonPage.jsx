@@ -33,6 +33,8 @@ const CurrentSeasonPage = () => {
     const [activeTrialOverlay, setActiveTrialOverlay] = useState(null);
 
     const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
+    // Confirming sell killer states for blood money and afterburn
+    const [killerToSellConfirm, setKillerToSellConfirm] = useState(null);
     const [selectedPerks, setSelectedPerks] = useState([]);
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [isViewingResults, setIsViewingResults] = useState(false);
@@ -242,7 +244,7 @@ const CurrentSeasonPage = () => {
                 }))
             };
 
-            if (['BLOOD_MONEY', 'CHAOS_SHUFFLE', 'IRON_MAN'].includes(activeSeason.variantType)) {
+            if (['BLOOD_MONEY', 'AFTERBURN', 'CHAOS_SHUFFLE', 'IRON_MAN'].includes(activeSeason.variantType)) {
                 payload.kills = killCount;
                 payload.gensLeft = resultsPayload.gensLeft || 0;
                 payload.closedHatch = resultsPayload.closedHatch || false;
@@ -408,7 +410,7 @@ const CurrentSeasonPage = () => {
                                     <h1 className="bebas-header-1 title-white m-0">{navView.display.name}</h1>
 
                                     {/* LIVE BLOOD MONEY LEDGER */}
-                                    {isBloodMoney && (
+                                    {isFinancialVariant && (
                                         <div className="blood-money-ledger flex items-end gap-3 ml-6 pb-1">
                                             <div className="ledger-item flex flex-col items-center border-l border-gray-700 pl-3">
                                                 <span className="text-gray-500 bebas-header-2 text-2xl m-0 leading-none">${startingBalance}</span>
@@ -462,11 +464,11 @@ const CurrentSeasonPage = () => {
                                                         setSelectedKiller(rosterItem);
                                                         setSelectedAddons([]);
                                                     }}
-                                                    onSell={handleSellKiller}
+                                                    onSell={(k) => setKillerToSellConfirm(k)}
                                                     mode="active"
                                                     currentBalance={projectedBalance} // <--- Triggers the SELL overlay if negative!
                                                     isVariantCooldown={isIronMan ? playedKillers.includes(rosterItem.killerId.toString()) : activeSeason?.variantState?.cooldownKillerId === rosterItem.killerId.toString()}
-                                                    isUnaffordable={isBloodMoney && rosterItem.cost > startingBalance}
+                                                    isUnaffordable={isFinancialVariant && rosterItem.cost > startingBalance}
                                                     isBankrupt={isBankrupt}
                                                 />
                                             ))}
@@ -538,6 +540,36 @@ const CurrentSeasonPage = () => {
                     alt={displayCharacterName}
                 />
             </div>
+
+            {/* === CUSTOM SELL CONFIRMATION MODAL === */}
+            {killerToSellConfirm && (
+                <div className="modal-backdrop fade-in">
+                    <div className="modal-content-box confirm-modal" style={{ height: 'auto', minHeight: '250px', width: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+
+                        <div>
+                            <h2 className="bebas-header-1 title-white modal-title">Confirm Sale</h2>
+                            <div className="modal-divider"></div>
+                            <p className="inter-text-normal">
+                                Are you sure you want to sell <span className="title-iri">{killerToSellConfirm.killerName}</span> for <span className="title-iri">${killerToSellConfirm.cost}</span>?
+                            </p>
+                            <p className="inter-text-normal">Your new balance will be <span className="title-iri">${startingBalance + killerToSellConfirm.cost}</span></p>
+                            <p className="inter-text-small text-muted">
+                                This action cannot be undone.
+                            </p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="modal-actions" style={{ marginTop: '30px' }}>
+                            <button className="back-button" onClick={() => setKillerToSellConfirm(null)}>Cancel</button>
+                            <button className="squareBtn" onClick={() => {
+                                handleSellKiller(killerToSellConfirm);
+                                setKillerToSellConfirm(null);
+                            }}>Confirm Sale</button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
             <TrialDetailsOverlay
                 trial={activeTrialOverlay}

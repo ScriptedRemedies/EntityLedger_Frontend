@@ -9,6 +9,7 @@ import GradeBadgeDisplay from './small-components/GradeBadgeDisplay.jsx';
 import TrialListTable from './small-components/TrialListTable.jsx';
 import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay';
+import SeasonCard from "./small-components/SeasonCard.jsx";
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {
@@ -268,23 +269,8 @@ const ReviewChallengesPage = () => {
                                     {tabView.display === 'Seasons' && !selectedSeason && seasons.length > 0 && (
                                         <div className="seasons-grid">
                                             {seasons.map(season => {
-                                                const [badge, gradeNum] = (season.currentGrade).split("_");
                                                 return (
-                                                    <div key={season.id} onClick={() => setSelectedSeason(season)} className="season-card">
-                                                        <div className="season-card-base">
-                                                            <p className="season-date inter-text-small text-muted">{season.status === 'IN_PROGRESS' ? 'Current' : season.dateRange}</p>
-                                                            <h3 className="bebas-header-2 text-center" style={{ color: `var(--color-${badge})` }}>{season.gradeName}</h3>
-                                                            <GradeBadgeDisplay rawGrade={season.currentGradeRaw} pips={season.seasonPips} />
-                                                            <p className="season-next-grade inter-text-small">Next Grade</p>
-                                                            <p style={{ color: `var(--color-${season.nextGradeName.split(" ")})` }}>{season.nextGradeName}</p>
-                                                        </div>
-                                                        {season.status !== "IN_PROGRESS" && (
-                                                            <div className="season-card-overlay">
-                                                                <p className="season-result-label text-size-normal text-muted uppercase">Result</p>
-                                                                <h2 className="bebas-header-1 season-result-title">{getResultTitle(season.gradeName)}</h2>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    <SeasonCard season={season} onClick={setSelectedSeason} />
                                                 )
                                             })}
                                         </div>

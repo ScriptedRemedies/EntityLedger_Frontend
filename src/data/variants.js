@@ -204,12 +204,12 @@ export const VARIANTS = [
             {
                 id: 6,
                 title: "PERK RESTRICTIONS",
-                description: "Perks from dead Killers cannot be used."
+                description: "Perks from dead or sold Killers from the selected Blood Money season cannot be used."
             },
             {
                 id: 7,
                 title: "STARTING FUNDS",
-                description: "Player will start the season with the remaining funds they have from the Blood Money Season they have chosen."
+                description: "Player will start the season with the remaining funds from the selected Blood Money Season."
             },
             {
                 id: 8,
