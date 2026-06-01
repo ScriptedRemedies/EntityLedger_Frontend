@@ -123,9 +123,19 @@ const CurrentSeasonPage = () => {
 
     // --- ROSTER CYCLING LOGIC ---
     const isIronMan = activeSeason?.variantType === 'IRON_MAN';
+    const isAfterburn = activeSeason?.variantType === 'AFTERBURN';
     const playedKillers = activeSeason?.variantState?.playedKillers || [];
     const lastPlayedId = activeSeason?.variantState?.lastPlayedKillerId;
-    const cooldownId = activeSeason?.variantState?.cooldownKillerId;
+
+    const isKillerOnCooldown = (killerIdStr) => {
+        if (isIronMan) return playedKillers.includes(killerIdStr);
+        if (isAfterburn) {
+            const cooldowns = activeSeason?.variantState?.cooldowns || {};
+            return cooldowns[killerIdStr] > 0;
+        }
+        // Default to Blood Money's single ID tracker
+        return activeSeason?.variantState?.cooldownKillerId === killerIdStr;
+    };
 
     // 1. Initial Independent Variables
     const isBloodMoney = activeSeason?.variantType === 'BLOOD_MONEY';
@@ -140,7 +150,7 @@ const CurrentSeasonPage = () => {
         .sort((a, b) => parseInt(a.killerId) - parseInt(b.killerId))
         .filter(k =>
             k.status !== 'DEAD' && k.status !== 'SOLD' &&
-            (isIronMan ? !playedKillers.includes(k.killerId.toString()) : k.killerId.toString() !== cooldownId)
+            !isKillerOnCooldown(k.killerId.toString())
         );
 
     // 3. Identify the "Last Played" killer
@@ -467,7 +477,7 @@ const CurrentSeasonPage = () => {
                                                     onSell={(k) => setKillerToSellConfirm(k)}
                                                     mode="active"
                                                     currentBalance={projectedBalance} // <--- Triggers the SELL overlay if negative!
-                                                    isVariantCooldown={isIronMan ? playedKillers.includes(rosterItem.killerId.toString()) : activeSeason?.variantState?.cooldownKillerId === rosterItem.killerId.toString()}
+                                                    isVariantCooldown={isKillerOnCooldown(rosterItem.killerId.toString())}
                                                     isUnaffordable={isFinancialVariant && rosterItem.cost > startingBalance}
                                                     isBankrupt={isBankrupt}
                                                 />
