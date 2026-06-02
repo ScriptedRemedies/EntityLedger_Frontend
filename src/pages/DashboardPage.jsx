@@ -1,49 +1,21 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import api from "../services/api.js";
-import { useToast } from "../hooks/ToastContext.jsx";
 import '../styles/DashboardPage.scss';
 import ReactMarkdown from 'react-markdown';
 import fm from 'front-matter';
 import latestNotes from '../data/latest-update.md?raw';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const DashboardPage = () => {
 
-    const { addToast } = useToast();
-
-    // State to handle the cascade menu
-    const [isMenuExpanded, setIsMenuExpanded] = useState(false);
     const navigate = useNavigate();
-    const menuItems =[
-        { name: 'Start a New Challenge', path: '/start-challenge' },
-        { name: 'Continue Challenge', path: '/continue-season' },
-        { name: 'Review Challenges', path: '/review-challenges'}
-    ]
 
-    const handleMenuClick = async (path) => {
-        if (path === '/continue-season') {
-            try {
-                const response = await api.get('/seasons/active');
+    // --- RESTORED: State to handle the cascade menu ---
+    const [isMenuExpanded, setIsMenuExpanded] = useState(false);
 
-                // Let's log the actual data so you can see exactly what the DTO looks like in your browser console!
-                console.log("Active Season Data:", response.data);
-
-                // Look for 'id' (Entity) or 'seasonId' (DTO)
-                const targetId = response.data?.id || response.data?.seasonId;
-
-                if (targetId) {
-                    navigate(`/current-season/${targetId}`);
-                } else {
-                    // If we get data but no ID, fire an error so it doesn't fail silently
-                    addToast("Found season data, but couldn't read the ID.", "error");
-                }
-            } catch (error) {
-                addToast("No active challenge found. The Entity waits.", "error");
-            }
-        } else {
-            navigate(path);
-        }
-    };
+    // --- NEW: Dynamic Season States ---
+    const [activeSeasonId, setActiveSeasonId] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     // State to handle the version info overlay
     const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
@@ -53,6 +25,26 @@ const DashboardPage = () => {
     const { version, date } = parsedNotes.attributes;
     const content = parsedNotes.body;
 
+    // --- NEW: Check for active season silently on mount ---
+    useEffect(() => {
+        const checkActiveSeason = async () => {
+            try {
+                const response = await api.get('/seasons/active');
+                const targetId = response.data?.id || response.data?.seasonId;
+
+                if (targetId) {
+                    setActiveSeasonId(targetId);
+                }
+            } catch (error) {
+                // If it fails, they just don't have an active season. Do nothing.
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        checkActiveSeason();
+    }, []);
+
     // Returns users to page they were on before auto logout
     useEffect(() => {
         const returnPath = localStorage.getItem('returnPath');
@@ -60,7 +52,16 @@ const DashboardPage = () => {
             localStorage.removeItem('returnPath');
             navigate(returnPath);
         }
-    });
+    }, [navigate]);
+
+    // Handle the dynamic sub-menu button
+    const handleDynamicSubMenuClick = () => {
+        if (activeSeasonId) {
+            navigate(`/current-season/${activeSeasonId}`);
+        } else {
+            navigate('/start-challenge');
+        }
+    };
 
     return (
         <div className="dashboard-container fade-in">
@@ -77,7 +78,7 @@ const DashboardPage = () => {
                     {/* Accordion Menu */}
                     <div className="menu-wrapper">
 
-                        {/* Primary Menu Button */}
+                        {/* RESTORED: Primary Menu Toggle Button */}
                         <button
                             onClick={() => setIsMenuExpanded(!isMenuExpanded)}
                             className="inter-text-normal primary-menu-btn"
@@ -92,17 +93,24 @@ const DashboardPage = () => {
                             <span>Killer Challenges</span>
                         </button>
 
-                        {/* Cascading Sub-Menu */}
+                        {/* RESTORED: Cascading Sub-Menu */}
                         <div className={`sub-menu-container ${isMenuExpanded ? 'expanded' : 'collapsed'}`}>
-                            {menuItems.map((item, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleMenuClick(item.path)}
-                                    className="inter-text-normal sub-menu-item"
-                                >
-                                    {item.name}
-                                </button>
-                            ))}
+
+                            {/* DYNAMIC BUTTON: Changes based on fetch results */}
+                            <button
+                                onClick={handleDynamicSubMenuClick}
+                                className="inter-text-normal sub-menu-item"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Checking Entity...' : (activeSeasonId ? 'Continue Season' : 'Start a New Challenge')}
+                            </button>
+
+                            <button
+                                onClick={() => navigate('/review-challenges')}
+                                className="inter-text-normal sub-menu-item"
+                            >
+                                Review Challenges
+                            </button>
                         </div>
 
                     </div>

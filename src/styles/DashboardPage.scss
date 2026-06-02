@@ -225,29 +225,40 @@
   }
 }
 
-/* Custom Markdown Rendering Rules (Replaces Tailwind Prose) */
+/* Custom Markdown Rendering Rules */
 .markdown-content {
   max-width: none;
   color: var(--color-normal);
   font-family: var(--font-inter);
-  font-size: 0.875rem;
+  font-size: var(--text-size-small);
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-bebas);
+    text-transform: uppercase;
+    font-weight: normal;
+  }
+
+  h1 {
     color: var(--color-white);
+    font-size: var(--title-size);
+  }
+
+  h2 {
+    color: var(--color-white);
+    font-size: var(--header-size-1);
+    border-bottom: 1px solid var(--color-btn-border);
+    padding-bottom: 0.5rem;
   }
 
   h3 {
     color: var(--color-IRIDESCENT);
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 1.5rem;
-    text-transform: uppercase;
+    font-size: var(--header-size-2);
   }
 
   p {
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    font-size: var(--text-size-normal);
+    margin-bottom: 20px;
+    line-height: 1.6;
   }
 
   a {
@@ -263,11 +274,15 @@
   ul {
     list-style-type: square;
     padding-left: 1.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 
     li {
+      font-size: var(--text-size-normal);
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+
       &::marker {
-        color: var(--color-normal);
+        color: var(--color-IRIDESCENT);
       }
     }
   }
