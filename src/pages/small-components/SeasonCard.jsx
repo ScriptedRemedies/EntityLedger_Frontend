@@ -53,8 +53,9 @@ const SeasonCard = ({ season, onClick, hideOverlay = false }) => {
             </div>
             {displayStatus !== "IN_PROGRESS" && !hideOverlay && (
                 <div className="season-card-overlay">
-                    <p className="season-result-label text-size-normal text-muted uppercase">Result</p>
-                    <h2 className="bebas-header-1 season-result-title">{getResultTitle(gradeName)}</h2>
+                    <p className="season-result-label uppercase">Result</p>
+                    <h2 className="bebas-header-1 season-result-title">{season.status.replace('_', ' ')}</h2>
+                    <p className="season-result-label">{getResultTitle(gradeName)}</p>
                 </div>
             )}
         </div>
