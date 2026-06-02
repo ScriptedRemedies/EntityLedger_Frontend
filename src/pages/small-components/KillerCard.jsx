@@ -15,7 +15,7 @@ const KillerCard = ({ killer, variantType, isSelected, onSelect, onSell, current
     // Financial logic for Blood Money / Afterburn
     const isFinancialVariant = variantType === 'BLOOD_MONEY' || variantType === 'AFTERBURN';
     const mustSell = isFinancialVariant && isBankrupt;
-    const isPriced = isFinancialVariant && !isDead && !isSold && !isReviewMode;
+    const isPriced = isFinancialVariant && !isDead && !isSold;
 
     // --- NEW: Dynamic Lock for Unaffordable Killers ---
     // If they can't afford it, it functionally acts as a locked card

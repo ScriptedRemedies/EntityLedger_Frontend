@@ -291,6 +291,7 @@ const StartChallengePage = () => {
                                                                 key={killer.id}
                                                                 killer={{ ...killer, killerName: killer.name }}
                                                                 mode="review"
+                                                                variantType={variantView.display.id}
                                                                 isSelected={isSelected}
                                                                 onSelect={() => handleToggleKiller(killer.id)}
                                                             />
