@@ -21,6 +21,11 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
     let twoToThreeKWithGates = 0;
     let hatchEscapesCount = 0;
 
+    let totalRevenue = 0, totalDebt = 0;
+    let biggestWin = { amount: 0, trialNumber: 0 };
+    let biggestLoss = { amount: 0, trialNumber: 0 };
+    let mulligansBurned = 0, flawlessCount = 0;
+
     const killerStats = {};
     const perkCounts = {};
     const emblemCounts = { GATEKEEPER: 0, DEVOUT: 0, MALICIOUS: 0, CHASER: 0 };
@@ -39,6 +44,16 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
         if (kills <= 1) lossCount++;
         if ((kills === 2 || kills === 3) && escapes > 0) twoToThreeKWithGates++;
         if (hatches > 0) hatchEscapesCount++;
+
+        if (t.netIncome > 0) {
+            totalRevenue += t.netIncome;
+            if (t.netIncome > biggestWin.amount) biggestWin = { amount: t.netIncome, trialNumber: t.trialNumber };
+        } else if (t.netIncome < 0) {
+            totalDebt += Math.abs(t.netIncome);
+            if (t.netIncome < biggestLoss.amount) biggestLoss = { amount: t.netIncome, trialNumber: t.trialNumber };
+        }
+        if (t.burnedMulligan) mulligansBurned++;
+        if (t.flawlessTrial) flawlessCount++;
 
         if (!killerStats[t.killer.name]) {
             killerStats[t.killer.name] = {
@@ -72,6 +87,14 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
         });
     });
 
+    let totalCompletionTime = "N/A";
+    if (season.startDate && season.endDate) {
+        const start = new Date(season.startDate);
+        const end = new Date(season.endDate);
+        const diffMins = Math.floor((end - start) / 60000);
+        totalCompletionTime = `${Math.floor(diffMins/60).toString().padStart(2,'0')}:${(diffMins%60).toString().padStart(2,'0')}`;
+    }
+
     // --- CALCULATE RATES ---
     const killRate = totalMatches > 0 ? Math.round((totalKills / (totalMatches * 4)) * 100) : 0;
     const fourKRate = totalMatches > 0 ? Math.round((fourKCount / totalMatches) * 100) : 0;
@@ -91,6 +114,10 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
         return (b.kills / b.matches) - (a.kills / a.matches);
     });
 
+    const adeptTopKillers = sortedKillers.slice(0, 4).map(k => ({
+        name: k.name, pickRate: Math.round((k.matches/totalMatches)*100), killRate: Math.round((k.kills/(k.matches*4))*100)
+    }));
+
     const mvp = sortedKillers.length > 0 ? sortedKillers[0] : null;
     const lvp = sortedKillers.length > 1 ? sortedKillers[sortedKillers.length - 1] : null;
 
@@ -99,7 +126,6 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
     const executioner = sortedKillers.filter(k => k.fourKs > 0).sort((a, b) => b.fourKs - a.fourKs)[0];
     const choker = sortedKillers.filter(k => k.gateEscapes > 0).sort((a, b) => b.gateEscapes - a.gateEscapes)[0];
     const merciful = sortedKillers.filter(k => k.hatchEscapes > 0).sort((a, b) => b.hatchEscapes - a.hatchEscapes)[0];
-    const disappointment = sortedKillers.filter(k => k.losses > 0).sort((a, b) => b.losses - a.losses)[0];
 
     // 2. Build the array conditionally using &&
     const awards = [
@@ -148,9 +174,9 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
 
     const isVictory = recapData.status === 'COMPLETED' && (!killerDied || reachedIri1);
 
-    const headerTitle = isVictory ? "CHALLENGE COMPLETED" : "ROSTER DECIMATED";
+    const headerTitle = recapData.status.replace("_", " ");
     const headerColor = isVictory ? "title-white" : "title-iri";
-    const subTitle = isVictory ? "The Entity is sated... for now." : "The fog claims another victim.";
+    const subTitle = isVictory ? "The Entity is pleased... for now." : "The fog claims another victim.";
 
     return (
         <div className="recap-overlay-container fade-in">
@@ -158,7 +184,6 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
 
             <div className="recap-content-box">
 
-                {/* TODO: Change header to change based on variant (Iron Man fail condition, instead of "Roster Decimated" you can say someting else) */}
                 {/* 1. HEADER & NAVIGATION */}
                 <div className="recap-header">
                     <h1 className={`bebas-header-1 ${headerColor}`}>{headerTitle}</h1>
@@ -180,7 +205,6 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                 {/* 2. SINGLE PANE BODY */}
                 <div className="recap-body-single hide-scrollbar">
 
-                    {/* TODO: Change stats based on variant needs */}
                     {/* === VIEW: STATS === */}
                     {activeTab === 'Stats' && (
                         <div className="fade-in">
@@ -228,59 +252,129 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                     </div>
                                     <div className="stat-card">
                                         <div className="stat-info">
-                                            <span className="stat-label">Final Grade Reached</span>
-                                            <span className="stat-value">{season.currentGrade.replace('_', ' ')}</span>
-                                        </div>
-                                        <GradeBadgeDisplay rawGrade={season.currentGrade} pips={season.currentPips} size="small" />
-                                    </div>
-                                    <div className="stat-card">
-                                        <div className="stat-info">
                                             <span className="stat-label">Hatch Escapes</span>
                                             <span className="stat-value">{hatchEscapeRate}%</span>
                                         </div>
                                         <img src="/assets/Survivor Status/hatch_escape.png" className="stat-icon" alt="Hatch" />
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Roster Performance Awards (Mapped over the 'awards' object) */}
-                            <div className="stats-section mb-8">
-                                <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
-                                <div className="recap-stats-grid">
-                                    {awards.map((award, i) => (
-                                        <div key={i} className="stats-card">
-                                            <h4 className={`stats-title bebas-header-2 text-white text-center ${award.effect === "negative" ? "weakest-link-header" : ""}`}>{award.name}</h4>
-                                            <img
-                                                src={`/assets/Killers/${award.killer.name}.png`}
-                                                className={`stat-killer-slot ${award.effect === "negative" ? "weakest-link-img" : ""}`}
-                                                alt={award.killer.name}
-                                            />
-                                            <div className="award-text">
-                                                <p className="inter-text-small uppercase">{award.killer.name}</p>
-                                                <p className="inter-text-small">{award.detailText}</p>
+                                    {/* --- NEW: IRON MAN SINGLE RUN STATS --- */}
+                                    {season.variantType === 'IRON_MAN' && (
+                                        <>
+                                            <div className="stat-card">
+                                                <div className="stat-info">
+                                                    <span className="stat-label">Total Completion Time</span>
+                                                    <span className="stat-value">{totalCompletionTime}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                            <div className="stat-card">
+                                                <div className="stat-info">
+                                                    <span className="stat-label">Flawless / Burned</span>
+                                                    <span className="stat-value">{flawlessCount} / {mulligansBurned}</span>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Meta Tendencies */}
-                            <div className="stats-section mb-8">
-                                <h3 className="bebas-header-2 stats-section-title">META TENDENCIES</h3>
-                                <div className="stats-grid">
-                                    {topPerks.map((perk, i) => (
-                                        <div key={i} className="stat-card">
+                            {/* --- NEW: FINANCIAL EXTREMES (Blood Money / Afterburn) --- */}
+                            {(season.variantType === 'BLOOD_MONEY' || season.variantType === 'AFTERBURN') && (
+                                <div className="stats-section mb-8">
+                                    <h3 className="bebas-header-2 stats-section-title">THE ECONOMY</h3>
+                                    <div className="recap-stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                                        <div className="stat-card">
                                             <div className="stat-info">
-                                                <span className="stat-value inter-text-normal text-normal">{perk.name}</span>
-                                                <span className="stat-label">{perk.pickRate}% Pick Rate</span>
-                                            </div>
-                                            <div className="stat-perk-diamond">
-                                                <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                <span className="stat-label">Total Revenue Generated</span>
+                                                <span className="stat-value title-white">${totalRevenue}</span>
                                             </div>
                                         </div>
-                                    ))}
+                                        <div className="stat-card">
+                                            <div className="stat-info">
+                                                <span className="stat-label">Total Debt Accrued</span>
+                                                <span className="stat-value title-iri">-${totalDebt}</span>
+                                            </div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-info">
+                                                <span className="stat-label">Biggest Win</span>
+                                                <span className="stat-value title-white">
+                                                    {biggestWin.amount > 0 ? `+$${biggestWin.amount}` : '$0'} <span className="text-sm text-normal">{biggestWin.trialNumber > 0 ? `(Trial ${biggestWin.trialNumber})` : ''}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-info">
+                                                <span className="stat-label">Biggest Loss</span>
+                                                <span className="stat-value title-iri">
+                                                    {biggestLoss.amount < 0 ? `-$${Math.abs(biggestLoss.amount)}` : '$0'} <span className="text-sm text-normal">{biggestLoss.trialNumber > 0 ? `(Trial ${biggestLoss.trialNumber})` : ''}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {/* Roster Performance Awards */}
+                            {awards && awards.length > 0 && (
+                                <div className="stats-section mb-8">
+                                    <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
+                                    <div className="recap-stats-grid">
+                                        {awards.map((award, i) => (
+                                            <div key={i} className="stats-card">
+                                                <h4 className={`stats-title bebas-header-2 text-white text-center ${award.effect === "negative" ? "weakest-link-header" : ""}`}>{award.name}</h4>
+                                                <img
+                                                    src={`/assets/Killers/${award.killer.name}.png`}
+                                                    className={`stat-killer-slot ${award.effect === "negative" ? "weakest-link-img" : ""}`}
+                                                    alt={award.killer.name}
+                                                />
+                                                <div className="award-text">
+                                                    <p className="inter-text-small uppercase">{award.killer.name}</p>
+                                                    <p className="inter-text-small">{award.detailText}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* --- NEW: TOP KILLERS (Adept Only) --- */}
+                            {season.variantType === 'ADEPT' && adeptTopKillers && adeptTopKillers.length > 0 && (
+                                <div className="stats-section mb-8">
+                                    <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
+                                    <div className="recap-stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                                        {adeptTopKillers.map((killer, i) => (
+                                            <div key={i} className="stat-card">
+                                                <div className="stat-info">
+                                                    <span className="stat-value inter-text-normal text-white uppercase">{killer.name}</span>
+                                                    <span className="stat-label">{killer.pickRate}% Pick Rate | {killer.killRate}% Kill Rate</span>
+                                                </div>
+                                                <img src={`/assets/Killer Portraits/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Meta Tendencies (Hidden for Adept & Chaos Shuffle) */}
+                            {season.variantType !== 'ADEPT' && season.variantType !== 'CHAOS_SHUFFLE' && (
+                                <div className="stats-section mb-8">
+                                    <h3 className="bebas-header-2 stats-section-title">META TENDENCIES</h3>
+                                    <div className="stats-grid">
+                                        {topPerks.map((perk, i) => (
+                                            <div key={i} className="stat-card">
+                                                <div className="stat-info">
+                                                    <span className="stat-value inter-text-normal text-normal">{perk.name}</span>
+                                                    <span className="stat-label">{perk.pickRate}% Pick Rate</span>
+                                                </div>
+                                                <div className="stat-perk-diamond">
+                                                    <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Emblems */}
                             <div className="stats-section">

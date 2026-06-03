@@ -393,27 +393,126 @@ const ReviewChallengesPage = () => {
                                                             </div>
                                                             <img src="/assets/Survivor Status/hatch_escape.png" className="stat-icon" alt="Hatch" />
                                                         </div>
+
+                                                        {/* --- NEW: IRON MAN METRICS --- */}
+                                                        {variantView.display.id === 'IRON_MAN' && (
+                                                            <>
+                                                                <div className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-label">Avg Completion Time</span>
+                                                                        <span className="stat-value">{stats.averageCompletionTime || 'N/A'}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-label">Flawless Trials / Mulligans Burned</span>
+                                                                        <span className="stat-value">{stats.flawlessTrials} / {stats.totalMulligansBurned}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* META & LOADOUT TENDENCIES */}
-                                            <div className="stats-section mb-8">
-                                                <h3 className="bebas-header-2 stats-section-title">META & LOADOUT TENDENCIES</h3>
-                                                <div className="stats-grid">
-                                                    {stats.topPerks?.map((perk, i) => (
-                                                        <div key={i} className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-value inter-text-normal text-normal">{perk.name}</span>
-                                                                <span className="stat-label">{perk.pickRate}% Pick Rate</span>
+                                            {/* --- NEW: FINANCIAL EXTREMES (Blood Money / Afterburn) --- */}
+                                            {(variantView.display.id === 'BLOOD_MONEY' || variantView.display.id === 'AFTERBURN') && stats.financialExtremes && (
+                                                <div className="stats-section mb-8">
+                                                    <h3 className="bebas-header-2 stats-section-title">THE ECONOMY</h3>
+                                                    <div className="stats-grid-cols">
+                                                        <div className="stats-col">
+                                                            <div className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-label">Total Revenue Generated</span>
+                                                                    <span className="stat-value title-white">${stats.totalRevenue}</span>
+                                                                </div>
                                                             </div>
-                                                            <div className="stat-perk-diamond">
-                                                                <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                            <div className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-label">Biggest Win</span>
+                                                                    <span className="stat-value title-white">+${stats.financialExtremes.biggestWin.amount} <span className="text-sm text-normal">(Trial {stats.financialExtremes.biggestWin.trialNumber})</span></span>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    ))}
+                                                        <div className="stats-col">
+                                                            <div className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-label">Total Debt Accrued</span>
+                                                                    <span className="stat-value title-iri">-${stats.totalDebt}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-label">Biggest Loss</span>
+                                                                    <span className="stat-value title-iri">-${Math.abs(stats.financialExtremes.biggestLoss.amount)} <span className="text-sm text-normal">(Trial {stats.financialExtremes.biggestLoss.trialNumber})</span></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
+
+                                            {/* --- NEW: ROSTER PERFORMANCE AWARDS (All Variants) --- */}
+                                            {stats.rosterAwards && stats.rosterAwards.length > 0 && (
+                                                <div className="stats-section mb-8">
+                                                    <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
+                                                    {/* Temporarily using your standard grid if recap grid is missing globally */}
+                                                    <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+                                                        {stats.rosterAwards.map((award, i) => (
+                                                            <div key={i} className="stat-card" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '15px' }}>
+                                                                <h4 className={`bebas-header-2 text-white mb-2 ${award.effect === "negative" ? "title-iri" : ""}`}>{award.name}</h4>
+                                                                <img
+                                                                    src={`/assets/Killers/${award.killerName}.png`}
+                                                                    style={{ height: '80px', objectFit: 'contain', filter: award.effect === "negative" ? 'grayscale(100%)' : 'none' }}
+                                                                    alt={award.killerName}
+                                                                />
+                                                                <div className="mt-2">
+                                                                    <p className="inter-text-small text-white uppercase m-0">{award.killerName}</p>
+                                                                    <p className="inter-text-small m-0">{award.detailText}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* --- NEW: TOP KILLERS (Adept Only) --- */}
+                                            {variantView.display.id === 'ADEPT' && stats.topKillers && (
+                                                <div className="stats-section mb-8">
+                                                    <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
+                                                    <div className="stats-grid">
+                                                        {stats.topKillers.map((killer, i) => (
+                                                            <div key={i} className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-value inter-text-normal text-white uppercase">{killer.name}</span>
+                                                                    <span className="stat-label">{killer.pickRate}% Pick Rate | {killer.killRate}% Kill Rate</span>
+                                                                </div>
+                                                                <img src={`/assets/Killer Portraits/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* META & LOADOUT TENDENCIES (Hidden for Adept & Chaos Shuffle) */}
+                                            {variantView.display.id !== 'ADEPT' && variantView.display.id !== 'CHAOS_SHUFFLE' && (
+                                                <div className="stats-section mb-8">
+                                                    <h3 className="bebas-header-2 stats-section-title">META & LOADOUT TENDENCIES</h3>
+                                                    <div className="stats-grid">
+                                                        {stats.topPerks?.map((perk, i) => (
+                                                            <div key={i} className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-value inter-text-normal text-normal">{perk.name}</span>
+                                                                    <span className="stat-label">{perk.pickRate}% Pick Rate</span>
+                                                                </div>
+                                                                <div className="stat-perk-diamond">
+                                                                    <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* EMBLEMS */}
                                             <div className="stats-section">
@@ -426,7 +525,7 @@ const ReviewChallengesPage = () => {
                                                                 <span className="stat-value inter-text-normal text-normal capitalize">
                                                                     {emblem.category.charAt(0) + emblem.category.slice(1).toLowerCase()}
                                                                 </span>
-                                                                <span className="stat-label">{emblem.rate}%</span>
+                                                                <span className="stat-label">{emblem.rate}% Iridescent</span>
                                                             </div>
                                                             <img src={`/assets/Emblems/${emblem.category}_IRIDESCENT.png`} className="stat-emblem-icon drop-shadow" alt={emblem.category} />
                                                         </div>
