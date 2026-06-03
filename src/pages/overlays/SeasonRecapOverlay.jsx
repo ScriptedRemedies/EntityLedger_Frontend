@@ -349,7 +349,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                                     <span className="stat-value inter-text-normal text-white uppercase">{killer.name}</span>
                                                     <span className="stat-label">{killer.pickRate}% Pick Rate | {killer.killRate}% Kill Rate</span>
                                                 </div>
-                                                <img src={`/assets/Killer Portraits/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
+                                                <img src={`/assets/Killers/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
                                             </div>
                                         ))}
                                     </div>
