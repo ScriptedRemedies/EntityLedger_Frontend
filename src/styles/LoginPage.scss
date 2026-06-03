@@ -1,0 +1,12 @@
+.login-btn {
+  cursor: pointer;
+  padding: 10px 20px;
+  background: var(--color-60-background);
+  color: var(--color-normal);
+  transition: 0.5s;
+
+  &:hover {
+    color: white;
+    background: black;
+  }
+}

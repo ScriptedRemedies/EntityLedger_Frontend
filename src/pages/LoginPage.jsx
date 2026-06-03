@@ -48,10 +48,9 @@ const LoginPage = () => {
 
                 {/* Google Login button */}
                 <div className="flex gap-6 mx-auto">
-                    {/* TODO: Change styles of button */}
                     <a
                         href={`${import.meta.env.VITE_API_BASE_URL || ''}/oauth2/authorization/google`}
-                        className="bg-white text-black px-8 py-3 rounded-md font-bebas text-2xl tracking-wider hover:bg-gray-200 transition-colors">
+                        className="login-btn">
                         SIGN IN WITH GOOGLE
                     </a>
                 </div>
