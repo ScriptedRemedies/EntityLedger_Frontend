@@ -57,8 +57,8 @@
   }
 }
 .trials-table-header {
+  grid-template-columns: var(--grid-columns, minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr));
   display: grid;
-  grid-template-columns: minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr);
   width: 100%;
   min-width: 850px;
   gap: 10px;
@@ -78,10 +78,14 @@
     text-align: right;
     padding-right: 20px;
   }
+
+  .table-col-center {
+    text-align: center;
+  }
 }
 .trial-row {
+  grid-template-columns: var(--grid-columns, minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr));
   display: grid;
-  grid-template-columns: minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr);
   width: 100%;
   min-width: 850px;
   gap: 10px;
@@ -131,12 +135,36 @@
           justify-content: center;
           transform: rotate(45deg);
           margin: 10px 13px;
+          position: relative; /* REQUIRED for absolute positioning of price/lock */
 
           .trial-perk-image {
             width: 100%;
             height: 100%;
             object-fit: contain;
             transform: rotate(-45deg) scale(1.35);
+          }
+
+          .locked-padlock-diamond {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            transform: rotate(-45deg);
+            opacity: 0.5;
+          }
+
+          .item-price {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            background-color: var(--color-IRIDESCENT);
+            color: white;
+            font-family: var(--font-bebas);
+            font-size: 14px;
+            padding: 0 4px;
+            border-radius: 2px;
+            z-index: 10;
+            box-shadow: 0px 2px 4px rgba(0,0,0,0.8);
+            transform: rotate(-45deg); /* Counter-rotates so text is straight */
           }
         }
       }
@@ -145,6 +173,7 @@
 
   .trial-addons {
     display: flex;
+    justify-content: center;
     gap: 5px;
     margin-bottom: 18px;
 
@@ -165,6 +194,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative; /* REQUIRED for absolute positioning of price/lock */
 
         .addon-image {
           width: 100%;
@@ -172,12 +202,47 @@
           max-width: unset;
           object-fit: contain;
         }
+
+        .locked-padlock-square {
+          width: 50%;
+          height: 50%;
+          object-fit: contain;
+          opacity: 0.5;
+        }
+
+        .item-price {
+          position: absolute;
+          bottom: -6px;
+          background-color: var(--color-IRIDESCENT);
+          color: white;
+          font-family: var(--font-bebas);
+          font-size: 14px;
+          padding: 0 4px;
+          border-radius: 2px;
+          z-index: 10;
+          box-shadow: 0px 2px 4px rgba(0,0,0,0.8);
+        }
       }
+    }
+  }
+
+  .trial-tokens-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+
+    .token-icon {
+      width: 45px;
+      object-fit: contain;
+      transition: filter 0.3s ease;
     }
   }
 
   .trial-survivors {
     display: flex;
+    justify-content: center;
     margin-bottom: 15px;
 
     .trial-survivor-status {
@@ -186,13 +251,16 @@
     }
   }
 
+  .trial-finances {
+    margin-bottom: 15px;
+  }
+
   .trial-grade {
     margin-bottom: 15px;
     display: flex;
     justify-content: flex-end;
     padding-right: 20px;
   }
-
 }
 
 /* ==================== */
