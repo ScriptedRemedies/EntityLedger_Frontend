@@ -2,6 +2,7 @@ import React from 'react';
 import GradeBadgeDisplay from './GradeBadgeDisplay.jsx';
 import KillerCard from './KillerCard.jsx';
 import '../../styles/small-components/TrialComponent.scss';
+import '../../styles/variant-loadouts/Loadouts.scss'; // Inherit exact loadout styles for pricing/locks!
 
 const TrialListTable = ({ trials, variantType, onRowClick }) => {
 
@@ -11,35 +12,25 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
     const isChaos = variantType === 'CHAOS_SHUFFLE';
     const isIronMan = variantType === 'IRON_MAN';
 
-    // --- DYNAMIC GRID LAYOUT ---
-    let gridCols = 'minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr)';
-    if (isFinancial) gridCols = 'minmax(350px, 2.5fr) minmax(140px, 1fr) minmax(150px, 1fr) minmax(120px, 1fr) minmax(100px, 1fr)';
-    if (isChaos) gridCols = 'minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr)'; // Replaces Addons with Tokens
-    if (isIronMan) gridCols = 'minmax(350px, 2.5fr) minmax(140px, 1fr) minmax(150px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr)';
-
-    // --- LOCK LOGIC ---
-    const isPerkLocked = (index) => isAdept && index === 3;
-    const isAddonLocked = (trial) => isAdept && trial.currentGrade && !trial.currentGrade.startsWith('ASH');
-
     return (
-        <div className="trials-table" style={{ '--grid-columns': gridCols }}>
-            <div className="trials-table-header">
-                <div className="table-col-1">Perks</div>
-                <div className="table-col-center">{isChaos ? 'Tokens' : 'Add Ons'}</div>
-                <div className="table-col-center">Survivor Status</div>
-                {isFinancial && <div className="table-col-center">Ledger</div>}
-                {isIronMan && <div className="table-col-center">Mulligan</div>}
-                <div className="table-col-right">Grade</div>
-            </div>
-
+        <div className="trials-card-list">
             {trials.map(trial => {
-                const killerDiedInTrial = trial.survivors?.some(res => res.outcome.toUpperCase() === 'ESCAPED');
+                // Historical Death Check
+                const killerDiedInTrial = trial.survivors?.some(res => {
+                    const outcome = typeof res === 'string' ? res : res.outcome;
+                    return outcome.toUpperCase() === 'ESCAPED';
+                });
                 const historicalStatus = killerDiedInTrial ? 'DEAD' : 'AVAILABLE';
 
-                return (
-                    <div key={trial.id || trial.trialId} onClick={() => onRowClick(trial)} className="trial-row">
+                // Addon Lock Check
+                const gradeStr = trial.currentGrade || trial.resultingGrade || 'ASH_IV';
+                const isAddonsLocked = isAdept && !gradeStr.startsWith('ASH');
 
-                        <div className="trial-killer-info">
+                return (
+                    <div key={trial.id || trial.trialId} onClick={() => onRowClick(trial)} className="trial-card-row">
+
+                        {/* --- LEFT: Killer Portrait --- */}
+                        <div className="trial-card-left">
                             <div className="trial-list-card-wrapper">
                                 <KillerCard
                                     killer={{ ...trial.killer, killerName: trial.killer?.name || trial.killerName, status: historicalStatus }}
@@ -48,100 +39,134 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                                     isSelected={false}
                                 />
                             </div>
-                            <div className="trial-killer-details">
-                                <p className="trial-killer-name"><span className="inter-text-normal">Trial #{trial.trialNumber} |</span> {trial.killer?.name || trial.killerName}</p>
-                                <div className="trial-perks">
-                                    {[0, 1, 2, 3].map(index => {
-                                        const perk = trial.perks ? trial.perks[index] : null;
-                                        const locked = isPerkLocked(index);
-                                        return (
-                                            <div key={index} className="trial-perk-slot">
-                                                {locked ? (
-                                                    <img src="/assets/Image Overlays/locked.png" className="locked-padlock-diamond" alt="Locked" />
-                                                ) : perk ? (
-                                                    <>
-                                                        <img src={perk.iconUrl || `/assets/Perks/${perk.name}.png`} className="trial-perk-image" alt={perk.name} />
-                                                        {isFinancial && <div className="item-price">${perk.cost}</div>}
-                                                    </>
-                                                ) : null}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
                         </div>
 
-                        {/* COLUMN 2: Addons OR Chaos Tokens */}
-                        {isChaos ? (
-                            <div className="trial-tokens-col">
-                                <img
-                                    src="/assets/Variants/ReRollToken.png"
-                                    className="token-icon"
-                                    style={{ filter: trial.usedReRollToken ? 'none' : 'grayscale(100%) opacity(0.3)' }}
-                                    alt="Reroll Token"
-                                />
-                                <div className="inter-text-small text-muted mt-1">Left: {trial.remainingTokens}</div>
+                        {/* --- CENTER: Details & Metrics --- */}
+                        <div className="trial-card-body">
+
+                            {/* TOP ROW: Title & Finances */}
+                            <div className="trial-card-header">
+                                <h3 className="bebas-header-2 text-white m-0">
+                                    <span className="text-normal">Trial #{trial.trialNumber} |</span> {trial.killer?.name || trial.killerName}
+                                </h3>
+
+                                {isFinancial && (
+                                    <div className="trial-finances-inline">
+                                        <span className={`bebas-header-2 ${trial.netIncome > 0 ? 'text-white' : 'title-iri'}`}>
+                                            {trial.netIncome > 0 ? `+$${trial.netIncome}` : `-$${Math.abs(trial.netIncome || 0)}`}
+                                        </span>
+                                        <span className="inter-text-small text-muted ml-3">Bal: ${trial.runningBalance || 0}</span>
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            <div className="trial-addons">
-                                {[0, 1].map(index => {
-                                    const addon = trial.addons || trial.addOns ? (trial.addons || trial.addOns)[index] : null;
-                                    const locked = isAddonLocked(trial);
-                                    return (
-                                        <div key={index} className="addon-wrapper">
-                                            {index > 0 && <span className="addon-plus">+</span>}
-                                            <div className="trial-addon-slot">
-                                                {locked ? (
-                                                    <img src="/assets/Image Overlays/locked.png" className="locked-padlock-square" alt="Locked" />
-                                                ) : addon ? (
-                                                    <>
-                                                        <img src={`/assets/Addons/${trial.killer.name}/${addon.name.replace('%', '')}.png`} className="addon-image" alt={addon.name} />
-                                                        {isFinancial && <div className="item-price">${addon.cost}</div>}
-                                                    </>
-                                                ) : null}
-                                            </div>
+
+                            {/* BOTTOM ROW: The Loadout & Match Results */}
+                            <div className="trial-card-metrics">
+
+                                {/* PERKS */}
+                                <div className="metric-group">
+                                    <div className="trial-perks">
+                                        {[0, 1, 2, 3].map(index => {
+                                            const perk = trial.perks ? trial.perks[index] : null;
+                                            const locked = isAdept && index === 3;
+                                            return (
+                                                <div key={index} className="trial-perk-slot">
+                                                    {locked ? (
+                                                        <div className="diamond-content flex items-center justify-center">
+                                                            <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Locked" style={{ width: '60%' }} />
+                                                        </div>
+                                                    ) : perk ? (
+                                                        <>
+                                                            <div className="diamond-content">
+                                                                <img src={perk.iconUrl || `/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                            </div>
+                                                            {isFinancial && (
+                                                                <div className="loadout-financial-overlay perk-mode">
+                                                                    <div className="price-banner">${perk.cost || 0}</div>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : null}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* ADDONS OR CHAOS TOKENS */}
+                                {isChaos ? (
+                                    <div className="metric-group tokens-group ml-2">
+                                        <img
+                                            src="/assets/Variants/ReRollToken.png"
+                                            className="token-icon"
+                                            style={{ filter: trial.usedReRollToken ? 'none' : 'grayscale(100%) opacity(0.3)' }}
+                                            alt="Reroll Token"
+                                            title={trial.usedReRollToken ? "Token Used" : "Token Not Used"}
+                                        />
+                                        <div className="inter-text-small text-muted mt-1">Left: {trial.remainingTokens || 0}</div>
+                                    </div>
+                                ) : (
+                                    <div className="metric-group ml-2">
+                                        <div className="trial-addons">
+                                            {[0, 1].map(index => {
+                                                const addonList = trial.addons || trial.addOns || [];
+                                                const addon = addonList[index];
+                                                return (
+                                                    <div key={index} className="addon-wrapper">
+                                                        {index > 0 && <span className="addon-plus">+</span>}
+                                                        <div className="trial-addon-slot">
+                                                            {isAddonsLocked ? (
+                                                                <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Locked" style={{ width: '60%' }} />
+                                                            ) : addon ? (
+                                                                <>
+                                                                    <img src={addon.iconUrl || `/assets/Addons/${trial.killer?.name || trial.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }}/>
+                                                                    {isFinancial && (
+                                                                        <div className="loadout-financial-overlay">
+                                                                            <div className="price-banner">${addon.cost || 0}</div>
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            ) : null}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                    </div>
+                                )}
 
-                        {/* COLUMN 3: Survivors */}
-                        <div className="trial-survivors">
-                            {(trial.survivors || trial.survivorResults)?.map((res, i) => {
-                                const outcome = typeof res === 'string' ? res : res.outcome;
-                                return <img key={i} src={`/assets/Survivor Status/${outcome.toLowerCase()}.png`} className="trial-survivor-status" alt={outcome} />
-                            })}
+                                {/* SURVIVORS */}
+                                <div className="metric-group ml-4">
+                                    <div className="trial-survivors">
+                                        {(trial.survivors || trial.survivorResults)?.map((res, i) => {
+                                            const outcome = typeof res === 'string' ? res : res.outcome;
+                                            return <img key={i} src={`/assets/Survivor Status/${outcome.toLowerCase()}.png`} className="trial-survivor-status" alt={outcome} />
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* IRON MAN MULLIGAN */}
+                                {isIronMan && (
+                                    <div className="metric-group tokens-group ml-4">
+                                        <img
+                                            src="/assets/Variants/ReRollToken.png"
+                                            className="token-icon"
+                                            style={{ filter: trial.burnedMulligan ? 'none' : 'grayscale(100%) opacity(0.3)' }}
+                                            alt="Mulligan Token"
+                                            title={trial.burnedMulligan ? "Mulligan Burned" : "Mulligan Intact"}
+                                        />
+                                        <div className="inter-text-small text-muted mt-1">Burned</div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {/* COLUMN 4/5 (Dynamic): Financials */}
-                        {isFinancial && (
-                            <div className="trial-finances flex flex-col items-center">
-                                <div className={`bebas-header-2 ${trial.netIncome > 0 ? 'text-white' : 'title-iri'}`}>
-                                    {trial.netIncome > 0 ? `+$${trial.netIncome}` : `-$${Math.abs(trial.netIncome)}`}
-                                </div>
-                                <div className="inter-text-small text-muted">Bal: ${trial.runningBalance}</div>
-                            </div>
-                        )}
-
-                        {/* COLUMN 4/5 (Dynamic): Iron Man Tokens */}
-                        {isIronMan && (
-                            <div className="trial-tokens-col flex justify-center">
-                                <img
-                                    src="/assets/Variants/ReRollToken.png"
-                                    className="token-icon"
-                                    style={{ width: '35px', filter: trial.burnedMulligan ? 'none' : 'grayscale(100%) opacity(0.3)' }}
-                                    alt="Mulligan Token"
-                                />
-                            </div>
-                        )}
-
-                        {/* FINAL COLUMN: Grade */}
-                        <div className="trial-grade">
+                        {/* --- RIGHT: Grade --- */}
+                        <div className="trial-card-right">
                             <GradeBadgeDisplay
                                 rawGrade={trial.resultingGrade || trial.currentGrade}
                                 pips={trial.resultingPips || trial.currentPips}
-                                size="small"
+                                size="normal"
                             />
                         </div>
                     </div>

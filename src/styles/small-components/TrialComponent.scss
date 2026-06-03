@@ -1,5 +1,5 @@
 /* ==================== */
-/* TRIAL LIST TABLE     */
+/* TRIAL LIST WRAPPERS  */
 /* ==================== */
 .trials-list-container {
   display: flex;
@@ -29,153 +29,146 @@
   align-items: flex-start;
   z-index: 300;
   position: relative;
-  margin-bottom: 15px;
 }
 .trials-header-text {
   display: flex;
   flex-direction: column;
 }
-.trials-header-desc {
-  color: var(--color-muted);
-}
-.trials-header-badge {
+
+/* ==================== */
+/* TRIAL MATCH CARDS    */
+/* ==================== */
+.trials-card-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-}
-.trials-table {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  gap: 15px;
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+  margin-bottom: 20px;
   -ms-overflow-style: none;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
 }
-.trials-table-header {
-  grid-template-columns: var(--grid-columns, minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr));
-  display: grid;
-  width: 100%;
-  min-width: 850px;
-  gap: 10px;
-  align-items: center;
-  font-size: var(--text-size-small);
-  text-align: left;
-  padding: 10px 5px;
-  background: black;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 
-  .table-col-1 {
-    padding-left: 100px;
-  }
-  .table-col-right {
-    text-align: right;
-    padding-right: 20px;
-  }
-
-  .table-col-center {
-    text-align: center;
-  }
-}
-.trial-row {
-  grid-template-columns: var(--grid-columns, minmax(410px, 2.5fr) minmax(140px, 1fr) minmax(170px, 1fr) minmax(100px, 1fr));
-  display: grid;
-  width: 100%;
-  min-width: 850px;
-  gap: 10px;
-  align-items: end;
-  padding: 5px;
+.trial-card-row {
+  display: flex;
+  gap: 20px;
+  padding: 15px;
+  background: var(--color-60-background);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.2s, border-color 0.2s;
 
   &:hover {
-    background: var(--color-60-background);
+    background: rgba(0,0,0,0.8);
+    border-color: rgba(255,255,255,0.15);
     cursor: pointer;
   }
+}
 
-  .trial-killer-info {
+.trial-card-left {
+  flex-shrink: 0;
+
+  .trial-list-card-wrapper {
+    width: 85px;
+    height: 110px;
+    pointer-events: none;
+
+    .killer-card {
+      width: 100%;
+      height: 100%;
+      min-height: unset;
+      min-width: unset;
+    }
+  }
+}
+
+.trial-card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+}
+
+.trial-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 8px;
+}
+
+.trial-finances-inline {
+  display: flex;
+  align-items: baseline;
+}
+
+.trial-card-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 25px;
+
+  .metric-group {
     display: flex;
-    gap: 10px;
-    padding: 5px 0;
+    align-items: center;
 
-    .trial-list-card-wrapper {
-      width: 85px;
-      height: 110px;
-      pointer-events: none;
-
-      .killer-card {
-        width: 100%;
-        height: 100%;
-        min-height: unset;
-        min-width: unset;
-      }
+    &.tokens-group {
+      flex-direction: column;
+      align-items: center;
     }
 
-    .trial-killer-details {
-      .trial-killer-name {
-        font-size: var(--header-size-2);
-        font-family: var(--font-bebas);
-        color: var(--color-white);
-      }
-      .trial-perks {
+    .token-icon {
+      width: 35px;
+      object-fit: contain;
+      transition: filter 0.3s ease;
+    }
+  }
+
+  .trial-perks {
+    display: flex;
+    gap: 5px;
+
+    .trial-perk-slot {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+      width: 45px;
+      height: 45px;
+      margin: 0 8px;
+      transform: rotate(45deg);
+      position: relative;
+      overflow: hidden; /* Clips the price banner corners */
+
+      .diamond-content {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-45deg) scale(1.4);
         display: flex;
-        padding-left: 5px;
+        justify-content: center;
+        align-items: center;
 
-        .trial-perk-slot {
-          width: 50px;
-          height: 50px;
-          background-color: var(--color-60-background);
-          border: 1px solid var(--color-80-background);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transform: rotate(45deg);
-          margin: 10px 13px;
-          position: relative; /* REQUIRED for absolute positioning of price/lock */
-
-          .trial-perk-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transform: rotate(-45deg) scale(1.35);
-          }
-
-          .locked-padlock-diamond {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-            transform: rotate(-45deg);
-            opacity: 0.5;
-          }
-
-          .item-price {
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            background-color: var(--color-IRIDESCENT);
-            color: white;
-            font-family: var(--font-bebas);
-            font-size: 14px;
-            padding: 0 4px;
-            border-radius: 2px;
-            z-index: 10;
-            box-shadow: 0px 2px 4px rgba(0,0,0,0.8);
-            transform: rotate(-45deg); /* Counter-rotates so text is straight */
-          }
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
+      }
+
+      .price-banner {
+        font-size: 11px; /* Scaled down for the 45px slots */
       }
     }
   }
 
   .trial-addons {
     display: flex;
-    justify-content: center;
     gap: 5px;
-    margin-bottom: 18px;
+    align-items: center;
 
     .addon-wrapper {
       display: flex;
@@ -186,81 +179,50 @@
         font-size: var(--header-size-2);
         color: var(--color-normal);
       }
-      .trial-addon-slot {
-        width: 50px;
-        height: 50px;
-        background-color: var(--color-60-background);
-        border: 1px solid var(--color-80-background);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative; /* REQUIRED for absolute positioning of price/lock */
 
-        .addon-image {
+      .trial-addon-slot {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        width: 45px;
+        height: 45px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden; /* Clips the price banner corners */
+
+        img {
           width: 100%;
           height: 100%;
-          max-width: unset;
           object-fit: contain;
         }
 
-        .locked-padlock-square {
-          width: 50%;
-          height: 50%;
-          object-fit: contain;
-          opacity: 0.5;
-        }
-
-        .item-price {
-          position: absolute;
-          bottom: -6px;
-          background-color: var(--color-IRIDESCENT);
-          color: white;
-          font-family: var(--font-bebas);
-          font-size: 14px;
-          padding: 0 4px;
-          border-radius: 2px;
-          z-index: 10;
-          box-shadow: 0px 2px 4px rgba(0,0,0,0.8);
+        .price-banner {
+          font-size: 12px; /* Scaled down for the 45px slots */
         }
       }
     }
   }
 
-  .trial-tokens-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 15px;
-
-    .token-icon {
-      width: 45px;
-      object-fit: contain;
-      transition: filter 0.3s ease;
-    }
-  }
-
   .trial-survivors {
     display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
+    gap: 5px;
 
     .trial-survivor-status {
       width: 40px;
-      max-width: unset;
+      object-fit: contain;
     }
   }
+}
 
-  .trial-finances {
-    margin-bottom: 15px;
-  }
-
-  .trial-grade {
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 20px;
-  }
+.trial-card-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 15px;
+  border-left: 1px solid rgba(255,255,255,0.1);
 }
 
 /* ==================== */
@@ -296,7 +258,6 @@
   }
 
   .close-overlay-btn {
-
     color: var(--color-white);
     background: transparent;
     border: none;
