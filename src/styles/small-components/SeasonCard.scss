@@ -5,7 +5,7 @@
   background: #0f0f0f;
   border: 1px solid rgba(255, 255, 255, 0.05);
   min-height: 280px;
-  min-width: 200px;
+  min-width: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,6 +74,8 @@
   font-size: var(--text-size-small);
   color: var(--color-normal);
   text-transform: uppercase;
+  text-align: center;
+  width: 100%;
 }
 .season-result-title {
   color: var(--color-IRIDESCENT);

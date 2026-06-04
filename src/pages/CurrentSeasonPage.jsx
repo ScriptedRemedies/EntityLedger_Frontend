@@ -583,6 +583,8 @@ const CurrentSeasonPage = () => {
 
             <TrialDetailsOverlay
                 trial={activeTrialOverlay}
+                trials={trials}
+                variantType={activeSeason?.variantType}
                 onClose={() => setActiveTrialOverlay(null)}
             />
 
@@ -605,6 +607,8 @@ const CurrentSeasonPage = () => {
                 <TrialResultsOverlay
                     season={activeSeason}
                     killer={currentKiller}
+                    selectedAddons={selectedAddons}
+                    selectedPerks={selectedPerks}
                     trialCount={trialCount}
                     onSubmit={handleTrialSubmit}
                 />

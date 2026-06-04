@@ -299,7 +299,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                             <div className="stat-info">
                                                 <span className="stat-label">Biggest Win</span>
                                                 <span className="stat-value title-white">
-                                                    {biggestWin.amount > 0 ? `+$${biggestWin.amount}` : '$0'} <span className="text-sm text-normal">{biggestWin.trialNumber > 0 ? `(Trial ${biggestWin.trialNumber})` : ''}</span>
+                                                    {biggestWin.amount > 0 ? `+$${biggestWin.amount}` : '$0'}
                                                 </span>
                                             </div>
                                         </div>
@@ -307,7 +307,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                             <div className="stat-info">
                                                 <span className="stat-label">Biggest Loss</span>
                                                 <span className="stat-value title-iri">
-                                                    {biggestLoss.amount < 0 ? `-$${Math.abs(biggestLoss.amount)}` : '$0'} <span className="text-sm text-normal">{biggestLoss.trialNumber > 0 ? `(Trial ${biggestLoss.trialNumber})` : ''}</span>
+                                                    {biggestLoss.amount < 0 ? `-$${Math.abs(biggestLoss.amount)}` : '$0'}
                                                 </span>
                                             </div>
                                         </div>

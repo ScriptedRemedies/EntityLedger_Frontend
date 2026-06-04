@@ -58,7 +58,7 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                                         <span className={`bebas-header-2 ${trial.netIncome > 0 ? 'text-white' : 'title-iri'}`}>
                                             {trial.netIncome > 0 ? `+$${trial.netIncome}` : `-$${Math.abs(trial.netIncome || 0)}`}
                                         </span>
-                                        <span className="inter-text-small text-muted ml-3">Bal: ${trial.runningBalance || 0}</span>
+                                        <span className="inter-text-small text-muted ml-3">Bal: ${(trial.runningBalance || 0) + (trial.netIncome || 0)}</span>
                                     </div>
                                 )}
                             </div>

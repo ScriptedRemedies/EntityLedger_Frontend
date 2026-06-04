@@ -231,7 +231,6 @@
 .td-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
@@ -317,7 +316,7 @@
 .td-grid-2x2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px 15px;
+  gap: 40px 10px;
 }
 
 .td-item-row {
@@ -328,7 +327,6 @@
   .td-item-text {
     font-family: var(--font-inter);
     font-size: var(--text-size-small);
-    color: var(--color-muted);
     line-height: 1.2;
   }
 }

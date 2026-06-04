@@ -426,7 +426,7 @@ const ReviewChallengesPage = () => {
                                                             <div className="stat-card">
                                                                 <div className="stat-info">
                                                                     <span className="stat-label">Biggest Win</span>
-                                                                    <span className="stat-value title-white">+${stats.financialExtremes.biggestWin.amount} <span className="text-sm text-normal">(Trial {stats.financialExtremes.biggestWin.trialNumber})</span></span>
+                                                                    <span className="stat-value title-white">+${stats.financialExtremes.biggestWin.amount}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -440,7 +440,7 @@ const ReviewChallengesPage = () => {
                                                             <div className="stat-card">
                                                                 <div className="stat-info">
                                                                     <span className="stat-label">Biggest Loss</span>
-                                                                    <span className="stat-value title-iri">-${Math.abs(stats.financialExtremes.biggestLoss.amount)} <span className="text-sm text-normal">(Trial {stats.financialExtremes.biggestLoss.trialNumber})</span></span>
+                                                                    <span className="stat-value title-iri">-${Math.abs(stats.financialExtremes.biggestLoss.amount)}</span>
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -43,6 +43,13 @@ const TrialDetailsOverlay = ({ trial, trials = [], variantType, onClose }) => {
     const handlePrev = () => { if (activeIndex > 0) setActiveIndex(activeIndex - 1); };
     const handleNext = () => { if (activeIndex < trials.length - 1) setActiveIndex(activeIndex + 1); };
 
+    const trialCost = (activeTrial.killer?.cost || activeTrial.killerCost || 0) +
+        (activeTrial.perks || []).reduce((sum, p) => sum + (p?.cost || 0), 0) +
+        (activeTrial.addons || activeTrial.addOns || []).reduce((sum, a) => sum + (a?.cost || 0), 0);
+
+    // Match Revenue is the raw gameplay earnings minus gameplay penalties
+    const matchRevenue = (activeTrial.netIncome || 0) + trialCost;
+
     return (
         <div className="td-modal-backdrop fade-in">
             <div className="td-modal-box">
@@ -66,7 +73,7 @@ const TrialDetailsOverlay = ({ trial, trials = [], variantType, onClose }) => {
                                     <div className={`bebas-header-2 m-0 ${activeTrial.netIncome > 0 ? 'text-white' : 'title-iri'}`}>
                                         {activeTrial.netIncome > 0 ? `+$${activeTrial.netIncome}` : `-$${Math.abs(activeTrial.netIncome || 0)}`}
                                     </div>
-                                    <div className="inter-text-small text-muted">Bal: ${activeTrial.runningBalance || 0}</div>
+                                    <div className="inter-text-small text-muted">Bal: ${(activeTrial.runningBalance || 0) + (activeTrial.netIncome || 0)}</div>
                                 </div>
                             )}
                             <GradeBadgeDisplay
@@ -164,6 +171,32 @@ const TrialDetailsOverlay = ({ trial, trials = [], variantType, onClose }) => {
                                 </div>
                             )}
 
+                            {/* --- ECONOMY LEDGER --- */}
+                            {isFinancial && (
+                                <div>
+                                    <h4 className="bebas-header-2 td-section-title">ECONOMY LEDGER</h4>
+                                    <div className="td-item-row mt-4" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                                        <div className="flex justify-between w-full pr-8">
+                                            <span className="td-item-text">Total Trial Cost</span>
+                                            <span className="td-item-text title-iri">-${trialCost}</span>
+                                        </div>
+                                        <div className="flex justify-between w-full pr-8">
+                                            <span className="td-item-text">Match Revenue (Earnings - Penalties)</span>
+                                            <span className={`td-item-text ${matchRevenue >= 0 ? 'text-white' : 'title-iri'}`}>
+                                                {matchRevenue >= 0 ? `+$${matchRevenue}` : `-$${Math.abs(matchRevenue)}`}
+                                            </span>
+                                        </div>
+                                        <div className="w-full pr-8"><div className="w-full h-px bg-white opacity-20 my-1"></div></div>
+                                        <div className="flex justify-between w-full pr-8 items-end">
+                                            <span className="td-item-text text-white">Net Profit</span>
+                                            <span className={`bebas-header-2 m-0 text-2xl ${activeTrial.netIncome >= 0 ? 'text-white' : 'title-iri'}`}>
+                                                {activeTrial.netIncome >= 0 ? `+$${activeTrial.netIncome}` : `-$${Math.abs(activeTrial.netIncome || 0)}`}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
 
                         <div className="td-col-right flex flex-col gap-8">
@@ -225,7 +258,7 @@ const TrialDetailsOverlay = ({ trial, trials = [], variantType, onClose }) => {
 
                     <div className="td-footer">
                         <button disabled={activeIndex === 0} onClick={handlePrev}>&larr; Previous Trial</button>
-                        <span className="inter-text-small text-muted">{activeIndex + 1} of {trials.length}</span>
+                        <span className="inter-text-small">{activeIndex + 1} of {trials.length}</span>
                         <button disabled={activeIndex === trials.length - 1} onClick={handleNext}>Next Trial &rarr;</button>
                     </div>
 
