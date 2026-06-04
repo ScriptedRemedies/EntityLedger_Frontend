@@ -24,7 +24,10 @@ const SeasonCard = ({ season, onClick, hideOverlay = false }) => {
 
     const start = season.startDate ? new Date(season.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Unknown';
     const completed = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Current';
-    const dateRange = `${start} - ${completed}`;
+    let dateRange = `${start} - ${completed}`;
+    if (season.variantType === 'IRON_MAN') {
+        dateRange = season.startDate ? new Date (season.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown';
+    }
 
     const badge = currentGradeRaw.split("_")[0];
     const nextGradeColor = nextGradeName.split(" ")[0];

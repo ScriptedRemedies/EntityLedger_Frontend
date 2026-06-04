@@ -136,6 +136,10 @@ const ReviewChallengesPage = () => {
 
                     const start = new Date(season.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     const completed = season.endDate ? new Date(season.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Current';
+                    let displayDateRange = `${start} - ${completed}`;
+                    if (season.variantType === 'IRON_MAN') {
+                        displayDateRange = new Date(season.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    }
 
                     return {
                         ...season,
@@ -145,7 +149,7 @@ const ReviewChallengesPage = () => {
                         seasonPips: season.currentPips || 0,
                         maxPips: maxPips,
                         nextGradeName: nextGradeName,
-                        dateRange: `${start} - ${completed}`,
+                        dateRange: displayDateRange,
                         dateStarted: start,
                         dateCompleted: completed
                     };
@@ -177,14 +181,6 @@ const ReviewChallengesPage = () => {
         };
         fetchTrials();
     }, [selectedSeason]);
-
-    const getResultTitle = (grade) => {
-        if (!grade) return "IN PROGRESS";
-        if (grade.includes("ASH") || grade.includes("BRONZE III")) return "THE ENTITY HUNGERS";
-        if (grade.includes("BRONZE II") || grade.includes("SILVER")) return "BRUTAL KILLER";
-        if (grade.includes("GOLD") || grade.includes("IRIDESCENT II")) return "RUTHLESS KILLER";
-        return "MERCILESS KILLER";
-    };
 
     if (isLoading) {
         return (
@@ -603,6 +599,8 @@ const ReviewChallengesPage = () => {
             {/* === TRIAL DETAILS OVERLAY === */}
             <TrialDetailsOverlay
                 trial={activeTrialOverlay}
+                trials={trials}
+                variantType={selectedSeason?.variantType}
                 onClose={() => setActiveTrialOverlay(null)}
             />
 

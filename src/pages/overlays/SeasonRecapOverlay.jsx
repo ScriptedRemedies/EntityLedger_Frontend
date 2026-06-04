@@ -421,6 +421,8 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
             {/* NESTED DETAILS OVERLAY */}
             <TrialDetailsOverlay
                 trial={activeTrialOverlay}
+                trials={recapData.finalTrials}
+                variantType={season.variantType}
                 onClose={() => setActiveTrialOverlay(null)}
             />
         </div>

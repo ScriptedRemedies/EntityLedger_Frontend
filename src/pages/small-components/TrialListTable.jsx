@@ -2,11 +2,10 @@ import React from 'react';
 import GradeBadgeDisplay from './GradeBadgeDisplay.jsx';
 import KillerCard from './KillerCard.jsx';
 import '../../styles/small-components/TrialComponent.scss';
-import '../../styles/variant-loadouts/Loadouts.scss'; // Inherit exact loadout styles for pricing/locks!
+import '../../styles/variant-loadouts/Loadouts.scss';
 
 const TrialListTable = ({ trials, variantType, onRowClick }) => {
 
-    // --- VARIANT FLAGS ---
     const isAdept = variantType === 'ADEPT';
     const isFinancial = variantType === 'BLOOD_MONEY' || variantType === 'AFTERBURN';
     const isChaos = variantType === 'CHAOS_SHUFFLE';
@@ -15,25 +14,27 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
     return (
         <div className="trials-card-list">
             {trials.map(trial => {
-                // Historical Death Check
                 const killerDiedInTrial = trial.survivors?.some(res => {
                     const outcome = typeof res === 'string' ? res : res.outcome;
                     return outcome.toUpperCase() === 'ESCAPED';
                 });
                 const historicalStatus = killerDiedInTrial ? 'DEAD' : 'AVAILABLE';
 
-                // Addon Lock Check
                 const gradeStr = trial.currentGrade || trial.resultingGrade || 'ASH_IV';
                 const isAddonsLocked = isAdept && !gradeStr.startsWith('ASH');
 
                 return (
                     <div key={trial.id || trial.trialId} onClick={() => onRowClick(trial)} className="trial-card-row">
 
-                        {/* --- LEFT: Killer Portrait --- */}
                         <div className="trial-card-left">
                             <div className="trial-list-card-wrapper">
                                 <KillerCard
-                                    killer={{ ...trial.killer, killerName: trial.killer?.name || trial.killerName, status: historicalStatus }}
+                                    killer={{
+                                        ...trial.killer,
+                                        killerName: trial.killer?.name || trial.killerName,
+                                        status: historicalStatus,
+                                        cost: trial.killer?.cost || trial.killerCost || 0 // Explicitly map cost!
+                                    }}
                                     variantType={variantType}
                                     mode="active"
                                     isSelected={false}
@@ -41,13 +42,15 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                             </div>
                         </div>
 
-                        {/* --- CENTER: Details & Metrics --- */}
                         <div className="trial-card-body">
 
-                            {/* TOP ROW: Title & Finances */}
+                            {/* --- HEADER UPDATE --- */}
                             <div className="trial-card-header">
-                                <h3 className="bebas-header-2 text-white m-0">
-                                    <span className="text-normal">Trial #{trial.trialNumber} |</span> {trial.killer?.name || trial.killerName}
+                                <h3 className="bebas-header-2 text-white m-0 flex items-center">
+                                    <span className="text-normal mr-2">Trial #{trial.trialNumber} |</span> {trial.killer?.name || trial.killerName}
+                                    {isFinancial && (
+                                        <span className="title-iri ml-2">${trial.killer?.cost || trial.killerCost || 0}</span>
+                                    )}
                                 </h3>
 
                                 {isFinancial && (
@@ -60,7 +63,6 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                                 )}
                             </div>
 
-                            {/* BOTTOM ROW: The Loadout & Match Results */}
                             <div className="trial-card-metrics">
 
                                 {/* PERKS */}
@@ -93,7 +95,7 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                                     </div>
                                 </div>
 
-                                {/* ADDONS OR CHAOS TOKENS */}
+                                {/* ADDONS OR TOKENS */}
                                 {isChaos ? (
                                     <div className="metric-group tokens-group ml-2">
                                         <img
@@ -161,7 +163,6 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                             </div>
                         </div>
 
-                        {/* --- RIGHT: Grade --- */}
                         <div className="trial-card-right">
                             <GradeBadgeDisplay
                                 rawGrade={trial.resultingGrade || trial.currentGrade}
