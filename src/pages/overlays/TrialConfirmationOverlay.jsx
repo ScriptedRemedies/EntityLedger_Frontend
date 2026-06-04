@@ -2,6 +2,7 @@ import React from 'react';
 import GradeBadgeDisplay from '../small-components/GradeBadgeDisplay';
 import '../../styles/overlays/TrialConfirmation.scss';
 import '../../styles/ChallengesPage.scss';
+import '../../styles/variant-loadouts/Loadouts.scss'; // Inherit exact loadout styles for pricing!
 
 const TrialConfirmationOverlay = ({
                                       season,
@@ -13,6 +14,13 @@ const TrialConfirmationOverlay = ({
                                       onConfirm
                                   }) => {
 
+    // --- FINANCIAL MATH ---
+    const isFinancial = season.variantType === 'BLOOD_MONEY' || season.variantType === 'AFTERBURN';
+    const killerCost = killer?.cost || 0;
+    const perksCost = selectedPerks.reduce((sum, p) => sum + (p?.cost || 0), 0);
+    const addonsCost = selectedAddons.reduce((sum, a) => sum + (a?.cost || 0), 0);
+    const totalCost = killerCost + perksCost + addonsCost;
+
     // --- ANIMATION TIMING MATH ---
     const baseDelay = 0.2;
     const perkStartDelay = baseDelay + 0.2;
@@ -21,17 +29,25 @@ const TrialConfirmationOverlay = ({
 
     return (
         <div className="trial-confirmation-overlay fade-in">
-            {/* Background Fog overlay */}
             <div className="login-fog-bg"></div>
 
             <div className="confirmation-content">
 
-                {/* HEADER (Standard Fade) */}
-                <div className="confirm-header">
-                    <GradeBadgeDisplay rawGrade={season.currentGrade} pips={season.currentPips} size="small" />
-                    <span className="inter-text-normal text-normal uppercase">
-                        {season.variantType.replace('_', ' ')} - Trial #{trialCount + 1}
-                    </span>
+                {/* HEADER */}
+                <div className="confirm-header" style={{ width: '100%', justifyContent: 'space-between' }}>
+                    <div className="flex items-center gap-4">
+                        <GradeBadgeDisplay rawGrade={season.currentGrade} pips={season.currentPips} size="small" />
+                        <span className="inter-text-normal text-normal uppercase">
+                            {season.variantType.replace('_', ' ')} - Trial #{trialCount + 1}
+                        </span>
+                    </div>
+
+                    {isFinancial && (
+                        <div className="flex items-center gap-2">
+                            <span className="inter-text-small uppercase">Total Trial Cost:</span>
+                            <span className="bebas-header-2 title-iri" style={{ fontSize: '1.8rem', margin: 0 }}>-${totalCost}</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* LOADOUT ROW */}
@@ -45,15 +61,18 @@ const TrialConfirmationOverlay = ({
                             style={{ animationDelay: `${baseDelay}s` }}
                         >
                             <img src={`/assets/Killers/${killer.killerName}.png`} alt={killer.killerName} />
+                            {isFinancial && (
+                                <div className="loadout-financial-overlay">
+                                    <div className="price-banner">${killerCost}</div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* PERKS */}
-                    {/* TODO: Make the perks locked if they are locked in the UI */}
                     <div className="confirm-column mx-8">
                         <h3 className="bebas-header-2 mb-3">PERKS</h3>
                         <div className="confirm-flex-row">
-                            {/* Loop 4 times to ensure empty slots still render as blank diamonds if needed */}
                             {[0, 1, 2, 3].map(index => {
                                 const perk = selectedPerks[index];
                                 return (
@@ -62,7 +81,16 @@ const TrialConfirmationOverlay = ({
                                         className="staggered-fade confirm-slot diamond-slot"
                                         style={{animationDelay: `${perkStartDelay + (index * 0.2)}s`}}
                                     >
-                                        {perk && <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>}
+                                        {perk && (
+                                            <>
+                                                <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name}/>
+                                                {isFinancial && (
+                                                    <div className="loadout-financial-overlay perk-mode">
+                                                        <div className="price-banner">${perk.cost || 0}</div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -70,7 +98,6 @@ const TrialConfirmationOverlay = ({
                     </div>
 
                     {/* ADD ONS */}
-                    {/* TODO: Make the addons locked if they are locked in the UI */}
                     <div className="confirm-column">
                         <h3 className="bebas-header-2 mb-6">ADDONS</h3>
                         <div className="confirm-flex-row align-center">
@@ -83,7 +110,16 @@ const TrialConfirmationOverlay = ({
                                             className="staggered-fade confirm-slot square-slot"
                                             style={{ animationDelay: `${addonStartDelay + (index * 0.2)}s` }}
                                         >
-                                            {addon && <img src={`/assets/Addons/${killer.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />}
+                                            {addon && (
+                                                <>
+                                                    <img src={`/assets/Addons/${killer.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />
+                                                    {isFinancial && (
+                                                        <div className="loadout-financial-overlay">
+                                                            <div className="price-banner">${addon.cost || 0}</div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     </React.Fragment>
                                 );
