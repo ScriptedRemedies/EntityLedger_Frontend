@@ -335,42 +335,23 @@ const TrialResultsOverlay = ({ season, killer, trialCount, onSubmit }) => {
 
                     {/* Gen B4 Hook & Close Hatch triggers */}
                     {isFinancialVariant && (
-                        <div className="bonus-penalty-section" style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '30px' }}>
-
-                            {/* TODO: Fix button styles */}
+                        <div className="bonus-penalty-section">
                             {season.variantType === 'AFTERBURN' && (
                                 <button
+                                    className={`modifier-toggle-btn ${closedHatch ? 'active-bonus' : ''}`}
                                     onClick={() => setClosedHatch(!closedHatch)}
-                                    style={{
-                                        backgroundColor: closedHatch ? 'var(--color-IRIDESCENT)' : 'transparent',
-                                        border: '1px solid var(--color-IRIDESCENT)',
-                                        color: closedHatch ? '#000' : 'var(--color-IRIDESCENT)',
-                                        padding: '8px 16px',
-                                        fontFamily: 'var(--font-bebas)',
-                                        fontSize: '18px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
                                 >
-                                    + CLOSED HATCH
+                                    <span className="modifier-icon">{closedHatch ? '✓' : '+'}</span>
+                                    CLOSED HATCH
                                 </button>
                             )}
 
-                            {/* TODO: Fix button styles */}
                             <button
+                                className={`modifier-toggle-btn ${genBeforeHook ? 'active-penalty' : ''}`}
                                 onClick={() => setGenBeforeHook(!genBeforeHook)}
-                                style={{
-                                    backgroundColor: genBeforeHook ? 'var(--color-IRIDESCENT)' : 'transparent',
-                                    border: '1px solid var(--color-IRIDESCENT)',
-                                    color: genBeforeHook ? '#000' : 'var(--color-IRIDESCENT)',
-                                    padding: '8px 16px',
-                                    fontFamily: 'var(--font-bebas)',
-                                    fontSize: '18px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
                             >
-                                - GEN BEFORE 1ST HOOK
+                                <span className="modifier-icon">{genBeforeHook ? '✕' : '-'}</span>
+                                GEN BEFORE 1ST HOOK
                             </button>
                         </div>
                     )}
