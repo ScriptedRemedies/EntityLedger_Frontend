@@ -12,6 +12,13 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
     const scrollRef = useRef(null);
     const tabView = useFadeTransition('Stats', 100, scrollRef);
     const [activeTrialOverlay, setActiveTrialOverlay] = useState(null);
+    const [isClosing, setIsClosing] = useState(false);
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            if (onAction) onAction();
+        }, 300);
+    }
 
     // --- AGGRESSIVE FRONTEND MATH ---
     const totalMatches = recapData.finalTrials.length;
@@ -180,10 +187,10 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
     const subTitle = isVictory ? "The Entity is pleased... for now." : "The fog claims another victim.";
 
     return (
-        <div className="recap-overlay-container fade-in">
+        <div className={`recap-overlay-container ${isClosing ? 'fade-out' : 'fade-in'}`}>
             <div className="login-fog-bg"></div>
 
-            <div className="recap-content-box">
+            <div className={`recap-content-box ${isClosing ? 'modal-slam-out' : 'modal-slam'}`}>
 
                 {/* 1. HEADER & NAVIGATION */}
                 <div className="recap-header">
@@ -414,7 +421,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
 
                 {/* 3. FIXED FOOTER */}
                 <div className="recap-footer">
-                    <button className="squareBtn" style={{ position: 'relative', bottom: '0', right: '0' }} onClick={onAction}>
+                    <button className="squareBtn" style={{ position: 'relative', bottom: '0', right: '0' }} onClick={handleClose}>
                         {actionText}
                     </button>
                 </div>

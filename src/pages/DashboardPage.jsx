@@ -19,6 +19,14 @@ const DashboardPage = () => {
 
     // State to handle the version info overlay
     const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+    const [isVersionClosing, setIsVersionClosing] = useState(false);
+    const handleCloseVersionModal = () => {
+        setIsVersionClosing(true);
+        setTimeout(() => {
+            setIsVersionModalOpen(false);
+            setIsVersionClosing(false);
+        }, 300);
+    }
 
     // Getting the updated version notes and parsing them
     const parsedNotes = fm(latestNotes);
@@ -118,7 +126,6 @@ const DashboardPage = () => {
 
                 {/* Bottom Section: Version Info */}
                 <div className="bottom-section">
-                    {/* TODO: Add tutorial modal button here */}
                     <button
                         onClick={() => setIsVersionModalOpen(true)}
                         className="inter-text-small version-btn"
@@ -138,14 +145,12 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* TODO: Add a tips and tricks/tutorial modal (make sure to add the md file too)  */}
             {/* Version Info Modal Overlay */}
             {isVersionModalOpen && (
-                <div className="modal-backdrop">
-                    <div className="modal-content-box hide-scrollbar">
-                        {/* TODO: Change styles of md file */}
+                <div className={`modal-backdrop ${isVersionClosing ? 'fade-out' : 'fade-in'}`}>
+                    <div className={`modal-content-box hide-scrollbar ${isVersionClosing ? 'modal-slam-out' : 'modal-slam'}`}>
                         <button
-                            onClick={() => setIsVersionModalOpen(false)}
+                            onClick={handleCloseVersionModal}
                             className="close-modal-btn"
                         >
                             ✕
