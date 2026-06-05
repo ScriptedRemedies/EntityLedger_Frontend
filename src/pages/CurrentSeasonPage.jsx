@@ -37,6 +37,17 @@ const CurrentSeasonPage = () => {
     const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
     // Confirming sell killer states for blood money and afterburn
     const [killerToSellConfirm, setKillerToSellConfirm] = useState(null);
+    const [isSellModalClosing, setIsSellModalClosing] = useState(false);
+    const handleCloseSellModal = (confirm = false) => {
+        setIsSellModalClosing(true);
+        setTimeout(() => {
+            if (confirm && killerToSellConfirm) {
+                handleSellKiller(killerToSellConfirm);
+            }
+            setKillerToSellConfirm(null);
+            setIsSellModalClosing(false);
+        }, 300)
+    }
     const [selectedPerks, setSelectedPerks] = useState([]);
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [isViewingResults, setIsViewingResults] = useState(false);
@@ -555,28 +566,37 @@ const CurrentSeasonPage = () => {
 
             {/* === CUSTOM SELL CONFIRMATION MODAL === */}
             {killerToSellConfirm && (
-                <div className="modal-backdrop fade-in">
-                    <div className="modal-content-box confirm-modal" style={{ height: 'auto', minHeight: '250px', width: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div className={`modal-backdrop ${isSellModalClosing ? 'fade-out' : 'fade-in'}`}>
+                    <div className={`modal-content-box sell-confirm-modal ${isSellModalClosing ? 'modal-slam-out' : 'modal-slam'}`}>
 
-                        <div>
-                            <h2 className="bebas-header-1 title-white modal-title">Confirm Sale</h2>
-                            <div className="modal-divider"></div>
-                            <p className="inter-text-normal">
-                                Are you sure you want to sell <span className="title-iri">{killerToSellConfirm.killerName}</span> for <span className="title-iri">${killerToSellConfirm.cost}</span>?
-                            </p>
-                            <p className="inter-text-normal">Your new balance will be <span className="title-iri">${startingBalance + killerToSellConfirm.cost}</span></p>
-                            <p className="inter-text-small text-muted">
-                                This action cannot be undone.
-                            </p>
+                        <div className="sell-modal-body">
+                            {/* Left: Killer Portrait */}
+                            <div className="sell-modal-image-wrapper">
+                                <img src={`/assets/Killers/${killerToSellConfirm.killerName}.png`} alt={killerToSellConfirm.killerName} />
+                            </div>
+
+                            {/* Right: The Details */}
+                            <div className="sell-modal-text">
+                                <h2 className="bebas-header-1 title-iri m-0 leading-none text-3xl">CONFIRM SALE</h2>
+                                <p className="inter-text-normal mt-2">
+                                    Are you sure you want to sell <span className="text-white">{killerToSellConfirm.killerName}</span> for <span className="title-iri">${killerToSellConfirm.cost}</span>?
+                                </p>
+
+                                <div className="sell-balance-readout mt-2">
+                                    <span className="text-muted">Projected Balance:</span>
+                                    <span className="title-white">${startingBalance + killerToSellConfirm.cost}</span>
+                                </div>
+
+                                <p className="inter-text-small text-muted mt-3 mb-0">
+                                    This action cannot be undone. They will be removed from your active roster.
+                                </p>
+                            </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="modal-actions" style={{ marginTop: '30px' }}>
-                            <button className="back-button" onClick={() => setKillerToSellConfirm(null)}>Cancel</button>
-                            <button className="squareBtn" onClick={() => {
-                                handleSellKiller(killerToSellConfirm);
-                                setKillerToSellConfirm(null);
-                            }}>Confirm Sale</button>
+                        {/* Full-width Action Buttons */}
+                        <div className="sell-modal-actions">
+                            <button className="cancel-sell-btn" onClick={() => handleCloseSellModal(false)}>Cancel</button>
+                            <button className="confirm-sell-btn" onClick={() => handleCloseSellModal(true)}>Confirm Sale</button>
                         </div>
 
                     </div>
