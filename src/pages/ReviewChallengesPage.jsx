@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { VARIANTS } from '../data/variants';
@@ -24,7 +24,8 @@ const ReviewChallengesPage = () => {
 
     // --- State Management ---
     const variantView = useFadeTransition(VARIANTS[0]);
-    const tabView = useFadeTransition('Seasons');
+    const scrollRef = useRef(null);
+    const tabView = useFadeTransition('Seasons', 100, scrollRef);
 
     // Global active season for the right-side character display
     const [activeSeason, setActiveSeason] = useState(null);
@@ -246,7 +247,7 @@ const ReviewChallengesPage = () => {
                                 )}
                             </div>
 
-                            <div className="tab-content-wrapper hide-scrollbar">
+                            <div className="tab-content-wrapper hide-scrollbar" ref={scrollRef}>
                                 <div key={tabView.display} className={`tab-content ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
 
                                     {/* EMPTY STATES */}

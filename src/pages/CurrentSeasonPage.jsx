@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/ChallengesPage.scss';
 import '../styles/CurrentSeasonPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
 import KillerCard from "./small-components/KillerCard.jsx";
@@ -26,7 +26,8 @@ const CurrentSeasonPage = () => {
     const { seasonId } = useParams();
     const [trialCount, setTrialCount] = useState(0);
 
-    const navView = useFadeTransition(NAV_TABS[0]);
+    const scrollRef = useRef(null);
+    const navView = useFadeTransition(NAV_TABS[0], 100, scrollRef);
     const [activeSeason, setActiveSeason] = useState(null);
     const [selectedKiller, setSelectedKiller] = useState(null);
     const [trials, setTrials] = useState([]);
@@ -406,7 +407,6 @@ const CurrentSeasonPage = () => {
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
-            {/* TODO: Put a max and min width on Middle-content with overflow-x auto, make sure the min width doesn't effect the overflow of y */}
             <div className="middle-content">
                 {navView.display && (
                     <div key={navView.display.id} className={`variant-view-wrapper ${navView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
@@ -457,7 +457,7 @@ const CurrentSeasonPage = () => {
                                 )}
                             </div>
 
-                            <div className="tab-content-wrapper hide-scrollbar" style={navView.display.id === 'TRIALS' ? {display: 'flex', flexDirection: 'column', overflowY: 'hidden'} : {}}>
+                            <div className="tab-content-wrapper hide-scrollbar" ref={scrollRef} style={navView.display.id === 'TRIALS' ? {display: 'flex', flexDirection: 'column', overflowY: 'hidden'} : {}}>
 
                                 {/* KILLER LIST */}
                                 {navView.display.id === 'KILLERS' && (

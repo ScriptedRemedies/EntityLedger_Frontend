@@ -117,7 +117,7 @@
 }
 .secondary-nav-container {
   display: flex;
-  border-bottom: 1px solid var(--color-60-background);
+  border-bottom: 3px solid var(--color-60-background);
 }
 .secondaryNav, .secondaryNavIndicator {
   padding: 3px 25px;
@@ -269,7 +269,6 @@
 }
 .variant-header {
   flex-shrink: 0;
-  padding-bottom: 15px;
 }
 .header-desc {
   padding-bottom: 10px;
