@@ -50,3 +50,37 @@
   }
 }
 
+/* ==========================================================================
+   THE BLOODWEB REVEAL (Staggered Cascades)
+   ========================================================================== */
+
+@keyframes driftUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-item {
+  opacity: 0; /* Start invisible so they don't pop before the delay finishes */
+  animation: driftUpFade 0.4s ease-out forwards;
+}
+
+/* Auto-staggering for the hardcoded layouts (stats) */
+.auto-stagger-grid {
+  > * {
+    opacity: 0;
+    animation: driftUpFade 0.4s ease-out forwards;
+  }
+
+  /* Loops through the first 30 children and mathematically staggers them */
+  @for $i from 1 through 30 {
+    > :nth-child(#{$i}) {
+      animation-delay: #{$i * 30}ms;
+    }
+  }
+}

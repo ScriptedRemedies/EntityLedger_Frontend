@@ -464,23 +464,24 @@ const CurrentSeasonPage = () => {
                                     <div className="killer-grid hide-scrollbar">
                                         {[...activeSeason.roster]
                                             .sort((a, b) => parseInt(a.killerId) - parseInt(b.killerId))
-                                            .map(rosterItem => (
-                                                <KillerCard
-                                                    key={rosterItem.killerId}
-                                                    killer={rosterItem}
-                                                    variantType={activeSeason.variantType}
-                                                    isSelected={currentKiller?.killerId === rosterItem.killerId}
-                                                    onSelect={() => {
-                                                        setSelectedKiller(rosterItem);
-                                                        setSelectedAddons([]);
-                                                    }}
-                                                    onSell={(k) => setKillerToSellConfirm(k)}
-                                                    mode="active"
-                                                    currentBalance={projectedBalance} // <--- Triggers the SELL overlay if negative!
-                                                    isVariantCooldown={isKillerOnCooldown(rosterItem.killerId.toString())}
-                                                    isUnaffordable={isFinancialVariant && rosterItem.cost > startingBalance}
-                                                    isBankrupt={isBankrupt}
-                                                />
+                                            .map((rosterItem, index) => (
+                                                <div key={rosterItem.killerId} className="stagger-item" style={{ animationDelay: `${index * 25}ms` }}>
+                                                    <KillerCard
+                                                        killer={rosterItem}
+                                                        variantType={activeSeason.variantType}
+                                                        isSelected={currentKiller?.killerId === rosterItem.killerId}
+                                                        onSelect={() => {
+                                                            setSelectedKiller(rosterItem);
+                                                            setSelectedAddons([]);
+                                                        }}
+                                                        onSell={(k) => setKillerToSellConfirm(k)}
+                                                        mode="active"
+                                                        currentBalance={projectedBalance}
+                                                        isVariantCooldown={isKillerOnCooldown(rosterItem.killerId.toString())}
+                                                        isUnaffordable={isFinancialVariant && rosterItem.cost > startingBalance}
+                                                        isBankrupt={isBankrupt}
+                                                    />
+                                                </div>
                                             ))}
                                     </div>
                                 )}

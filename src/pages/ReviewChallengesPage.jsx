@@ -278,9 +278,11 @@ const ReviewChallengesPage = () => {
                                         ) : seasons.length > 0 && (
                                             // --- REAL DATA ---
                                             <div className="seasons-grid fade-in">
-                                                {seasons.map(season => {
+                                                {seasons.map((season, index) => {
                                                     return (
-                                                        <SeasonCard key={season.id} season={season} onClick={setSelectedSeason} />
+                                                        <div key={season.id} className="stagger-item" style={{ animationDelay: `${index * 40}ms` }}>
+                                                            <SeasonCard season={season} onClick={setSelectedSeason} />
+                                                        </div>
                                                     )
                                                 })}
                                             </div>

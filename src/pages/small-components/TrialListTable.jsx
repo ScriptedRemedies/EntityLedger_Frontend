@@ -13,7 +13,7 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
 
     return (
         <div className="trials-card-list">
-            {trials.map(trial => {
+            {trials.map((trial, index) => {
                 const killerDiedInTrial = trial.survivors?.some(res => {
                     const outcome = typeof res === 'string' ? res : res.outcome;
                     return outcome.toUpperCase() === 'ESCAPED';
@@ -24,7 +24,7 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                 const isAddonsLocked = isAdept && !gradeStr.startsWith('ASH');
 
                 return (
-                    <div key={trial.id || trial.trialId} onClick={() => onRowClick(trial)} className="trial-card-row">
+                    <div key={trial.id || trial.trialId} onClick={() => onRowClick(trial)} className="trial-card-row stagger-item" style={{ animationDelay: `${index * 25}ms` }}>
 
                         <div className="trial-card-left">
                             <div className="trial-list-card-wrapper">

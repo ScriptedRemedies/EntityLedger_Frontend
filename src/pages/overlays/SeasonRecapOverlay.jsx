@@ -213,7 +213,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                 {/* Core Performance Metrics */}
                                 <div className="stats-section mb-8">
                                     <h3 className="bebas-header-2 stats-section-title">CORE PERFORMANCE METRICS</h3>
-                                    <div className="recap-stats-grid">
+                                    <div className="recap-stats-grid auto-stagger-grid">
                                         <div className="stat-card">
                                             <div className="stat-info">
                                                 <span className="stat-label">Trials Survived</span>
@@ -284,7 +284,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                 {(season.variantType === 'BLOOD_MONEY' || season.variantType === 'AFTERBURN') && (
                                     <div className="stats-section mb-8">
                                         <h3 className="bebas-header-2 stats-section-title">THE ECONOMY</h3>
-                                        <div className="recap-stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                                        <div className="recap-stats-grid auto-stagger-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
                                             <div className="stat-card">
                                                 <div className="stat-info">
                                                     <span className="stat-label">Total Revenue Generated</span>
@@ -321,7 +321,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                 {awards && awards.length > 0 && (
                                     <div className="stats-section mb-8">
                                         <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
-                                        <div className="recap-stats-grid">
+                                        <div className="recap-stats-grid auto-stagger-grid">
                                             {awards.map((award, i) => (
                                                 <div key={i} className="stats-card">
                                                     <h4 className={`stats-title bebas-header-2 text-white text-center ${award.effect === "negative" ? "weakest-link-header" : ""}`}>{award.name}</h4>
@@ -344,7 +344,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                 {season.variantType === 'ADEPT' && adeptTopKillers && adeptTopKillers.length > 0 && (
                                     <div className="stats-section mb-8">
                                         <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
-                                        <div className="recap-stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                                        <div className="recap-stats-grid auto-stagger-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
                                             {adeptTopKillers.map((killer, i) => (
                                                 <div key={i} className="stat-card">
                                                     <div className="stat-info">
@@ -362,7 +362,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                 {season.variantType !== 'ADEPT' && season.variantType !== 'CHAOS_SHUFFLE' && (
                                     <div className="stats-section mb-8">
                                         <h3 className="bebas-header-2 stats-section-title">META TENDENCIES</h3>
-                                        <div className="stats-grid">
+                                        <div className="stats-grid auto-stagger-grid">
                                             {topPerks.map((perk, i) => (
                                                 <div key={i} className="stat-card">
                                                     <div className="stat-info">
@@ -381,7 +381,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
                                 {/* Emblems */}
                                 <div className="stats-section">
                                     <h3 className="bebas-header-2 stats-section-title">EMBLEMS</h3>
-                                    <div className="stats-grid">
+                                    <div className="stats-grid auto-stagger-grid">
                                         {iridescentEmblems.map((emblem, i) => (
                                             <div key={i} className="stat-card">
                                                 <div className="stat-info">
