@@ -125,12 +125,9 @@ const MasterLoadout = ({
         if (rules.addonsLocked && selectedAddons.length > 0) {
             setSelectedAddons([]);
             setActiveInventory('PERKS');
+            setCurrentPage(1);
         }
     }, [rules.addonsLocked, selectedAddons, setSelectedAddons]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [activeInventory, searchQuery]);
 
     // ==========================================
     // 4. INTERACTION LOGIC
@@ -194,6 +191,35 @@ const MasterLoadout = ({
     const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
     const currentItems = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+    const handleJumpToItem = (e, item, type) => {
+        // If they click an empty slot, let the event bubble up to the normal tab-switcher
+        if (!item) return;
+
+        e.stopPropagation(); // Prevent the parent container from overriding our logic
+
+        // 1. Switch to the correct tab (respecting variant locks)
+        if (type === 'ADDONS') {
+            if (rules.addonsLocked) return;
+            setActiveInventory('ADDONS');
+        } else if (type === 'PERKS') {
+            if (rules.perksLocked) return;
+            setActiveInventory('PERKS');
+        }
+
+        // 2. Clear the search bar so the full list is visible, ensuring our math is 100% accurate
+        setSearchQuery('');
+
+        // 3. Find the exact page number based on the master arrays
+        const dataList = type === 'ADDONS' ? killerAddons : allPerks;
+        const itemIndex = dataList.findIndex(i => i.id === item.id);
+
+        if (itemIndex !== -1) {
+            // Because ITEMS_PER_PAGE is 15, index 14 is page 1, index 15 is page 2, etc.
+            const targetPage = Math.floor(itemIndex / ITEMS_PER_PAGE) + 1;
+            setCurrentPage(targetPage);
+        }
+    };
+
     return (
         <div className="loadout">
             <div className="equipped-section">
@@ -203,13 +229,18 @@ const MasterLoadout = ({
                     <h3 className="inter-text-normal text-muted">Add Ons</h3>
                     <div
                         className="slots-container"
-                        onClick={() => !rules.addonsLocked && setActiveInventory('ADDONS')}
+                        onClick={() => {
+                            if (!rules.addonsLocked) {
+                                setActiveInventory('ADDONS');
+                                setCurrentPage(1);
+                            }
+                        }}
                         style={{ cursor: rules.addonsLocked ? 'not-allowed' : 'pointer' }}
                     >
                         {[0, 1].map(index => {
                             const addon = selectedAddons[index];
                             return (
-                                <div key={index} className="addon-wrapper flex flex-col items-center">
+                                <div key={index} className="addon-wrapper flex flex-col items-center" onClick={(e) => handleJumpToItem(e, addon, 'ADDONS')}>
                                     <div className="addon-slot square-slot" style={{ position: 'relative', overflow: 'hidden' }}>
                                         {addon && <img src={`/assets/Addons/${currentKiller?.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />}
                                         {rules.addonsLocked && !addon && <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="AddOn Slot Locked" />}
@@ -234,7 +265,12 @@ const MasterLoadout = ({
                     <h3 className="inter-text-normal text-muted">Perks</h3>
                     <div
                         className="slots-container perks-container"
-                        onClick={() => !rules.perksLocked && setActiveInventory('PERKS')}
+                        onClick={() => {
+                            if (!rules.perksLocked) {
+                                setActiveInventory('PERKS');
+                                setCurrentPage(1);
+                            }
+                        }}
                         style={{ cursor: rules.perksLocked ? 'not-allowed' : 'pointer' }}
                     >
                         {[0, 1, 2, 3].map(index => {
@@ -243,7 +279,7 @@ const MasterLoadout = ({
                             const isVisible = isChaos ? flippedSlots[index] : true;
 
                             return (
-                                <div key={index} className="perk-wrapper flex flex-col items-center">
+                                <div key={index} className="perk-wrapper flex flex-col items-center" onClick={(e) => handleJumpToItem(e, perk, 'PERKS')}>
                                     <div className="perk-slot diamond-slot" style={{ pointerEvents: rules.perksLocked ? 'none' : 'auto', position: 'relative', overflow: 'hidden' }}>
                                         {perk && !isSlotLocked && (
                                             <div className={`diamond-content ${isChaos && isVisible ? 'flip-in-y' : ''} ${isChaos && !isVisible ? 'hidden-opacity' : ''}`}>
@@ -325,7 +361,10 @@ const MasterLoadout = ({
                                 className="inventory-search"
                                 placeholder="Search..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1);
+                                }}
                                 disabled={(activeInventory === 'ADDONS' && rules.addonsLocked) || (activeInventory === 'PERKS' && rules.perksLocked)}
                             />
                         )}
