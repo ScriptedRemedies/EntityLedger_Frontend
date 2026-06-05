@@ -4,12 +4,14 @@ import api from '../services/api';
 import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
 import '../styles/small-components/TrialComponent.scss';
+import '../styles/Animations.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import GradeBadgeDisplay from './small-components/GradeBadgeDisplay.jsx';
 import TrialListTable from './small-components/TrialListTable.jsx';
 import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay';
 import SeasonCard from "./small-components/SeasonCard.jsx";
+import EntityLoader from "./small-components/EntityLoader.jsx";
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {
@@ -53,15 +55,16 @@ const ReviewChallengesPage = () => {
                 const mins = Math.floor(remainingMs / 60000);
                 const secs = Math.floor((remainingMs % 60000) / 1000);
                 setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
-                setIsTimerDanger(mins < 5); // Turns red when under 5 minutes
+                setIsTimerDanger(mins < 5);
             }
         }, 1000);
 
         return () => clearInterval(timerInterval);
     }, [activeSeason]);
 
-    // Dedicated loading state
-    const [isLoading, setIsLoading] = useState(true);
+    // Dedicated loading states
+    const [isLoading, setIsLoading] = useState(true); // Global init load
+    const [isFetchingVariant, setIsFetchingVariant] = useState(false);
 
     // Data states for the currently selected variant
     const [seasons, setSeasons] = useState([]);
@@ -83,10 +86,8 @@ const ReviewChallengesPage = () => {
                 }
             } catch (error) {
                 if (error.response && error.response.status === 404) {
-                    // TODO: Set error
                     setActiveSeason(null);
                 } else {
-                    // TODO: Set error
                     console.error("Failed to load global season data", error);
                 }
             } finally {
@@ -105,12 +106,17 @@ const ReviewChallengesPage = () => {
         tabView.triggerTransition('Seasons');
 
         const fetchVariantData = async () => {
+            // 1. Instantly trigger the skeleton UI
+            setIsFetchingVariant(true);
+
             try {
                 const variantName = variantView.display.name.toUpperCase().replace(' ', '_');
 
                 const [seasonsRes, statsRes] = await Promise.all([
                     api.get(`/seasons/variant/${variantName}`),
-                    api.get(`/seasons/variant/${variantName}/stats`)
+                    api.get(`/seasons/variant/${variantName}/stats`),
+                    // TODO: Create hooked called useSmartLoader and remove line below for production
+                    new Promise(resolve => setTimeout(resolve, 600))
                 ]);
 
                 const rawSeasons = Array.isArray(seasonsRes.data) ? seasonsRes.data : [];
@@ -159,9 +165,11 @@ const ReviewChallengesPage = () => {
                 setSeasons(formattedSeasons);
                 setStats(statsRes.data);
             } catch (error) {
-                // TODO: Set error
                 console.error("Failed to load variant details", error);
                 setSeasons([]);
+            } finally {
+                // 2. Erase the skeletons and mount the data
+                setIsFetchingVariant(false);
             }
         };
         fetchVariantData();
@@ -176,7 +184,6 @@ const ReviewChallengesPage = () => {
                 const trialsRes = await api.get(`/seasons/${selectedSeason.id}/trials`);
                 setTrials(trialsRes.data);
             } catch (error) {
-                // TODO: Handle error
                 console.error("Failed to load trial history", error);
             }
         };
@@ -251,26 +258,33 @@ const ReviewChallengesPage = () => {
                                 <div key={tabView.display} className={`tab-content ${tabView.isTransitioning ? 'fade-out' : 'fade-in'}`}>
 
                                     {/* EMPTY STATES */}
-                                    {tabView.display === 'Seasons' && seasons.length === 0 && (
+                                    {tabView.display === 'Seasons' && !isFetchingVariant && seasons.length === 0 && (
                                         <div className="empty-state-container">
                                             <p className="inter-text-normal">No past or current seasons recorded for this variant.</p>
                                         </div>
                                     )}
-                                    {tabView.display === 'Stats' && (!stats || seasons.length === 0) && (
+                                    {tabView.display === 'Stats' && !isFetchingVariant && (!stats || seasons.length === 0) && (
                                         <div className="empty-state-container">
                                             <p className="inter-text-normal">Complete trials to generate performance stats.</p>
                                         </div>
                                     )}
 
                                     {/* TAB 1: SEASONS (Grid View) */}
-                                    {tabView.display === 'Seasons' && !selectedSeason && seasons.length > 0 && (
-                                        <div className="seasons-grid">
-                                            {seasons.map(season => {
-                                                return (
-                                                    <SeasonCard season={season} onClick={setSelectedSeason} />
-                                                )
-                                            })}
-                                        </div>
+                                    {tabView.display === 'Seasons' && !selectedSeason && (
+                                        isFetchingVariant ? (
+                                            <div className="flex items-center justify-center w-full py-24 fade-in">
+                                                <EntityLoader />
+                                            </div>
+                                        ) : seasons.length > 0 && (
+                                            // --- REAL DATA ---
+                                            <div className="seasons-grid fade-in">
+                                                {seasons.map(season => {
+                                                    return (
+                                                        <SeasonCard key={season.id} season={season} onClick={setSelectedSeason} />
+                                                    )
+                                                })}
+                                            </div>
+                                        )
                                     )}
 
                                     {/* TAB 1: TRIALS (List View) */}
@@ -306,7 +320,7 @@ const ReviewChallengesPage = () => {
 
                                     {/* TAB 2: RULES */}
                                     {tabView.display === 'Rules' && (
-                                        <div className="rules-container">
+                                        <div className="rules-container fade-in">
                                             <p className="inter-text-normal rules-description">{variantView.display.rulesDescription}</p>
                                             <h1 className="bebas-header-1 title-white">RULES</h1>
                                             {variantView.display.rules.map(rule => (
@@ -326,211 +340,215 @@ const ReviewChallengesPage = () => {
                                     )}
 
                                     {/* TAB 3: STATS */}
-                                    {tabView.display === 'Stats' && stats && seasons.length > 0 && (
-                                        <div className="stats-container pb-10">
-
-                                            <div className="mb-6">
-                                                <h1 className="bebas-header-1 title-white">{variantView.display.name} REPORT</h1>
-                                                <p className="inter-text-normal">Statistics pulled from every game in this challenge.</p>
+                                    {tabView.display === 'Stats' && (
+                                        isFetchingVariant ? (
+                                            <div className="flex items-center justify-center w-full py-24 fade-in">
+                                                <EntityLoader />
                                             </div>
-
-                                            {/* CORE METRICS */}
-                                            <div className="stats-section mb-8">
-                                                <h3 className="bebas-header-2 stats-section-title">CORE PERFORMANCE METRICS</h3>
-                                                <div className="stats-grid-cols">
-
-                                                    {/* Left Column */}
-                                                    <div className="stats-col">
-                                                        <div className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-label">Trials Completed</span>
-                                                                <span className="stat-value">{stats.matchesPlayed}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-label">4K Rate</span>
-                                                                <span className="stat-value">{stats.fourKRate}%</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-label">Losses</span>
-                                                                <span className="stat-value">{stats.lossRate}%</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-label">2K-3K Via Exit Gates</span>
-                                                                <span className="stat-value">{stats.twoToThreeKillsWithGates}</span>
-                                                            </div>
-                                                            <img src="/assets/Survivor Status/escaped.png" className="stat-icon" alt="Gate" />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Right Column */}
-                                                    <div className="stats-col">
-                                                        <div className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-label">Kill Rate</span>
-                                                                <span className="stat-value">{stats.killRate}%</span>
-                                                            </div>
-                                                            <img src="/assets/Survivor Status/sacrificed.png" className="stat-icon" alt="Sacrificed" />
-                                                        </div>
-                                                        <div className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-label">Pip Progression</span>
-                                                                <span className="stat-value">{stats.pipProgression > 0 ? `+${stats.pipProgression}` : stats.pipProgression} Pips</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="stat-card">
-                                                            <div className="stat-info">
-                                                                <span className="stat-label">Hatch Escapes</span>
-                                                                <span className="stat-value">{stats.hatchEscapeRate}%</span>
-                                                            </div>
-                                                            <img src="/assets/Survivor Status/hatch_escape.png" className="stat-icon" alt="Hatch" />
-                                                        </div>
-
-                                                        {/* --- NEW: IRON MAN METRICS --- */}
-                                                        {variantView.display.id === 'IRON_MAN' && (
-                                                            <>
-                                                                <div className="stat-card">
-                                                                    <div className="stat-info">
-                                                                        <span className="stat-label">Avg Completion Time</span>
-                                                                        <span className="stat-value">{stats.averageCompletionTime || 'N/A'}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="stat-card">
-                                                                    <div className="stat-info">
-                                                                        <span className="stat-label">Flawless Trials / Mulligans Burned</span>
-                                                                        <span className="stat-value">{stats.flawlessTrials} / {stats.totalMulligansBurned}</span>
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                        ) : stats && seasons.length > 0 && (
+                                            // --- REAL DATA ---
+                                            <div className="stats-container pb-10 fade-in">
+                                                <div className="mb-6">
+                                                    <h1 className="bebas-header-1 title-white">{variantView.display.name} REPORT</h1>
+                                                    <p className="inter-text-normal">Statistics pulled from every game in this challenge.</p>
                                                 </div>
-                                            </div>
 
-                                            {/* --- NEW: FINANCIAL EXTREMES (Blood Money / Afterburn) --- */}
-                                            {(variantView.display.id === 'BLOOD_MONEY' || variantView.display.id === 'AFTERBURN') && stats.financialExtremes && (
+                                                {/* CORE METRICS */}
                                                 <div className="stats-section mb-8">
-                                                    <h3 className="bebas-header-2 stats-section-title">THE ECONOMY</h3>
+                                                    <h3 className="bebas-header-2 stats-section-title">CORE PERFORMANCE METRICS</h3>
                                                     <div className="stats-grid-cols">
+
+                                                        {/* Left Column */}
                                                         <div className="stats-col">
                                                             <div className="stat-card">
                                                                 <div className="stat-info">
-                                                                    <span className="stat-label">Total Revenue Generated</span>
-                                                                    <span className="stat-value title-white">${stats.totalRevenue}</span>
+                                                                    <span className="stat-label">Trials Completed</span>
+                                                                    <span className="stat-value">{stats.matchesPlayed}</span>
                                                                 </div>
                                                             </div>
                                                             <div className="stat-card">
                                                                 <div className="stat-info">
-                                                                    <span className="stat-label">Biggest Win</span>
-                                                                    <span className="stat-value title-white">+${stats.financialExtremes.biggestWin.amount}</span>
+                                                                    <span className="stat-label">4K Rate</span>
+                                                                    <span className="stat-value">{stats.fourKRate}%</span>
                                                                 </div>
                                                             </div>
+                                                            <div className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-label">Losses</span>
+                                                                    <span className="stat-value">{stats.lossRate}%</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-label">2K-3K Via Exit Gates</span>
+                                                                    <span className="stat-value">{stats.twoToThreeKillsWithGates}</span>
+                                                                </div>
+                                                                <img src="/assets/Survivor Status/escaped.png" className="stat-icon" alt="Gate" />
+                                                            </div>
                                                         </div>
+
+                                                        {/* Right Column */}
                                                         <div className="stats-col">
                                                             <div className="stat-card">
                                                                 <div className="stat-info">
-                                                                    <span className="stat-label">Total Debt Accrued</span>
-                                                                    <span className="stat-value title-iri">-${stats.totalDebt}</span>
+                                                                    <span className="stat-label">Kill Rate</span>
+                                                                    <span className="stat-value">{stats.killRate}%</span>
+                                                                </div>
+                                                                <img src="/assets/Survivor Status/sacrificed.png" className="stat-icon" alt="Sacrificed" />
+                                                            </div>
+                                                            <div className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-label">Pip Progression</span>
+                                                                    <span className="stat-value">{stats.pipProgression > 0 ? `+${stats.pipProgression}` : stats.pipProgression} Pips</span>
                                                                 </div>
                                                             </div>
                                                             <div className="stat-card">
                                                                 <div className="stat-info">
-                                                                    <span className="stat-label">Biggest Loss</span>
-                                                                    <span className="stat-value title-iri">-${Math.abs(stats.financialExtremes.biggestLoss.amount)}</span>
+                                                                    <span className="stat-label">Hatch Escapes</span>
+                                                                    <span className="stat-value">{stats.hatchEscapeRate}%</span>
+                                                                </div>
+                                                                <img src="/assets/Survivor Status/hatch_escape.png" className="stat-icon" alt="Hatch" />
+                                                            </div>
+
+                                                            {/* --- NEW: IRON MAN METRICS --- */}
+                                                            {variantView.display.id === 'IRON_MAN' && (
+                                                                <>
+                                                                    <div className="stat-card">
+                                                                        <div className="stat-info">
+                                                                            <span className="stat-label">Avg Completion Time</span>
+                                                                            <span className="stat-value">{stats.averageCompletionTime || 'N/A'}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="stat-card">
+                                                                        <div className="stat-info">
+                                                                            <span className="stat-label">Flawless Trials / Mulligans Burned</span>
+                                                                            <span className="stat-value">{stats.flawlessTrials} / {stats.totalMulligansBurned}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* --- NEW: FINANCIAL EXTREMES (Blood Money / Afterburn) --- */}
+                                                {(variantView.display.id === 'BLOOD_MONEY' || variantView.display.id === 'AFTERBURN') && stats.financialExtremes && (
+                                                    <div className="stats-section mb-8">
+                                                        <h3 className="bebas-header-2 stats-section-title">THE ECONOMY</h3>
+                                                        <div className="stats-grid-cols">
+                                                            <div className="stats-col">
+                                                                <div className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-label">Total Revenue Generated</span>
+                                                                        <span className="stat-value title-white">${stats.totalRevenue}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-label">Biggest Win</span>
+                                                                        <span className="stat-value title-white">+${stats.financialExtremes.biggestWin.amount}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="stats-col">
+                                                                <div className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-label">Total Debt Accrued</span>
+                                                                        <span className="stat-value title-iri">-${stats.totalDebt}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-label">Biggest Loss</span>
+                                                                        <span className="stat-value title-iri">-${Math.abs(stats.financialExtremes.biggestLoss.amount)}</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {/* --- NEW: ROSTER PERFORMANCE AWARDS (All Variants) --- */}
-                                            {stats.rosterAwards && stats.rosterAwards.length > 0 && (
-                                                <div className="stats-section mb-8">
-                                                    <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
-                                                    {/* Temporarily using your standard grid if recap grid is missing globally */}
-                                                    <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
-                                                        {stats.rosterAwards.map((award, i) => (
-                                                            <div key={i} className="stat-card" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '15px' }}>
-                                                                <h4 className={`bebas-header-2 text-white mb-2 ${award.effect === "negative" ? "title-iri" : ""}`}>{award.name}</h4>
-                                                                <img
-                                                                    src={`/assets/Killers/${award.killerName}.png`}
-                                                                    style={{ height: '80px', objectFit: 'contain', filter: award.effect === "negative" ? 'grayscale(100%)' : 'none' }}
-                                                                    alt={award.killerName}
-                                                                />
-                                                                <div className="mt-2">
-                                                                    <p className="inter-text-small text-white uppercase m-0">{award.killerName}</p>
-                                                                    <p className="inter-text-small m-0">{award.detailText}</p>
+                                                {/* --- NEW: ROSTER PERFORMANCE AWARDS (All Variants) --- */}
+                                                {stats.rosterAwards && stats.rosterAwards.length > 0 && (
+                                                    <div className="stats-section mb-8">
+                                                        <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
+                                                        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+                                                            {stats.rosterAwards.map((award, i) => (
+                                                                <div key={i} className="stat-card" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '15px' }}>
+                                                                    <h4 className={`bebas-header-2 text-white mb-2 ${award.effect === "negative" ? "title-iri" : ""}`}>{award.name}</h4>
+                                                                    <img
+                                                                        src={`/assets/Killers/${award.killerName}.png`}
+                                                                        style={{ height: '80px', objectFit: 'contain', filter: award.effect === "negative" ? 'grayscale(100%)' : 'none' }}
+                                                                        alt={award.killerName}
+                                                                    />
+                                                                    <div className="mt-2">
+                                                                        <p className="inter-text-small text-white uppercase m-0">{award.killerName}</p>
+                                                                        <p className="inter-text-small m-0">{award.detailText}</p>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* --- NEW: TOP KILLERS (Adept Only) --- */}
-                                            {variantView.display.id === 'ADEPT' && stats.topKillers && (
-                                                <div className="stats-section mb-8">
-                                                    <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
-                                                    <div className="stats-grid">
-                                                        {stats.topKillers.map((killer, i) => (
-                                                            <div key={i} className="stat-card">
-                                                                <div className="stat-info">
-                                                                    <span className="stat-value inter-text-normal text-white uppercase">{killer.name}</span>
-                                                                    <span className="stat-label">{killer.pickRate}% Pick Rate | {killer.killRate}% Kill Rate</span>
-                                                                </div>
-                                                                <img src={`/assets/Killers/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* META & LOADOUT TENDENCIES (Hidden for Adept & Chaos Shuffle) */}
-                                            {variantView.display.id !== 'ADEPT' && variantView.display.id !== 'CHAOS_SHUFFLE' && (
-                                                <div className="stats-section mb-8">
-                                                    <h3 className="bebas-header-2 stats-section-title">META & LOADOUT TENDENCIES</h3>
-                                                    <div className="stats-grid">
-                                                        {stats.topPerks?.map((perk, i) => (
-                                                            <div key={i} className="stat-card">
-                                                                <div className="stat-info">
-                                                                    <span className="stat-value inter-text-normal text-normal">{perk.name}</span>
-                                                                    <span className="stat-label">{perk.pickRate}% Pick Rate</span>
-                                                                </div>
-                                                                <div className="stat-perk-diamond">
-                                                                    <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* EMBLEMS */}
-                                            <div className="stats-section">
-                                                <h3 className="bebas-header-2 stats-section-title">EMBLEMS</h3>
-                                                <div className="stats-grid">
-                                                    {stats.iridescentEmblems?.map((emblem, i) => (
-                                                        <div key={i} className="stat-card">
-                                                            <div className="stat-info">
-                                                                {/* Formats GATEKEEPER to Gatekeeper */}
-                                                                <span className="stat-value inter-text-normal text-normal capitalize">
-                                                                    {emblem.category.charAt(0) + emblem.category.slice(1).toLowerCase()}
-                                                                </span>
-                                                                <span className="stat-label">{emblem.rate}% Iridescent</span>
-                                                            </div>
-                                                            <img src={`/assets/Emblems/${emblem.category}_IRIDESCENT.png`} className="stat-emblem-icon drop-shadow" alt={emblem.category} />
+                                                            ))}
                                                         </div>
-                                                    ))}
+                                                    </div>
+                                                )}
+
+                                                {/* --- NEW: TOP KILLERS (Adept Only) --- */}
+                                                {variantView.display.id === 'ADEPT' && stats.topKillers && (
+                                                    <div className="stats-section mb-8">
+                                                        <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
+                                                        <div className="stats-grid">
+                                                            {stats.topKillers.map((killer, i) => (
+                                                                <div key={i} className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-value inter-text-normal text-white uppercase">{killer.name}</span>
+                                                                        <span className="stat-label">{killer.pickRate}% Pick Rate | {killer.killRate}% Kill Rate</span>
+                                                                    </div>
+                                                                    <img src={`/assets/Killers/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* META & LOADOUT TENDENCIES (Hidden for Adept & Chaos Shuffle) */}
+                                                {variantView.display.id !== 'ADEPT' && variantView.display.id !== 'CHAOS_SHUFFLE' && (
+                                                    <div className="stats-section mb-8">
+                                                        <h3 className="bebas-header-2 stats-section-title">META & LOADOUT TENDENCIES</h3>
+                                                        <div className="stats-grid">
+                                                            {stats.topPerks?.map((perk, i) => (
+                                                                <div key={i} className="stat-card">
+                                                                    <div className="stat-info">
+                                                                        <span className="stat-value inter-text-normal text-normal">{perk.name}</span>
+                                                                        <span className="stat-label">{perk.pickRate}% Pick Rate</span>
+                                                                    </div>
+                                                                    <div className="stat-perk-diamond">
+                                                                        <img src={`/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* EMBLEMS */}
+                                                <div className="stats-section">
+                                                    <h3 className="bebas-header-2 stats-section-title">EMBLEMS</h3>
+                                                    <div className="stats-grid">
+                                                        {stats.iridescentEmblems?.map((emblem, i) => (
+                                                            <div key={i} className="stat-card">
+                                                                <div className="stat-info">
+                                                                    <span className="stat-value inter-text-normal text-normal capitalize">
+                                                                        {emblem.category.charAt(0) + emblem.category.slice(1).toLowerCase()}
+                                                                    </span>
+                                                                    <span className="stat-label">{emblem.rate}% Iridescent</span>
+                                                                </div>
+                                                                <img src={`/assets/Emblems/${emblem.category}_IRIDESCENT.png`} className="stat-emblem-icon drop-shadow" alt={emblem.category} />
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
+
                                             </div>
-
-                                        </div>
+                                        )
                                     )}
                                 </div>
                             </div>

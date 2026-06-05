@@ -1,0 +1,52 @@
+/* ==========================================================================
+   THE ENTITY'S LOADER (Mask Fill Animation)
+   ========================================================================== */
+
+.entity-loader-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .loader-base-icon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0.15;
+    filter: grayscale(100%);
+  }
+
+  .loader-fill-mask {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-IRIDESCENT);
+
+    /* These tell the browser to use the PNG's transparency as a cookie cutter */
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center bottom;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center bottom;
+
+    /* The magic slice that moves upward over the exact duration of your API delay */
+    animation: entityFillUp 0.6s linear forwards;
+  }
+}
+
+/* CSS Clip-Path inset(top right bottom left) */
+@keyframes entityFillUp {
+  0% {
+    clip-path: inset(100% 0 0 0); /* Fully clipped away at the bottom */
+  }
+  100% {
+    clip-path: inset(0 0 0 0); /* Fully revealed at the top */
+  }
+}
+
