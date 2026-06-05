@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import '../styles/ChallengesPage.scss';
 import '../styles/CurrentSeasonPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
@@ -13,6 +13,7 @@ import TrialListTable from './small-components/TrialListTable.jsx';
 import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay'
 import MasterLoadout from "./small-components/MasterLoadout.jsx";
+import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -21,7 +22,7 @@ const NAV_TABS = [
 ];
 
 const CurrentSeasonPage = () => {
-    const navigate = useNavigate();
+    const navigate = useCinematicNavigate();
     const { addToast } = useToast();
     const { seasonId } = useParams();
     const [trialCount, setTrialCount] = useState(0);

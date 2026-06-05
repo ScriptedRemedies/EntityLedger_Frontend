@@ -84,3 +84,27 @@
     }
   }
 }
+
+/* ==========================================================================
+   THE DESCENT INTO THE FOG (Page Transitions)
+   ========================================================================== */
+
+.global-fog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999; /* Above absolutely everything, including modals */
+  pointer-events: none;
+
+  /* The "open" state */
+  opacity: 0;
+  box-shadow: inset 0 0 0 0vmax #050505;
+  transition: box-shadow 0.45s ease-in, opacity 0.45s ease-in;
+}
+
+.global-fog-overlay.fog-active {
+  pointer-events: all; /* Blocks user from clicking anything while transitioning */
+
+  /* The "closed" state - drives the black shadow all the way to the center */
+  opacity: 1;
+  box-shadow: inset 0 0 0 100vmax #050505;
+}

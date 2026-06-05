@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.scss';
+import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
 
 const LoginPage = () => {
     const [isMounted, setIsMounted] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useCinematicNavigate();
 
     // Triggers the initial fade-in animation when the page loads
     useEffect(() => {

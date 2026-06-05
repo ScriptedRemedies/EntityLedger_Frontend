@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
@@ -12,6 +11,7 @@ import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay';
 import SeasonCard from "./small-components/SeasonCard.jsx";
 import EntityLoader from "./small-components/EntityLoader.jsx";
+import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {
@@ -22,7 +22,7 @@ const STATUS_MESSAGES = {
 }
 
 const ReviewChallengesPage = () => {
-    const navigate = useNavigate();
+    const navigate = useCinematicNavigate();
 
     // --- State Management ---
     const variantView = useFadeTransition(VARIANTS[0]);

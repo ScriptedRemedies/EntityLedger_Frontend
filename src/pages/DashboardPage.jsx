@@ -4,11 +4,11 @@ import '../styles/DashboardPage.scss';
 import ReactMarkdown from 'react-markdown';
 import fm from 'front-matter';
 import latestNotes from '../data/latest-update.md?raw';
-import { useNavigate } from "react-router-dom";
+import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
 
 const DashboardPage = () => {
 
-    const navigate = useNavigate();
+    const navigate = useCinematicNavigate();
 
     // --- RESTORED: State to handle the cascade menu ---
     const [isMenuExpanded, setIsMenuExpanded] = useState(false);

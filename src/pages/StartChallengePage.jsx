@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { VARIANTS } from '../data/variants';
 import '../styles/ChallengesPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
@@ -6,11 +5,11 @@ import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
 import KillerCard from "./small-components/KillerCard.jsx";
-// --- NEW: Import your SeasonCard (Adjust path if necessary) ---
 import SeasonCard from "./small-components/SeasonCard.jsx";
+import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
 
 const StartChallengePage = () => {
-    const navigate = useNavigate();
+    const navigate = useCinematicNavigate();
     const { addToast } = useToast();
 
     // --- State Management ---

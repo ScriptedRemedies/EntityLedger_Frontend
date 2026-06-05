@@ -5,6 +5,7 @@ import ReviewChallengesPage from "./pages/ReviewChallengesPage.jsx";
 import StartChallengePage from "./pages/StartChallengePage.jsx";
 import CurrentSeasonPage from "./pages/CurrentSeasonPage.jsx";
 import useSessionHeartbeat from "./hooks/useSessionHeartbeat";
+import {NavigationProvider} from "./hooks/NavigationContext.jsx";
 
 function AppContent() {
 
@@ -24,7 +25,9 @@ function AppContent() {
 function App() {
     return (
         <Router>
-            <AppContent />
+            <NavigationProvider>
+                <AppContent />
+            </NavigationProvider>
         </Router>
     )
 }
