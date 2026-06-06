@@ -335,14 +335,14 @@ const StartChallengePage = () => {
                         {isSealingPact ? (
                             // === THE CINEMATIC STATE ===
                             <div className="pact-sealed-cinematic fade-in">
-                                <h2 className="bebas-header-1 title-iri text-4xl mb-6 tracking-widest">THE PACT IS SEALED</h2>
+                                <h2 className="bebas-header-1 title-iri text-4xl mb-6 tracking-widest">CHALLENGE STARTED</h2>
                                 <EntityLoader />
                             </div>
                         ) : (
                             // === THE PACT FORM STATE ===
                             <>
                                 <div className="pact-header">
-                                    <h2 className="bebas-header-1 title-white m-0 text-3xl">SIGN THE PACT</h2>
+                                    <h2 className="bebas-header-1 title-white m-0 text-3xl">CONFIRM NEW CHALLENGE</h2>
                                 </div>
 
                                 <div className="pact-body hide-scrollbar">
@@ -396,8 +396,8 @@ const StartChallengePage = () => {
 
                                 {/* Reusing the gorgeous Sell Modal button classes! */}
                                 <div className="sell-modal-actions mt-auto">
-                                    <button className="cancel-sell-btn" onClick={handleCloseConfirmModal}>Review Terms</button>
-                                    <button className="confirm-sell-btn" onClick={submitChallenge}>Seal Pact</button>
+                                    <button className="cancel-sell-btn" onClick={handleCloseConfirmModal}>Back</button>
+                                    <button className="confirm-sell-btn" onClick={submitChallenge}>Start Challenge</button>
                                 </div>
                             </>
                         )}

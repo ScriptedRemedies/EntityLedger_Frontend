@@ -231,7 +231,6 @@
   width: 600px !important;
   padding: 0 !important;
   background: #080808 !important;
-  border: 1px solid rgba(139, 40, 40, 0.3) !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(139, 40, 40, 0.05) !important;
   overflow: hidden;
   display: flex;
@@ -241,7 +240,6 @@
 .pact-header {
   padding: 25px 30px 20px 30px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: linear-gradient(to bottom, rgba(139, 40, 40, 0.15) 0%, transparent 100%);
 }
 
 .pact-body {
@@ -257,4 +255,76 @@
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle, rgba(139, 40, 40, 0.15) 0%, transparent 70%);
+}
+
+/* ==========================================================================
+   THE VOID COLLAPSE (Season Failure Cinematic)
+   ========================================================================== */
+
+.void-cinematic-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+  pointer-events: none; /* Let the blackout handle the visual blocking */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.void-blackout {
+  position: absolute;
+  inset: 0;
+  pointer-events: all;
+  box-shadow: inset 0 0 0 0vmax #000000;
+  opacity: 0;
+}
+
+/* 1. The Vacuum (Dimming the background UI quickly) */
+.vacuum-active {
+  background: rgba(0,0,0,0.4);
+  transition: background 0.5s ease-out;
+}
+
+/* 2. The Blackout (Rushes in from the edges) */
+.blackout-active {
+  opacity: 1;
+  box-shadow: inset 0 0 0 100vmax #000000;
+  transition: box-shadow 1.2s cubic-bezier(0.5, 0, 0.1, 1), opacity 0.3s;
+}
+
+/* 3. The Verdict Text */
+.verdict-text {
+  font-family: var(--font-bebas);
+  font-size: 6rem;
+  color: #5c0a0a; /* Dark, dried blood red */
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.4), 2px 2px 0px #000;
+  letter-spacing: 8px;
+  opacity: 0;
+  transform: scale(0.9);
+  z-index: 10;
+}
+
+.verdict-burn-in {
+  animation: verdictBurn 3s ease-out forwards;
+}
+
+.verdict-ash-fade {
+  animation: verdictAshFade 1.5s ease-in forwards;
+}
+
+/* 4. The Lift (Fades the black screen to reveal the recap) */
+.blackout-reveal {
+  opacity: 0 !important;
+  transition: opacity 1s ease-in-out;
+}
+
+@keyframes verdictBurn {
+  0% { opacity: 0; transform: scale(0.95); filter: blur(10px); }
+  20% { opacity: 1; filter: blur(0px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0px); }
+}
+
+@keyframes verdictAshFade {
+  0% { opacity: 1; transform: scale(1); filter: blur(0px); }
+  100% { opacity: 0; transform: scale(1.05) translateY(-20px); filter: blur(20px); }
 }

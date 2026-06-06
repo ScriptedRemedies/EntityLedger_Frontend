@@ -21,33 +21,79 @@ const NAV_TABS = [
     { id: 'TRIALS', name: 'Trials' }
 ];
 
-// Killer dead animation component
-const DeathCinematic = ({ killer, onComplete }) => {
+// ==========================================
+// THE ENTITY'S TOLL (Killer Death Cinematic)
+// ==========================================
+const DeathCinematic = ({ killer, isRunEnding, onComplete }) => {
     const [isDead, setIsDead] = useState(false);
     const [isFadingOut, setIsFadingOut] = useState(false);
 
     useEffect(() => {
-        // 1. Wait 1400ms (800ms for our new slow fade-in + 600ms viewing time) before stamping
         const t1 = setTimeout(() => setIsDead(true), 1400);
-        // 2. Wait 2.5s after the stamp for the user to absorb the failure
         const t2 = setTimeout(() => setIsFadingOut(true), 3900);
-        // 3. Wait 1.2s for the CSS slow-fade-out to finish, then unmount and route
         const t3 = setTimeout(() => onComplete(), 5100);
 
         return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
     }, [onComplete]);
 
+    // If the run is completely failing, hold the background at pure black. Only fade the card.
+    const overlayClass = isFadingOut && !isRunEnding ? 'slow-fade-out' : 'cinematic-fade-in';
+    const cardClass = `cinematic-card-wrapper ${isDead ? 'stamp-active' : ''} ${isFadingOut && isRunEnding ? 'slow-fade-out' : ''}`;
+
     return (
-        // Added the new cinematic-fade-in class!
-        <div className={`death-cinematic-overlay ${isFadingOut ? 'slow-fade-out' : 'cinematic-fade-in'}`}>
+        <div className={`death-cinematic-overlay ${overlayClass}`}>
             <div className="content-fog-bg"></div>
-            <div className={`cinematic-card-wrapper ${isDead ? 'stamp-active' : ''}`}>
+            <div className={cardClass}>
                 <KillerCard
                     killer={{ ...killer, status: isDead ? 'DEAD' : 'ACTIVE' }}
                     variantType="STANDARD"
                     mode="active"
                 />
             </div>
+        </div>
+    );
+};
+
+// ==========================================
+// THE VOID COLLAPSE (Season Ending Cinematic)
+// ==========================================
+const RunEndingCinematic = ({ outcome, recapData, isChained, onTriggerRecap, onComplete }) => {
+    // If chained from the Death Cinematic, the screen is already black!
+    const [phase, setPhase] = useState(isChained ? 'blackout' : 'idle');
+
+    useEffect(() => {
+        let t1, t2, t3, t4, t5, t6, t7;
+
+        if (isChained) {
+            // Fast-track the animation directly to the burning text
+            t3 = setTimeout(() => setPhase('verdict'), 100);
+            t4 = setTimeout(() => onTriggerRecap(recapData), 2000);
+            t5 = setTimeout(() => setPhase('ash'), 3500);
+            t6 = setTimeout(() => setPhase('reveal'), 4500);
+            t7 = setTimeout(() => onComplete(), 5500);
+        } else {
+            // Standard Flow (Bankruptcy, Marathon Timer)
+            t1 = setTimeout(() => setPhase('vacuum'), 500);
+            t2 = setTimeout(() => setPhase('blackout'), 1000);
+            t3 = setTimeout(() => setPhase('verdict'), 2000);
+            t4 = setTimeout(() => onTriggerRecap(recapData), 4000);
+            t5 = setTimeout(() => setPhase('ash'), 5500);
+            t6 = setTimeout(() => setPhase('reveal'), 6500);
+            t7 = setTimeout(() => onComplete(), 7500);
+        }
+
+        return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); clearTimeout(t6); clearTimeout(t7); };
+    }, []); // Strictly one-shot
+
+    return (
+        <div className={`void-cinematic-overlay ${phase === 'vacuum' ? 'vacuum-active' : ''}`}>
+            <div className={`void-blackout ${(phase === 'blackout' || phase === 'verdict' || phase === 'ash') ? 'blackout-active' : ''} ${phase === 'reveal' ? 'blackout-reveal' : ''}`}></div>
+
+            {(phase === 'verdict' || phase === 'ash' || phase === 'reveal') && (
+                <div className={`verdict-text ${phase === 'verdict' ? 'verdict-burn-in' : 'verdict-ash-fade'}`}>
+                    {recapData.status === 'FAILED_TIME' ? 'TIME EXPIRED' : 'ENTITY DISPLEASED'}
+                </div>
+            )}
         </div>
     );
 };
@@ -85,6 +131,7 @@ const CurrentSeasonPage = () => {
     const [isViewingResults, setIsViewingResults] = useState(false);
     const [isResultsClosing, setIsResultsClosing] = useState(false);
     const [seasonRecap, setSeasonRecap] = useState(null);
+    const [runEndingData, setRunEndingData] = useState(null);
     const [usedReRollTokens, setUsedReRollTokens] = useState(false);
     const [allPerks, setAllPerks] = useState([]);
 
@@ -148,9 +195,10 @@ const CurrentSeasonPage = () => {
                 api.post(`/seasons/${activeSeason.seasonId}/fail`)
                     .then(() => api.get(`/seasons/${activeSeason.seasonId}/trials`))
                     .then(finalTrialsRes => {
-                        setSeasonRecap({
-                            status: 'FAILED_TIME',
-                            finalTrials: finalTrialsRes.data
+                        setRunEndingData({
+                            outcome: 'failure',
+                            isChained: false,
+                            recap: { status: 'FAILED_TIME', finalTrials: finalTrialsRes.data }
                         });
                         addToast("Time's up! The Entity has claimed your run.", "error");
                     })
@@ -278,7 +326,7 @@ const CurrentSeasonPage = () => {
             const isKillerDead = resultsPayload.survivors.includes('escaped');
 
             const mappedSurvivors = resultsPayload.survivors.map(status => {
-                if (status === 'hatch') return 'HATCH_ESCAPE';
+                if (status === 'hatch' || status === 'hatch_escape') return 'HATCH_ESCAPE';
                 return status.toUpperCase();
             });
 
@@ -312,12 +360,18 @@ const CurrentSeasonPage = () => {
             const response = await api.post(`/trials`, payload);
             const trialResult = response.data;
 
-            // Determine if they actually died (accounting for Iron Man Mulligans)
             const isKillerActuallyDead = isKillerDead && !(isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE');
+
+            // --- NEW: Identify if this specific death killed the entire run ---
+            const isRunFailed = trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE' && trialResult.seasonStatus !== 'COMPLETED';
+
             const refreshPromise = fetchSeasonData();
 
-            // --- THE CLEANUP CLOSURE ---
-            // We package the cleanup logic so it can run AFTER the cinematic finishes
+            // Start fetching the final trials early so we don't stall the cinematic!
+            const finalTrialsPromise = (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE')
+                ? api.get(`/seasons/${activeSeason.seasonId}/trials`)
+                : null;
+
             const finishSubmission = async () => {
                 setSelectedPerks([]);
                 setSelectedAddons([]);
@@ -330,11 +384,17 @@ const CurrentSeasonPage = () => {
                 localStorage.removeItem('chaos_perks');
 
                 if (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE') {
-                    const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
-                    setSeasonRecap({
-                        status: trialResult.seasonStatus,
-                        finalTrials: finalTrialsRes.data
-                    });
+                    const finalTrialsRes = await finalTrialsPromise; // Await the early fetch
+
+                    if (trialResult.seasonStatus !== 'COMPLETED') {
+                        setRunEndingData({
+                            outcome: 'failure',
+                            isChained: isKillerActuallyDead, // Let Void know if it's chaining off the Death Cinematic!
+                            recap: { status: trialResult.seasonStatus, finalTrials: finalTrialsRes.data }
+                        });
+                    } else {
+                        setSeasonRecap({ status: trialResult.seasonStatus, finalTrials: finalTrialsRes.data });
+                    }
                 } else {
                     navView.triggerTransition(NAV_TABS[0]);
                 }
@@ -344,18 +404,24 @@ const CurrentSeasonPage = () => {
             if (isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE') {
                 addToast("Mulligan used! Your run was saved.", "warning");
             } else if (!isKillerActuallyDead) {
-                // Only show the success toast if they didn't die.
-                // If they died, we don't show a toast because the cinematic handles the messaging!
                 addToast("Trial complete! The Entity is pleased.", "success");
             }
 
             if (isKillerActuallyDead) {
                 setDeathCinematic({
                     killer: currentKiller,
+                    isRunEnding: isRunFailed, // Tell the Death Cinematic to hold the black background!
                     onComplete: async () => {
-                        await refreshPromise; // Ensure the background fetch is completely finished
-                        setDeathCinematic(null);
-                        finishSubmission();
+                        await refreshPromise;
+                        if (!isRunFailed) {
+                            // Standard Death: Normal Unmount
+                            setDeathCinematic(null);
+                            finishSubmission();
+                        } else {
+                            // Run Failed: Trigger Void Cinematic over top, then silently delete Death Cinematic 1.5s later
+                            finishSubmission();
+                            setTimeout(() => setDeathCinematic(null), 1500);
+                        }
                     }
                 });
 
@@ -382,14 +448,19 @@ const CurrentSeasonPage = () => {
 
             addToast(`${killerToSell.killerName} was sold for $${killerToSell.cost}!`, "success");
 
-            // --- NEW: Check if the sale mathematically ended the run ---
+            // Check if the sale mathematically ended the run
             if (updatedSeason.status && updatedSeason.status !== 'ACTIVE') {
                 const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
 
-                setSeasonRecap({
-                    status: updatedSeason.status,
-                    finalTrials: finalTrialsRes.data
-                });
+                if (updatedSeason.status !== 'COMPLETED') {
+                    setRunEndingData({
+                        outcome: 'failure',
+                        isChained: false,
+                        recap: { status: updatedSeason.status, finalTrials: finalTrialsRes.data }
+                    });
+                } else {
+                    setSeasonRecap({ status: updatedSeason.status, finalTrials: finalTrialsRes.data });
+                }
             } else {
                 // If they can still afford to play, carry on as normal
                 await fetchSeasonData();
@@ -695,7 +766,18 @@ const CurrentSeasonPage = () => {
             {deathCinematic && (
                 <DeathCinematic
                     killer={deathCinematic.killer}
+                    isRunEnding={deathCinematic.isRunEnding}
                     onComplete={deathCinematic.onComplete}
+                />
+            )}
+
+            {runEndingData && (
+                <RunEndingCinematic
+                    outcome={runEndingData.outcome}
+                    recapData={runEndingData.recap}
+                    isChained={runEndingData.isChained}
+                    onTriggerRecap={(data) => setSeasonRecap(data)} // Renders the overlay silently in the background
+                    onComplete={() => setRunEndingData(null)}
                 />
             )}
 
@@ -705,6 +787,7 @@ const CurrentSeasonPage = () => {
                     recapData={seasonRecap}
                     actionText="Return to Dashboard"
                     onAction={() => navigate('/dashboard')}
+                    stayOpenOnAction={true}
                 />
             )}
         </div>

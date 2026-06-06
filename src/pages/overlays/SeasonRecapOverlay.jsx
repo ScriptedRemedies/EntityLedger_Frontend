@@ -6,7 +6,7 @@ import '../../styles/overlays/TrialConfirmation.scss';
 import '../../styles/ChallengesPage.scss';
 import '../../styles/overlays/SeasonRecapOverlay.scss';
 
-const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
+const SeasonRecapOverlay = ({ season, recapData, actionText, onAction, stayOpenOnAction = false }) => {
 
     // --- VIEW STATES ---
     const scrollRef = useRef(null);
@@ -14,10 +14,17 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
     const [activeTrialOverlay, setActiveTrialOverlay] = useState(null);
     const [isClosing, setIsClosing] = useState(false);
     const handleClose = () => {
-        setIsClosing(true);
-        setTimeout(() => {
+        if (stayOpenOnAction) {
+            // CINEMATIC EXIT: Freeze the modal in place and instantly trigger the router.
+            // The black fog will wash over the static modal.
             if (onAction) onAction();
-        }, 300);
+        } else {
+            // STANDARD EXIT: Trigger the CSS slam-out, wait 300ms, then unmount (used on the Review Page).
+            setIsClosing(true);
+            setTimeout(() => {
+                if (onAction) onAction();
+            }, 300);
+        }
     }
 
     // --- AGGRESSIVE FRONTEND MATH ---
@@ -185,6 +192,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction }) => {
     const headerTitle = recapData.status.replace("_", " ");
     const headerColor = isVictory ? "title-white" : "title-iri";
     const subTitle = isVictory ? "The Entity is pleased... for now." : "The fog claims another victim.";
+    const isFailure = recapData.status !== 'COMPLETED';
 
     return (
         <div className={`recap-overlay-container ${isClosing ? 'fade-out' : 'fade-in'}`}>
