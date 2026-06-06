@@ -409,11 +409,13 @@ const TrialResultsOverlay = ({ season, killer, selectedPerks = [], selectedAddon
 
             {/* === RIGHT PANEL (The Killer Showcase) === */}
             <div className="results-right-panel">
-                <img
-                    src={`/assets/Killer Portraits/${killer.killerName}.png`}
-                    alt={killer.killerName}
-                    className="results-killer-bg fade-in"
-                />
+                {killer && (
+                    <img
+                        src={`/assets/Killer Portraits/${killer.killerName}.png`}
+                        alt={killer.killerName}
+                        className="results-killer-bg fade-in"
+                    />
+                )}
                 <button className="squareBtn complete-btn" onClick={handleSubmit}>
                     Complete Trial
                 </button>

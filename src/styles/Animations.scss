@@ -143,3 +143,80 @@
 .modal-slam-out {
   animation: entitySlamOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ==========================================================================
+   THE ENTITY'S TOLL (Killer Death Cinematic)
+   ========================================================================== */
+
+.death-cinematic-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+  background: #050505; /* Deep black to hide the UI underneath */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  /* Re-use the existing fog but make it thicker */
+  .content-fog-bg {
+    opacity: 0.8;
+    z-index: 0;
+  }
+}
+
+.cinematic-fade-in {
+  animation: slowFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes slowFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cinematic-card-wrapper {
+  transform: scale(1.6); /* Makes the killer card huge in the center of the screen */
+  z-index: 10;
+  pointer-events: none; /* Prevents clicking the card */
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+
+  &.stamp-active {
+    /* Targets the text overlay rendered inside KillerCard.jsx */
+    .text-overlay-diagonal {
+      animation: deathStamp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      color: #7f1d1d; /* Deep bloody red */
+      text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+      /* Make sure it sits above the grey filter */
+      z-index: 20;
+    }
+
+    /* Dramatically desaturate the killer when the stamp hits */
+    .killer-portrait {
+      transition: filter 0.4s ease;
+      filter: grayscale(100%) brightness(0.3) contrast(1.2) !important;
+    }
+  }
+}
+
+/* Assumes your text-overlay-diagonal class is rotated -45deg.
+  Starts 2x size, snaps down to 1x.
+*/
+@keyframes deathStamp {
+  0% {
+    transform: translate(-50%, -50%) rotate(-45deg) scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-45deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.slow-fade-out {
+  animation: slowFadeOut 1.2s ease-in forwards;
+}
+
+@keyframes slowFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

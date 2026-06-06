@@ -21,6 +21,37 @@ const NAV_TABS = [
     { id: 'TRIALS', name: 'Trials' }
 ];
 
+// Killer dead animation component
+const DeathCinematic = ({ killer, onComplete }) => {
+    const [isDead, setIsDead] = useState(false);
+    const [isFadingOut, setIsFadingOut] = useState(false);
+
+    useEffect(() => {
+        // 1. Wait 1400ms (800ms for our new slow fade-in + 600ms viewing time) before stamping
+        const t1 = setTimeout(() => setIsDead(true), 1400);
+        // 2. Wait 2.5s after the stamp for the user to absorb the failure
+        const t2 = setTimeout(() => setIsFadingOut(true), 3900);
+        // 3. Wait 1.2s for the CSS slow-fade-out to finish, then unmount and route
+        const t3 = setTimeout(() => onComplete(), 5100);
+
+        return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    }, [onComplete]);
+
+    return (
+        // Added the new cinematic-fade-in class!
+        <div className={`death-cinematic-overlay ${isFadingOut ? 'slow-fade-out' : 'cinematic-fade-in'}`}>
+            <div className="content-fog-bg"></div>
+            <div className={`cinematic-card-wrapper ${isDead ? 'stamp-active' : ''}`}>
+                <KillerCard
+                    killer={{ ...killer, status: isDead ? 'DEAD' : 'ACTIVE' }}
+                    variantType="STANDARD"
+                    mode="active"
+                />
+            </div>
+        </div>
+    );
+};
+
 const CurrentSeasonPage = () => {
     const navigate = useCinematicNavigate();
     const { addToast } = useToast();
@@ -35,6 +66,7 @@ const CurrentSeasonPage = () => {
     const [activeTrialOverlay, setActiveTrialOverlay] = useState(null);
 
     const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
+    const [deathCinematic, setDeathCinematic] = useState(null);
     // Confirming sell killer states for blood money and afterburn
     const [killerToSellConfirm, setKillerToSellConfirm] = useState(null);
     const [isSellModalClosing, setIsSellModalClosing] = useState(false);
@@ -51,6 +83,7 @@ const CurrentSeasonPage = () => {
     const [selectedPerks, setSelectedPerks] = useState([]);
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [isViewingResults, setIsViewingResults] = useState(false);
+    const [isResultsClosing, setIsResultsClosing] = useState(false);
     const [seasonRecap, setSeasonRecap] = useState(null);
     const [usedReRollTokens, setUsedReRollTokens] = useState(false);
     const [allPerks, setAllPerks] = useState([]);
@@ -279,39 +312,60 @@ const CurrentSeasonPage = () => {
             const response = await api.post(`/trials`, payload);
             const trialResult = response.data;
 
-            // --- UI FEEDBACK INTERCEPT ---
-            // If they are playing Iron Man, a gate escape happened, AND the season is still active... a Mulligan saved them!
+            // Determine if they actually died (accounting for Iron Man Mulligans)
+            const isKillerActuallyDead = isKillerDead && !(isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE');
+            const refreshPromise = fetchSeasonData();
+
+            // --- THE CLEANUP CLOSURE ---
+            // We package the cleanup logic so it can run AFTER the cinematic finishes
+            const finishSubmission = async () => {
+                setSelectedPerks([]);
+                setSelectedAddons([]);
+                setSelectedKiller(null);
+
+                if (typeof setUsedReRollTokens !== 'undefined') setUsedReRollTokens(false);
+                localStorage.removeItem('chaos_tokens');
+                localStorage.removeItem('chaos_hasRolled');
+                localStorage.removeItem('chaos_hasReRolled');
+                localStorage.removeItem('chaos_perks');
+
+                if (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE') {
+                    const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
+                    setSeasonRecap({
+                        status: trialResult.seasonStatus,
+                        finalTrials: finalTrialsRes.data
+                    });
+                } else {
+                    navView.triggerTransition(NAV_TABS[0]);
+                }
+            };
+
+            // --- TOAST LOGIC ---
             if (isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE') {
                 addToast("Mulligan used! Your run was saved.", "warning");
-            } else if (isKillerDead) {
-                addToast(`${currentKiller.killerName} was consumed by The Entity.`, "error");
-            } else {
+            } else if (!isKillerActuallyDead) {
+                // Only show the success toast if they didn't die.
+                // If they died, we don't show a toast because the cinematic handles the messaging!
                 addToast("Trial complete! The Entity is pleased.", "success");
             }
 
-            setSelectedPerks([]);
-            setSelectedAddons([]);
-            setSelectedKiller(null);
-
-            if (typeof setUsedReRollTokens !== 'undefined') setUsedReRollTokens(false);
-            localStorage.removeItem('chaos_tokens');
-            localStorage.removeItem('chaos_hasRolled');
-            localStorage.removeItem('chaos_hasReRolled');
-            localStorage.removeItem('chaos_perks');
-
-            if (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE') {
-                const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
-
-                setSeasonRecap({
-                    status: trialResult.seasonStatus,
-                    finalTrials: finalTrialsRes.data
+            if (isKillerActuallyDead) {
+                setDeathCinematic({
+                    killer: currentKiller,
+                    onComplete: async () => {
+                        await refreshPromise; // Ensure the background fetch is completely finished
+                        setDeathCinematic(null);
+                        finishSubmission();
+                    }
                 });
 
-                setIsViewingResults(false);
+                setTimeout(() => {
+                    setIsViewingResults(false);
+                }, 1000);
             } else {
                 setIsViewingResults(false);
-                navView.triggerTransition(NAV_TABS[0]);
-                await fetchSeasonData();
+                await refreshPromise;
+                finishSubmission();
             }
 
         } catch (error) {
@@ -626,13 +680,22 @@ const CurrentSeasonPage = () => {
             )}
 
             {isViewingResults && (
-                <TrialResultsOverlay
-                    season={activeSeason}
-                    killer={currentKiller}
-                    selectedAddons={selectedAddons}
-                    selectedPerks={selectedPerks}
-                    trialCount={trialCount}
-                    onSubmit={handleTrialSubmit}
+                <div className={isResultsClosing ? 'fade-out' : ''} style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+                    <TrialResultsOverlay
+                        season={activeSeason}
+                        killer={currentKiller}
+                        selectedAddons={selectedAddons}
+                        selectedPerks={selectedPerks}
+                        trialCount={trialCount}
+                        onSubmit={handleTrialSubmit}
+                    />
+                </div>
+            )}
+
+            {deathCinematic && (
+                <DeathCinematic
+                    killer={deathCinematic.killer}
+                    onComplete={deathCinematic.onComplete}
                 />
             )}
 
