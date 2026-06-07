@@ -55,24 +55,22 @@ const DeathCinematic = ({ killer, isRunEnding, onComplete }) => {
 };
 
 // ==========================================
-// THE VOID COLLAPSE (Season Ending Cinematic)
+// THE RUN ENDING CINEMATIC (Victory & Void)
 // ==========================================
 const RunEndingCinematic = ({ outcome, recapData, isChained, onTriggerRecap, onComplete }) => {
-    // If chained from the Death Cinematic, the screen is already black!
     const [phase, setPhase] = useState(isChained ? 'blackout' : 'idle');
 
     useEffect(() => {
         let t1, t2, t3, t4, t5, t6, t7;
 
+        // Because Crimson Ash mirrors the Void, the timing logic is 100% identical!
         if (isChained) {
-            // Fast-track the animation directly to the burning text
             t3 = setTimeout(() => setPhase('verdict'), 100);
             t4 = setTimeout(() => onTriggerRecap(recapData), 2000);
             t5 = setTimeout(() => setPhase('ash'), 3500);
             t6 = setTimeout(() => setPhase('reveal'), 4500);
             t7 = setTimeout(() => onComplete(), 5500);
         } else {
-            // Standard Flow (Bankruptcy, Marathon Timer)
             t1 = setTimeout(() => setPhase('vacuum'), 500);
             t2 = setTimeout(() => setPhase('blackout'), 1000);
             t3 = setTimeout(() => setPhase('verdict'), 2000);
@@ -85,13 +83,18 @@ const RunEndingCinematic = ({ outcome, recapData, isChained, onTriggerRecap, onC
         return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); clearTimeout(t6); clearTimeout(t7); };
     }, []); // Strictly one-shot
 
+    const isVictory = outcome === 'victory';
+
     return (
         <div className={`void-cinematic-overlay ${phase === 'vacuum' ? 'vacuum-active' : ''}`}>
             <div className={`void-blackout ${(phase === 'blackout' || phase === 'verdict' || phase === 'ash') ? 'blackout-active' : ''} ${phase === 'reveal' ? 'blackout-reveal' : ''}`}></div>
 
             {(phase === 'verdict' || phase === 'ash' || phase === 'reveal') && (
-                <div className={`verdict-text ${phase === 'verdict' ? 'verdict-burn-in' : 'verdict-ash-fade'}`}>
-                    {recapData.status === 'FAILED_TIME' ? 'TIME EXPIRED' : 'ENTITY DISPLEASED'}
+                <div className={isVictory
+                    ? `victory-text ${phase === 'verdict' ? 'victory-burn-in' : 'victory-ash-fade'}`
+                    : `verdict-text ${phase === 'verdict' ? 'verdict-burn-in' : 'verdict-ash-fade'}`
+                }>
+                    {isVictory ? 'CHALLENGE CONQUERED' : (recapData.status === 'FAILED_TIME' ? 'TIME EXPIRED' : 'ENTITY DISPLEASED')}
                 </div>
             )}
         </div>
@@ -362,13 +365,12 @@ const CurrentSeasonPage = () => {
 
             const isKillerActuallyDead = isKillerDead && !(isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE');
 
-            // --- NEW: Identify if this specific death killed the entire run ---
-            const isRunFailed = trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE' && trialResult.seasonStatus !== 'COMPLETED';
+            // --- Identify if the run ended IN ANY WAY (Win or Lose) ---
+            const isRunEnding = trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE';
 
             const refreshPromise = fetchSeasonData();
 
-            // Start fetching the final trials early so we don't stall the cinematic!
-            const finalTrialsPromise = (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE')
+            const finalTrialsPromise = isRunEnding
                 ? api.get(`/seasons/${activeSeason.seasonId}/trials`)
                 : null;
 
@@ -383,17 +385,23 @@ const CurrentSeasonPage = () => {
                 localStorage.removeItem('chaos_hasReRolled');
                 localStorage.removeItem('chaos_perks');
 
-                if (trialResult.seasonStatus && trialResult.seasonStatus !== 'ACTIVE') {
-                    const finalTrialsRes = await finalTrialsPromise; // Await the early fetch
+                if (isRunEnding) {
+                    const finalTrialsRes = await finalTrialsPromise;
 
                     if (trialResult.seasonStatus !== 'COMPLETED') {
+                        // THE VOID COLLAPSE
                         setRunEndingData({
                             outcome: 'failure',
-                            isChained: isKillerActuallyDead, // Let Void know if it's chaining off the Death Cinematic!
+                            isChained: isKillerActuallyDead,
                             recap: { status: trialResult.seasonStatus, finalTrials: finalTrialsRes.data }
                         });
                     } else {
-                        setSeasonRecap({ status: trialResult.seasonStatus, finalTrials: finalTrialsRes.data });
+                        // THE CRIMSON ASH
+                        setRunEndingData({
+                            outcome: 'victory',
+                            isChained: isKillerActuallyDead,
+                            recap: { status: trialResult.seasonStatus, finalTrials: finalTrialsRes.data }
+                        });
                     }
                 } else {
                     navView.triggerTransition(NAV_TABS[0]);
@@ -403,17 +411,17 @@ const CurrentSeasonPage = () => {
             // --- TOAST LOGIC ---
             if (isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE') {
                 addToast("Mulligan used! Your run was saved.", "warning");
-            } else if (!isKillerActuallyDead) {
+            } else if (!isKillerActuallyDead && !isRunEnding) {
                 addToast("Trial complete! The Entity is pleased.", "success");
             }
 
             if (isKillerActuallyDead) {
                 setDeathCinematic({
                     killer: currentKiller,
-                    isRunEnding: isRunFailed, // Tell the Death Cinematic to hold the black background!
+                    isRunEnding: isRunEnding, // Tell the Death Cinematic to hold the black background!
                     onComplete: async () => {
                         await refreshPromise;
-                        if (!isRunFailed) {
+                        if (!isRunEnding) {
                             // Standard Death: Normal Unmount
                             setDeathCinematic(null);
                             finishSubmission();
@@ -429,9 +437,20 @@ const CurrentSeasonPage = () => {
                     setIsViewingResults(false);
                 }, 1000);
             } else {
-                setIsViewingResults(false);
-                await refreshPromise;
-                finishSubmission();
+                if (isRunEnding) {
+                    await refreshPromise;
+                    finishSubmission(); // This spawns the Crimson Ash cinematic ON TOP of the results
+
+                    // Silently delete the results overlay behind the black fog after 1.5 seconds
+                    setTimeout(() => {
+                        setIsViewingResults(false);
+                    }, 1500);
+                } else {
+                    // Normal Path (Run continues)
+                    setIsViewingResults(false);
+                    await refreshPromise;
+                    finishSubmission();
+                }
             }
 
         } catch (error) {

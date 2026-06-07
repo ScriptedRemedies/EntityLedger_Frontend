@@ -328,3 +328,33 @@
   0% { opacity: 1; transform: scale(1); filter: blur(0px); }
   100% { opacity: 0; transform: scale(1.05) translateY(-20px); filter: blur(20px); }
 }
+
+/* ==========================================================================
+   THE CRIMSON ASH (Season Victory Cinematic)
+   ========================================================================== */
+
+.victory-text {
+  font-family: var(--font-bebas);
+  font-size: 6rem;
+  color: #ff0a2f; /* Bright, saturated Bloodpoint Red */
+  text-shadow: 0 0 20px rgba(255, 10, 47, 0.8), 2px 2px 0px #000;
+  letter-spacing: 8px;
+  opacity: 0;
+  transform: scale(0.9);
+  z-index: 10;
+}
+
+.victory-burn-in {
+  /* Re-uses the exact same heavy pacing as the failure burn! */
+  animation: verdictBurn 3s ease-out forwards;
+}
+
+.victory-ash-fade {
+  animation: victoryAshFade 1.5s ease-in forwards;
+}
+
+/* Identical to the failure ash fade, but it drifts UPWARD like embers */
+@keyframes victoryAshFade {
+  0% { opacity: 1; transform: scale(1); filter: blur(0px); }
+  100% { opacity: 0; transform: scale(1.05) translateY(-40px); filter: blur(20px); }
+}
