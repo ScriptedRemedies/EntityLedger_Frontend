@@ -1,0 +1,107 @@
+/* ==========================================================================
+   THE ENTITY'S WHISPERS (Global Tutorial UI)
+   ========================================================================== */
+
+.tutorial-overlay-active {
+  /* Gently dims the background app to make the whisper pop */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999998;
+  pointer-events: none; /* Let clicks pass through to the highlighted element! */
+  transition: background 0.5s ease;
+}
+
+.entity-whisper-box {
+  position: absolute;
+  z-index: 999999;
+  width: 350px;
+  background: rgba(10, 5, 5, 0.95);
+  //border: 1px solid rgba(139, 40, 40, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(139, 40, 40, 0.1);
+  padding: 20px 25px;
+  pointer-events: all; /* Allow clicking buttons inside the whisper */
+
+  /* Ethereal breathing animation */
+  animation: whisperBreathe 4s ease-in-out infinite, entitySlam 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(139, 40, 40, 0.4), transparent);
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0; width: 100%; height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(139, 40, 40, 0.4), transparent);
+  }
+}
+
+/* Centered state for the Dashboard Intro */
+.whisper-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  width: 450px;
+  text-align: center;
+}
+
+/* The actual text styling */
+.whisper-text {
+  font-family: var(--font-inter);
+  color: var(--color-normal);
+  font-size: var(--text-size-normal);
+}
+
+.whisper-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 15px;
+}
+
+.whisper-btn-skip {
+  background: transparent;
+  border: none;
+  color: var(--color-normal);
+  font-family: var(--font-inter);
+  font-size: var(--text-size-small);
+  cursor: pointer;
+  transition: color 0.2s;
+  &:hover { color: #ff4444; }
+}
+
+.whisper-btn-next {
+  background: rgba(139, 40, 40, 0.2);
+  border: 1px solid rgba(139, 40, 40, 0.5);
+  color: var(--color-white);
+  font-family: var(--font-inter);
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: rgba(139, 40, 40, 0.4); border-color: var(--color-IRIDESCENT); }
+}
+
+@keyframes whisperBreathe {
+  0% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(139, 40, 40, 0.2); }
+  50% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(139, 40, 40, 0.4); }
+  100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(139, 40, 40, 0.2); }
+}
+
+/* --- SPOTLIGHT HIGHLIGHTING --- */
+.tutorial-highlight {
+  position: relative;
+  z-index: 999999 !important; /* Forces it above the dark overlay */
+  border-radius: 4px; /* Softens the glow edges */
+  animation: whisperHighlightPulse 2s infinite ease-in-out;
+}
+
+@keyframes whisperHighlightPulse {
+  0% { box-shadow: 0 0 0 rgba(139, 40, 40, 0); }
+  50% { box-shadow: 0 0 25px rgba(139, 40, 40, 0.7); }
+  100% { box-shadow: 0 0 0 rgba(139, 40, 40, 0); }
+}
