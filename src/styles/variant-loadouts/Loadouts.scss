@@ -1,40 +1,70 @@
 .loadout {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   height: 100%;
-  gap: 10px;
 
   /* === EQUIPPED SECTION === */
-  // TODO: Change the spacing and width of the perks and addons along with their matching text to completely fill that space
   .equipped-section {
     display: flex;
-    justify-content: space-around;
-    align-items: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
 
     .square-slot {
-      width: 65px;
-      height: 65px;
+      width: 70px;
+      height: 70px;
     }
     .diamond-slot {
-      width: 60px;
-      height: 60px;
+      width: 65px;
+      height: 65px;
+      margin: 15px 15px 15px 5px; /* Room for rotation */
     }
     .item-name {
       width: 80px;
       transition: opacity 0.5s ease-out;
     }
+
+    /* Magic CSS: Remove background/border ONLY if an item is equipped */
+    .square-slot, .diamond-slot {
+      &:has(img) {
+        border-color: transparent;
+        background: transparent;
+        box-shadow: none;
+
+        &::after {
+          display: none; /* Hide the plus sign */
+        }
+      }
+
+      /* Exception: Keep the background if it's just the padlock */
+      &:has(img.locked-indicator) {
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(15, 15, 15, 0.6);
+      }
+    }
   }
 
+  /* === ROW HEADERS (POWER, ADDONS, PERKS) === */
   .loadout-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
     h3 {
+      font-family: var(--font-inter);
+      font-size: 11px;
+      font-weight: 600;
+      color: #a0a0a0;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      font-size: var(--font-size-small);
+      margin: 0;
     }
 
     .locked-indicator {
-      opacity: 0.7;
-      filter: grayscale(70%);
+      opacity: 0.5;
+      filter: grayscale(100%);
     }
   }
 
@@ -46,53 +76,49 @@
   }
 
   .perks-container {
-    gap: 25px;
-    padding-left: 15px;
-    align-items: flex-start;
+    gap: 15px;
+    padding-left: 10px;
   }
 
-  .perk-wrapper {
+  .perk-wrapper, .addon-wrapper {
     display: flex;
     flex-direction: column;
-    justify-items: center;
-  }
-
-  .divider-line {
-    height: 2px;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 5px 0;
+    align-items: center;
   }
 
   /* === UNIVERSAL SLOT LOGIC === */
   .square-slot, .diamond-slot {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(15, 15, 15, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
     flex-shrink: 0;
+    position: relative; /* Needed for the ::after plus sign */
+    transition: all 0.2s ease;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      color: transparent;
-      font-size: 0;
+      filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
+      z-index: 2;
+    }
+
+    /* The empty stamped '+' sign */
+    &::after {
+      content: '+';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.15);
+      font-size: 26px;
+      font-weight: 300;
+      z-index: 1;
     }
   }
 
-  .square-slot {
-    width: 75px;
-    height: 75px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   .diamond-slot {
-    width: 75px;
-    height: 75px;
     transform: rotate(45deg);
-    margin: 12px;
 
     .diamond-content {
       width: 100%;
@@ -102,6 +128,11 @@
       justify-content: center;
       align-items: center;
     }
+
+    /* Counter-rotate the empty plus sign so it stands up straight */
+    &::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
   }
 
   /* === BOTTOM INVENTORY SECTION === */
@@ -110,7 +141,6 @@
     flex-direction: column;
     flex: 1;
 
-    // For both the re-roll tokens and the revive token
     .token-container {
       display: flex;
       gap: 10px;
@@ -120,62 +150,81 @@
         object-fit: contain;
       }
     }
+  }
 
-    .roll-btn {
-      padding: 10px;
-      background: var(--color-60-background);
-      border: 2px solid black;
-      cursor: pointer;
+  /* Replicating the game's search bar header */
+  .inventory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin: 5px 0;
 
-      &:hover {
-        background: var(--color-iri-60);
-        border-color: var(--color-IRIDESCENT);
-        color: white;
+    .text {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+
+      h2 {
+        font-family: var(--font-bebas);
+        font-size: 26px;
+        color: #fff;
+        letter-spacing: 1.5px;
+        margin: 0;
+        text-transform: uppercase;
+      }
+      p {
+        font-size: 16px;
+        color: #a0a0a0;
+        margin: 0;
       }
     }
   }
+
   .inventory-search {
-    width: 300px;
-    padding: 5px 15px;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: var(--color-white);
+    color: white;
+    padding: 6px 12px;
     font-family: var(--font-inter);
+    font-size: 12px;
+    width: 220px;
     outline: none;
+    transition: border-color 0.2s ease;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+      text-transform: uppercase;
+    }
 
     &:focus {
       border-color: rgba(255, 255, 255, 0.5);
     }
   }
 
-  .inventory-header {
-    display: flex;
-    justify-content: space-between;
+  .divider-line {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+    margin-bottom: 20px;
   }
 
   /* === FIXED INVENTORY GRID === */
   .inventory-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, 60px);
     justify-content: center;
-    min-height: 340px;
     align-content: start;
-    column-gap: 15px;
+    gap: 30px;
+    row-gap: 30px;
     width: 100%;
-    padding: 20px 10px;
-
-    &.grid-squares {
-      row-gap: 30px;
-    }
-
-    &.grid-diamonds {
-      row-gap: 15px;
-    }
+    padding: 20px;
 
     .inventory-item {
       cursor: pointer;
       transition: transform 0.2s ease, border-color 0.2s ease;
       position: relative;
+      overflow: hidden;
+      width: 60px;
 
       &:hover {
         transform: scale(1.08);
@@ -199,6 +248,7 @@
     justify-content: center;
     gap: 8px;
     margin-top: auto;
+    padding-bottom: 20px;
 
     .page-number {
       background: rgba(0, 0, 0, 0.5);
@@ -227,6 +277,8 @@
     }
   }
 }
+
+/* === FINANCIAL OVERLAYS === */
 .loadout-financial-overlay {
   position: absolute;
   bottom: 0;
@@ -255,12 +307,6 @@
     justify-content: center;
     letter-spacing: 1px;
   }
-}
-
-/* Ensure the parent item clips the banner neatly */
-.inventory-item {
-  position: relative;
-  overflow: hidden;
 }
 
 /* --- CHAOS SHUFFLE FLIP ANIMATION --- */

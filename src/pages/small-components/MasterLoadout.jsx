@@ -250,9 +250,6 @@ const MasterLoadout = ({
                                             </div>
                                         )}
                                     </div>
-                                    <p className="inter-text-small text-muted text-center" style={{ width: '80px', marginTop: '15px', lineHeight: '1.2' }}>
-                                        {addon ? addon.name : ""}
-                                    </p>
 
                                 </div>
                             );
@@ -298,10 +295,6 @@ const MasterLoadout = ({
                                             </div>
                                         )}
                                     </div>
-                                    <p className="item-name inter-text-small text-center text-muted"
-                                       style={{ width: '80px', marginTop: '15px', lineHeight: '1.2', opacity: (isChaos && !isVisible) ? 0 : 1 }}>
-                                        {perk ? perk.name : ""}
-                                    </p>
                                 </div>
                             );
                         })}

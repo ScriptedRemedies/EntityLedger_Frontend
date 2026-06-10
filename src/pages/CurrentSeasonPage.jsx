@@ -651,11 +651,22 @@ const CurrentSeasonPage = () => {
 
                                 {/* TRIALS */}
                                 {navView.display.id === 'TRIALS' && (
-                                    <TrialListTable
-                                        trials={trials}
-                                        variantType={activeSeason.variantType}
-                                        onRowClick={setActiveTrialOverlay}
-                                    />
+                                    trials && trials.length > 0 ? (
+                                            <TrialListTable
+                                                trials={trials}
+                                                variantType={activeSeason.variantType}
+                                                onRowClick={setActiveTrialOverlay}
+                                            />
+                                        ) : (
+                                        <div className="empty-state-container flex flex-col fade-in">
+                                            <h3 className="bebas-header-2">The Ledger is Empty</h3>
+                                            <p className="inter-text-small text-center" style={{ maxWidth: '350px' }}>
+                                                No trials have been documented yet. Start a trial to offer your first sacrifice to the Entity.
+                                            </p>
+                                        </div>
+                                    )
+
+
                                 )}
                             </div>
                         </div>
