@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import fm from 'front-matter';
 import latestNotes from '../data/latest-update.md?raw';
 import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
+import {VersionModal} from "./modals/AppModals.jsx";
 
 const DashboardPage = () => {
 
@@ -147,34 +148,10 @@ const DashboardPage = () => {
 
             {/* Version Info Modal Overlay */}
             {isVersionModalOpen && (
-                <div className={`modal-backdrop ${isVersionClosing ? 'fade-out' : 'fade-in'}`}>
-                    <div className={`modal-content-box hide-scrollbar ${isVersionClosing ? 'modal-slam-out' : 'modal-slam'}`}>
-                        <button
-                            onClick={handleCloseVersionModal}
-                            className="close-modal-btn"
-                        >
-                            ✕
-                        </button>
-
-                        {/* Version # */}
-                        <h2 className="inter-text-small modal-title text-normal">
-                            Version {version} Information
-                        </h2>
-
-                        {/* Release Date */}
-                        <p className="inter-text-small modal-date title-iri uppercase">
-                            Released: {date}
-                        </p>
-
-                        {/* Body of the md file */}
-                        <div className="markdown-content">
-                            <ReactMarkdown>
-                                {content}
-                            </ReactMarkdown>
-                        </div>
-
-                    </div>
-                </div>
+                <VersionModal
+                    version={version} date={date} content={content}
+                    onClose={() => setIsVersionModalOpen(false)}
+                />
             )}
 
         </div>

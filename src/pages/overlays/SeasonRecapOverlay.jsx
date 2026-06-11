@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useFadeTransition } from '../../hooks/useFadeTranistion.js';
 import TrialListTable from '../small-components/TrialListTable';
-import TrialDetailsOverlay from './TrialDetailsOverlay';
+import TrialDetailsModal from '../modals/TrialDetailsModal.jsx';
 import '../../styles/overlays/TrialConfirmation.scss';
 import '../../styles/ChallengesPage.scss';
 import '../../styles/overlays/SeasonRecapOverlay.scss';
@@ -436,7 +436,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction, stayOpenO
             </div>
 
             {/* NESTED DETAILS OVERLAY */}
-            <TrialDetailsOverlay
+            <TrialDetailsModal
                 trial={activeTrialOverlay}
                 trials={recapData.finalTrials}
                 variantType={season.variantType}

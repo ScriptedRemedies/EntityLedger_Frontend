@@ -7,7 +7,7 @@ import '../styles/Animations.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
 import GradeBadgeDisplay from './small-components/GradeBadgeDisplay.jsx';
 import TrialListTable from './small-components/TrialListTable.jsx';
-import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
+import TrialDetailsModal from './modals/TrialDetailsModal.jsx';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay';
 import SeasonCard from "./small-components/SeasonCard.jsx";
 import EntityLoader from "./small-components/EntityLoader.jsx";
@@ -618,7 +618,7 @@ const ReviewChallengesPage = () => {
             </div>
 
             {/* === TRIAL DETAILS OVERLAY === */}
-            <TrialDetailsOverlay
+            <TrialDetailsModal
                 trial={activeTrialOverlay}
                 trials={trials}
                 variantType={selectedSeason?.variantType}

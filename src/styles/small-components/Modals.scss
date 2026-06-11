@@ -1,0 +1,108 @@
+/* ==========================================================================
+   THE GLOBAL MODAL ENGINE
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(4, 5, 7, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content-box {
+  background-color: #080808;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  border-radius: 4px;
+  overflow: hidden;
+
+  /* Subtle fog background inside all modals */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('/assets/fog.png') center/cover no-repeat;
+    opacity: 0.09;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+/* --- STANDARDIZED INTERNAL LAYOUT --- */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 45px 20px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.modal-body {
+  padding: 30px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  z-index: 10;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  z-index: 10;
+
+  .squareBtn {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    margin: 0;
+  }
+
+  .back-button {
+    margin: 0;
+    left: auto;
+  }
+
+  // Underlined to indicate option to click
+  p a {
+    text-decoration: underline;
+  }
+}
+
+.close-modal-btn {
+  color: var(--color-normal);
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  &:hover { color: var(--color-white); }
+}
+
+/* --- GLOBAL ANIMATIONS --- */
+.modal-slam { animation: slamIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.modal-slam-out { animation: slamOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes slamIn {
+  0% { transform: scale(1.05); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes slamOut {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+

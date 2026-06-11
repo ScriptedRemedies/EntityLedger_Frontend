@@ -10,10 +10,11 @@ import GradeBadgeDisplay from './small-components/GradeBadgeDisplay.jsx';
 import TrialConfirmationOverlay from './overlays/TrialConfirmationOverlay';
 import TrialResultsOverlay from './overlays/TrialResultsOverlay.jsx';
 import TrialListTable from './small-components/TrialListTable.jsx';
-import TrialDetailsOverlay from './overlays/TrialDetailsOverlay';
+import TrialDetailsModal from './modals/TrialDetailsModal.jsx';
 import SeasonRecapOverlay from './overlays/SeasonRecapOverlay'
 import MasterLoadout from "./small-components/MasterLoadout.jsx";
 import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
+import {SellKillerModal} from "./modals/AppModals.jsx";
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -721,44 +722,17 @@ const CurrentSeasonPage = () => {
 
             {/* === CUSTOM SELL CONFIRMATION MODAL === */}
             {killerToSellConfirm && (
-                <div className={`modal-backdrop ${isSellModalClosing ? 'fade-out' : 'fade-in'}`}>
-                    <div className={`modal-content-box sell-confirm-modal ${isSellModalClosing ? 'modal-slam-out' : 'modal-slam'}`}>
-
-                        <div className="sell-modal-body">
-                            {/* Left: Killer Portrait */}
-                            <div className="sell-modal-image-wrapper">
-                                <img src={`/assets/Killers/${killerToSellConfirm.killerName}.png`} alt={killerToSellConfirm.killerName} />
-                            </div>
-
-                            {/* Right: The Details */}
-                            <div className="sell-modal-text">
-                                <h2 className="bebas-header-1 title-iri m-0 leading-none text-3xl">CONFIRM SALE</h2>
-                                <p className="inter-text-normal mt-2">
-                                    Are you sure you want to sell <span className="text-white">{killerToSellConfirm.killerName}</span> for <span className="title-iri">${killerToSellConfirm.cost}</span>?
-                                </p>
-
-                                <div className="sell-balance-readout mt-2">
-                                    <span className="text-muted">Projected Balance:</span>
-                                    <span className="title-white">${startingBalance + killerToSellConfirm.cost}</span>
-                                </div>
-
-                                <p className="inter-text-small text-muted mt-3 mb-0">
-                                    This action cannot be undone. They will be removed from your active roster.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Full-width Action Buttons */}
-                        <div className="sell-modal-actions">
-                            <button className="cancel-sell-btn" onClick={() => handleCloseSellModal(false)}>Cancel</button>
-                            <button className="confirm-sell-btn" onClick={() => handleCloseSellModal(true)}>Confirm Sale</button>
-                        </div>
-
-                    </div>
-                </div>
+                <SellKillerModal
+                    killer={killerToSellConfirm}
+                    projectedBalance={projectedBalance}
+                    onClose={(confirm) => {
+                        if (confirm) handleSellKiller(killerToSellConfirm);
+                        setKillerToSellConfirm(null);
+                    }}
+                />
             )}
 
-            <TrialDetailsOverlay
+            <TrialDetailsModal
                 trial={activeTrialOverlay}
                 trials={trials}
                 variantType={activeSeason?.variantType}

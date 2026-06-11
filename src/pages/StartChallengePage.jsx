@@ -9,6 +9,7 @@ import KillerCard from "./small-components/KillerCard.jsx";
 import SeasonCard from "./small-components/SeasonCard.jsx";
 import EntityLoader from "./small-components/EntityLoader.jsx";
 import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
+import {StartChallengeModal} from "./modals/AppModals.jsx";
 
 const StartChallengePage = () => {
     const navigate = useCinematicNavigate();
@@ -329,80 +330,13 @@ const StartChallengePage = () => {
 
             {/* === CONFIRMATION MODAL === */}
             {isConfirmModalOpen && (
-                <div className={`modal-backdrop ${isConfirmModalClosing ? 'fade-out' : 'fade-in'}`}>
-                    <div className={`modal-content-box pact-modal ${isConfirmModalClosing ? 'modal-slam-out' : 'modal-slam'}`}>
-
-                        {isSealingPact ? (
-                            // === THE CINEMATIC STATE ===
-                            <div className="pact-sealed-cinematic fade-in">
-                                <h2 className="bebas-header-1 title-iri text-4xl mb-6 tracking-widest">CHALLENGE STARTED</h2>
-                                <EntityLoader />
-                            </div>
-                        ) : (
-                            // === THE PACT FORM STATE ===
-                            <>
-                                <div className="pact-header">
-                                    <h2 className="bebas-header-1 title-white m-0 text-3xl">CONFIRM NEW CHALLENGE</h2>
-                                </div>
-
-                                <div className="pact-body hide-scrollbar">
-                                    <h3 className="bebas-header-1 text-2xl mb-2">Variant: <span className="title-iri">{variantView.display.name}</span></h3>
-                                    {(variantView.display.id === 'BLOOD_MONEY' || variantView.display.id === 'AFTERBURN') && (
-                                        <p className="bebas-header-1">Starting Balance: <span className="title-iri">
-                                            ${variantView.display.id === 'BLOOD_MONEY'
-                                            ? 20
-                                            : pastBloodMoneyRuns.find(run => run.id === seasonPayload.inheritedSeasonId)?.variantState?.balance || 0}
-                                        </span></p>
-                                    )}
-
-                                    <p className="inter-text-normal text-muted mt-4 mb-2">{variantView.display.rulesDescription}</p>
-
-                                    <ul className="rules-summary-list">
-                                        {variantView.display.rulesSummary.map((rule, index) => (
-                                            <li key={index}>{rule}</li>
-                                        ))}
-                                    </ul>
-
-                                    <div className="collapsible-section mt-6">
-                                        <button
-                                            className="inter-text-normal title-white collapsible-btn"
-                                            onClick={() => setIsKillerListExpanded(!isKillerListExpanded)}
-                                        >
-                                            <span>Included Killers ({variantView.display.id === 'AFTERBURN' ? selectedPastRoster.filter(r => r.status === 'AVAILABLE').length : seasonPayload.unlockedKillerIds.length})</span>
-                                            <span>{isKillerListExpanded ? '▲' : '▼'}</span>
-                                        </button>
-
-                                        <div className={`collapsible-content ${isKillerListExpanded ? 'expanded' : ''}`}>
-                                            <ul className="killer-summary-list">
-                                                {variantView.display.id === 'AFTERBURN' ? (
-                                                    selectedPastRoster
-                                                        .filter(r => r.status === 'AVAILABLE')
-                                                        .map(r => (
-                                                            <li key={r.killer?.id || r.killerId} className="inter-text-small text-normal">
-                                                                {r.killer?.name || r.killerName}
-                                                            </li>
-                                                        ))
-                                                ) : (
-                                                    masterKillerList
-                                                        .filter(k => seasonPayload.unlockedKillerIds.includes(k.id))
-                                                        .map(k => (
-                                                            <li key={k.id} className="inter-text-small text-normal">{k.name}</li>
-                                                        ))
-                                                )}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Reusing the gorgeous Sell Modal button classes! */}
-                                <div className="sell-modal-actions mt-auto">
-                                    <button className="cancel-sell-btn" onClick={handleCloseConfirmModal}>Back</button>
-                                    <button className="confirm-sell-btn" onClick={submitChallenge}>Start Challenge</button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
+                <StartChallengeModal
+                    variant={variantView.display}
+                    startingBalance={variantView.display.id === 'BLOOD_MONEY' ? 20 : pastBloodMoneyRuns.find(run => run.id === seasonPayload.ingeritedSeasonId)?.variantState?.balance || 0}
+                    rosterList={variantView.display.id === 'AFTERBURN' ? selectedPastRoster.filter(r => r.status === 'AVAILABLE') : masterKillerList.filter(k => seasonPayload.unlockedKillerIds.includes(k.id))}
+                    isSealingPact={isSealingPact}
+                    onClose={() => setIsConfirmModalOpen(false)}
+                />
             )}
         </div>
     );
