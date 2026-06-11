@@ -428,8 +428,16 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction, stayOpenO
                 </div>
 
                 {/* 3. FIXED FOOTER */}
-                <div className="recap-footer">
-                    <button className="squareBtn" style={{ position: 'relative', bottom: '0', right: '0' }} onClick={handleClose}>
+                <div className="recap-footer" style={{ justifyContent: actionText === 'Back' ? "unset" : "flex-end" }}>
+                    <button
+                        className={actionText === 'Back' ? "back-button" : "squareBtn" }
+                        style={{
+                            marginLeft: actionText === 'Back' ? '0' : 'auto',
+                            position: 'relative',
+                            bottom: '0'
+                        }}
+                        onClick={handleClose}
+                    >
                         {actionText}
                     </button>
                 </div>
