@@ -66,6 +66,28 @@
   flex-shrink: 0;
   z-index: 10;
 
+  .pagination-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-normal);
+    font-family: var(--font-inter);
+    font-size: var(--text-size-small);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 8px 16px;
+
+    &:hover:not(:disabled) {
+      color: var(--color-white);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+
   .squareBtn {
     position: relative;
     bottom: auto;

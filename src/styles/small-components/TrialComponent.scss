@@ -386,3 +386,18 @@
     }
   }
 }
+
+/* --- ETHEREAL TRIAL TRANSITIONS --- */
+.ethereal-fade-out {
+  opacity: 0;
+  transform: scale(0.98);
+  filter: blur(4px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.ethereal-fade-in {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0px);
+  transition: all 0.3s cubic-bezier(0, 0, 0.2, 1);
+}

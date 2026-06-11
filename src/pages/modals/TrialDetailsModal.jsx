@@ -20,6 +20,7 @@ const EMBLEM_DISPLAY_MAP = {
 const TrialDetailsModal = ({ trial, trials = [], variantType, onClose }) => {
 
     const [activeIndex, setActiveIndex] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     useEffect(() => {
         if (trial && trials.length > 0) {
@@ -27,6 +28,23 @@ const TrialDetailsModal = ({ trial, trials = [], variantType, onClose }) => {
             if (index !== -1) setActiveIndex(index);
         }
     }, [trial, trials]);
+
+    const triggerTransition = (newIndex) => {
+        if (isTransitioning) return;
+
+        setIsTransitioning(true);
+
+        setTimeout(() => {
+            setActiveIndex(newIndex);
+            setIsTransitioning(false);
+        }, 200);
+    }
+    const handlePrev = () => {
+        if (activeIndex > 0) triggerTransition(activeIndex - 1);
+    };
+    const handleNext = () => {
+        if (activeIndex < trials.length - 1) triggerTransition(activeIndex + 1);
+    };
 
     if (!trial) return null;
 
@@ -40,9 +58,6 @@ const TrialDetailsModal = ({ trial, trials = [], variantType, onClose }) => {
 
     const gradeStr = activeTrial.currentGrade || activeTrial.resultingGrade || 'ASH_IV';
     const isAddonsLocked = isAdept && !gradeStr.startsWith('ASH');
-
-    const handlePrev = () => { if (activeIndex > 0) setActiveIndex(activeIndex - 1); };
-    const handleNext = () => { if (activeIndex < trials.length - 1) setActiveIndex(activeIndex + 1); };
 
     const trialCost = (activeTrial.killer?.cost || activeTrial.killerCost || 0) +
         (activeTrial.perks || []).reduce((sum, p) => sum + (p?.cost || 0), 0) +
@@ -79,7 +94,7 @@ const TrialDetailsModal = ({ trial, trials = [], variantType, onClose }) => {
                 </div>
 
                 {/* === MODAL BODY === */}
-                <div className="modal-body td-body hide-scrollbar">
+                <div className={`modal-body td-body hide-scrollbar ${isTransitioning ? 'ethereal-fade-out' : 'ethereal-fade-in'}`}>
 
                     <div className="td-col-left flex flex-col gap-8">
 
@@ -251,9 +266,9 @@ const TrialDetailsModal = ({ trial, trials = [], variantType, onClose }) => {
 
                 {/* === NEW MODAL FOOTER === */}
                 <div className="modal-footer">
-                    <button className="back-button m-0" disabled={activeIndex === 0} onClick={handlePrev}>Previous</button>
+                    <button className="back-button m-0" disabled={activeIndex === 0 || isTransitioning} onClick={handlePrev}>Previous</button>
                     <span className="inter-text-small">{activeIndex + 1} of {trials.length}</span>
-                    <button className="squareBtn m-0" disabled={activeIndex === trials.length - 1} onClick={handleNext}>Next</button>
+                    <button className="squareBtn m-0" disabled={activeIndex === trials.length - 1 || isTransitioning} onClick={handleNext}>Next</button>
                 </div>
             </div>
         </div>
