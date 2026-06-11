@@ -181,9 +181,9 @@
 
     .results-killer-bg {
       position: absolute;
-      bottom: 10px;
-      right: 90px;
-      height: 90%;
+      bottom: -10px;
+      right: 140px;
+      height: 97%;
       aspect-ratio: 2/3;
       object-position: bottom;
       pointer-events: none;
@@ -193,8 +193,8 @@
 
     .complete-btn {
       position: absolute;
-      bottom: 40px;
-      right: 40px;
+      bottom: 15px;
+      right: 15px;
     }
   }
 }

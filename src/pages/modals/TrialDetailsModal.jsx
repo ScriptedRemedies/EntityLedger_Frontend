@@ -85,7 +85,7 @@ const TrialDetailsModal = ({ trial, trials = [], variantType, onClose }) => {
                                 <div className={`bebas-header-2 m-0 ${activeTrial.netIncome > 0 ? 'text-white' : 'title-iri'}`}>
                                     {activeTrial.netIncome > 0 ? `+$${activeTrial.netIncome}` : `-$${Math.abs(activeTrial.netIncome || 0)}`}
                                 </div>
-                                <div className="inter-text-small text-muted">Bal: ${(activeTrial.runningBalance || 0) + (activeTrial.netIncome || 0)}</div>
+                                <div className="inter-text-small text-muted">Bal: ${(activeTrial.runningBalance || 0)}</div>
                             </div>
                         )}
                         <GradeBadgeDisplay rawGrade={activeTrial.resultingGrade || activeTrial.currentGrade} pips={activeTrial.resultingPips || activeTrial.currentPips} size="small" />
