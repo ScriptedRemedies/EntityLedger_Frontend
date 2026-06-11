@@ -201,7 +201,7 @@ const ReviewChallengesPage = () => {
     }
 
     return (
-        <div className="main-container review-container">
+        <div className="main-container review-container" style={{ gridTemplateColumns: activeSeason ? '150px 1fr 1fr' : '150px auto 250px' }}>
 
             {/* === LEFT NAV === */}
             <div className="nav">
@@ -612,7 +612,13 @@ const ReviewChallengesPage = () => {
                     </>
                 ) : (
                     <div className="global-actions">
-                        <button className="squareBtn" onClick={() => navigate('/start-challenge')}>Start New Challenge</button>
+                        <button
+                            className="squareBtn"
+                            onClick={() => navigate('/start-challenge')}
+                            style={{ bottom: '-15px' }}
+                        >
+                            Start New Challenge
+                        </button>
                     </div>
                 )}
             </div>

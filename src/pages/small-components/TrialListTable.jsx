@@ -1,8 +1,6 @@
 import React from 'react';
 import GradeBadgeDisplay from './GradeBadgeDisplay.jsx';
-import KillerCard from './KillerCard.jsx';
 import '../../styles/small-components/TrialComponent.scss';
-import '../../styles/variant-loadouts/Loadouts.scss';
 
 const TrialListTable = ({ trials, variantType, onRowClick }) => {
 
@@ -19,156 +17,102 @@ const TrialListTable = ({ trials, variantType, onRowClick }) => {
                     return outcome.toUpperCase() === 'ESCAPED';
                 });
                 const historicalStatus = killerDiedInTrial ? 'DEAD' : 'AVAILABLE';
-
                 const gradeStr = trial.currentGrade || trial.resultingGrade || 'ASH_IV';
                 const isAddonsLocked = isAdept && !gradeStr.startsWith('ASH');
+                const killerName = trial.killer?.name || trial.killerName;
 
                 return (
-                    <div key={trial.id || trial.trialId} onClick={() => onRowClick(trial)} className="trial-card-row stagger-item" style={{ animationDelay: `${index * 25}ms` }}>
+                    <div key={trial.id || trial.trialId} onClick={() => onRowClick(trial)} className="trial-banner-row stagger-item" style={{ animationDelay: `${index * 25}ms` }}>
 
-                        <div className="trial-card-left">
-                            <div className="trial-list-card-wrapper">
-                                <KillerCard
-                                    killer={{
-                                        ...trial.killer,
-                                        killerName: trial.killer?.name || trial.killerName,
-                                        status: historicalStatus,
-                                        cost: trial.killer?.cost || trial.killerCost || 0 // Explicitly map cost!
-                                    }}
-                                    variantType={variantType}
-                                    mode="active"
-                                    isSelected={false}
-                                />
-                            </div>
+                        {/* 1. SQUARE PROFILE CROP */}
+                        <div className={`banner-portrait ${historicalStatus === 'DEAD' ? 'portrait-dead' : ''}`}>
+                            <img src={`/assets/Killers/${killerName}.png`} alt={killerName} />
+                            {historicalStatus === 'DEAD' && <div className="dead-stamp bebas-header-2">DEAD</div>}
                         </div>
 
-                        <div className="trial-card-body">
+                        {/* 2. MATCH INFO & MINI-METRICS */}
+                        <div className="banner-body">
 
-                            {/* --- HEADER UPDATE --- */}
-                            <div className="trial-card-header">
-                                <h3 className="bebas-header-2 text-white m-0 flex items-center">
-                                    <span className="text-normal mr-2">Trial #{trial.trialNumber} |</span> {trial.killer?.name || trial.killerName}
-                                    {isFinancial && (
-                                        <span className="title-iri ml-2">${trial.killer?.cost || trial.killerCost || 0}</span>
-                                    )}
+                            <div className="banner-header">
+                                <h3 className="bebas-header-2 text-white m-0 tracking-wide">
+                                    <span className="text-normal mr-2">#{trial.trialNumber} |</span> {killerName}
                                 </h3>
 
+                                {/* Sleek Financial Tag */}
                                 {isFinancial && (
-                                    <div className="trial-finances-inline">
-                                        <span className={`bebas-header-2 ${trial.netIncome > 0 ? 'text-white' : 'title-iri'}`}>
+                                    <div className="banner-finances">
+                                        <span className={`bebas-header-2 m-0 ${trial.netIncome > 0 ? 'text-white' : 'title-iri'}`}>
                                             {trial.netIncome > 0 ? `+$${trial.netIncome}` : `-$${Math.abs(trial.netIncome || 0)}`}
                                         </span>
-                                        <span className="inter-text-small text-muted ml-3">Bal: ${(trial.runningBalance || 0) + (trial.netIncome || 0)}</span>
+                                        <span className="inter-text-small text-muted">Bal: ${(trial.runningBalance || 0) + (trial.netIncome || 0)}</span>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="trial-card-metrics">
+                            <div className="banner-metrics">
+                                {/* MINI PERKS */}
+                                <div className="mini-metric-group">
+                                    {[0, 1, 2, 3].map(i => {
+                                        const perk = trial.perks ? trial.perks[i] : null;
+                                        const locked = isAdept && i === 3;
+                                        return (
+                                            <div key={i} className="mini-slot-diamond">
+                                                {locked ? (
+                                                    <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Locked" />
+                                                ) : perk ? (
+                                                    <div className="mini-diamond-content">
+                                                        <img src={perk.iconUrl || `/assets/Perks/${perk.name}.png`} alt={perk.name} />
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
 
-                                {/* PERKS */}
-                                <div className="metric-group">
-                                    <div className="trial-perks">
-                                        {[0, 1, 2, 3].map(index => {
-                                            const perk = trial.perks ? trial.perks[index] : null;
-                                            const locked = isAdept && index === 3;
+                                {/* MINI ADDONS / TOKENS */}
+                                {isChaos ? (
+                                    <div className="mini-metric-group ml-2" style={{ gap: '6px' }}>
+                                        <img src="/assets/Variants/ReRollToken.png" className="mini-token" style={{ filter: trial.usedReRollToken ? 'none' : 'grayscale(100%) opacity(0.3)' }} alt="Reroll Token" />
+                                        <span className="inter-text-small text-muted" style={{ fontSize: '11px' }}>{trial.remainingTokens || 0} Left</span>
+                                    </div>
+                                ) : (
+                                    <div className="mini-metric-group ml-2">
+                                        {[0, 1].map(i => {
+                                            const addon = (trial.addons || trial.addOns || [])[i];
                                             return (
-                                                <div key={index} className="trial-perk-slot">
-                                                    {locked ? (
-                                                        <div className="diamond-content flex items-center justify-center">
-                                                            <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Locked" style={{ width: '60%' }} />
-                                                        </div>
-                                                    ) : perk ? (
-                                                        <>
-                                                            <div className="diamond-content">
-                                                                <img src={perk.iconUrl || `/assets/Perks/${perk.name}.png`} alt={perk.name} />
-                                                            </div>
-                                                            {isFinancial && (
-                                                                <div className="loadout-financial-overlay perk-mode">
-                                                                    <div className="price-banner">${perk.cost || 0}</div>
-                                                                </div>
-                                                            )}
-                                                        </>
+                                                <div key={i} className="mini-slot-square">
+                                                    {isAddonsLocked ? (
+                                                        <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Locked" />
+                                                    ) : addon ? (
+                                                        <img src={addon.iconUrl || `/assets/Addons/${killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} />
                                                     ) : null}
                                                 </div>
                                             );
                                         })}
                                     </div>
-                                </div>
-
-                                {/* ADDONS OR TOKENS */}
-                                {isChaos ? (
-                                    <div className="metric-group tokens-group ml-2">
-                                        <img
-                                            src="/assets/Variants/ReRollToken.png"
-                                            className="token-icon"
-                                            style={{ filter: trial.usedReRollToken ? 'none' : 'grayscale(100%) opacity(0.3)' }}
-                                            alt="Reroll Token"
-                                            title={trial.usedReRollToken ? "Token Used" : "Token Not Used"}
-                                        />
-                                        <div className="inter-text-small text-muted mt-1">Left: {trial.remainingTokens || 0}</div>
-                                    </div>
-                                ) : (
-                                    <div className="metric-group ml-2">
-                                        <div className="trial-addons">
-                                            {[0, 1].map(index => {
-                                                const addonList = trial.addons || trial.addOns || [];
-                                                const addon = addonList[index];
-                                                return (
-                                                    <div key={index} className="addon-wrapper">
-                                                        {index > 0 && <span className="addon-plus">+</span>}
-                                                        <div className="trial-addon-slot">
-                                                            {isAddonsLocked ? (
-                                                                <img className="locked-indicator" src="/assets/Image Overlays/locked.png" alt="Locked" style={{ width: '60%' }} />
-                                                            ) : addon ? (
-                                                                <>
-                                                                    <img src={addon.iconUrl || `/assets/Addons/${trial.killer?.name || trial.killerName}/${addon.name.replace('%', '')}.png`} alt={addon.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }}/>
-                                                                    {isFinancial && (
-                                                                        <div className="loadout-financial-overlay">
-                                                                            <div className="price-banner">${addon.cost || 0}</div>
-                                                                        </div>
-                                                                    )}
-                                                                </>
-                                                            ) : null}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
                                 )}
 
-                                {/* SURVIVORS */}
-                                <div className="metric-group ml-4">
-                                    <div className="trial-survivors">
-                                        {(trial.survivors || trial.survivorResults)?.map((res, i) => {
-                                            const outcome = typeof res === 'string' ? res : res.outcome;
-                                            return <img key={i} src={`/assets/Survivor Status/${outcome.toLowerCase()}.png`} className="trial-survivor-status" alt={outcome} />
-                                        })}
-                                    </div>
+                                {/* MINI SURVIVORS */}
+                                <div className="mini-metric-group ml-4" style={{ gap: '4px' }}>
+                                    {(trial.survivors || trial.survivorResults)?.map((res, i) => {
+                                        const outcome = typeof res === 'string' ? res : res.outcome;
+                                        return <img key={i} src={`/assets/Survivor Status/${outcome.toLowerCase()}.png`} className="mini-survivor" alt={outcome} />
+                                    })}
                                 </div>
 
-                                {/* IRON MAN MULLIGAN */}
-                                {isIronMan && (
-                                    <div className="metric-group tokens-group ml-4">
-                                        <img
-                                            src="/assets/Variants/ReRollToken.png"
-                                            className="token-icon"
-                                            style={{ filter: trial.burnedMulligan ? 'none' : 'grayscale(100%) opacity(0.3)' }}
-                                            alt="Mulligan Token"
-                                            title={trial.burnedMulligan ? "Mulligan Burned" : "Mulligan Intact"}
-                                        />
-                                        <div className="inter-text-small text-muted mt-1">Burned</div>
+                                {/* MINI MULLIGAN */}
+                                {isIronMan && trial.burnedMulligan && (
+                                    <div className="mini-metric-group ml-4">
+                                        <img src="/assets/Variants/ReRollToken.png" className="mini-token" alt="Mulligan Burned" />
+                                        <span className="inter-text-small title-iri ml-1" style={{ fontSize: '11px', textTransform: 'uppercase' }}>Burned</span>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="trial-card-right">
-                            <GradeBadgeDisplay
-                                rawGrade={trial.resultingGrade || trial.currentGrade}
-                                pips={trial.resultingPips || trial.currentPips}
-                                size="normal"
-                            />
+                        {/* 3. RIGHT ALIGNED BADGE */}
+                        <div className="banner-right">
+                            <GradeBadgeDisplay rawGrade={trial.resultingGrade || trial.currentGrade} pips={trial.resultingPips || trial.currentPips} size="small" />
                         </div>
                     </div>
                 )

@@ -33,17 +33,7 @@ const StartChallengePage = () => {
 
     // Modal States
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [isKillerListExpanded, setIsKillerListExpanded] = useState(false);
-    const [isConfirmModalClosing, setIsConfirmModalClosing] = useState(false);
     const [isSealingPact, setIsSealingPact] = useState(false);
-
-    const handleCloseConfirmModal = () => {
-        setIsConfirmModalClosing(true);
-        setTimeout(() => {
-            setIsConfirmModalOpen(false);
-            setIsConfirmModalClosing(false);
-        }, 300); // Waits for the modal-slam-out animation
-    };
 
     // --- Fetch Master Killer List ---
     useEffect(() => {
@@ -142,7 +132,7 @@ const StartChallengePage = () => {
     };
 
     return (
-        <div className="main-container review-container relative">
+        <div className="main-container review-container relative" style={{ gridTemplateColumns: '150px auto 250px' }}>
 
             {/* === LEFT NAV === */}
             <div className="nav">
@@ -335,6 +325,7 @@ const StartChallengePage = () => {
                     startingBalance={variantView.display.id === 'BLOOD_MONEY' ? 20 : pastBloodMoneyRuns.find(run => run.id === seasonPayload.ingeritedSeasonId)?.variantState?.balance || 0}
                     rosterList={variantView.display.id === 'AFTERBURN' ? selectedPastRoster.filter(r => r.status === 'AVAILABLE') : masterKillerList.filter(k => seasonPayload.unlockedKillerIds.includes(k.id))}
                     isSealingPact={isSealingPact}
+                    onSubmit={submitChallenge}
                     onClose={() => setIsConfirmModalOpen(false)}
                 />
             )}
