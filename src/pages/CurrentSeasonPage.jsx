@@ -15,6 +15,7 @@ import SeasonRecapOverlay from './overlays/SeasonRecapOverlay'
 import MasterLoadout from "./small-components/MasterLoadout.jsx";
 import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
 import {SellKillerModal} from "./modals/AppModals.jsx";
+import EntityLoader from "./small-components/EntityLoader.jsx";
 
 const NAV_TABS = [
     { id: 'KILLERS', name: 'Killers' },
@@ -133,6 +134,8 @@ const CurrentSeasonPage = () => {
     const [selectedPerks, setSelectedPerks] = useState([]);
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [isViewingResults, setIsViewingResults] = useState(false);
+    const [isProcessingResults, setIsProcessingResults] = useState(false);
+    const [isLoaderClosing, setIsLoaderClosing] = useState(false);
     const [isResultsClosing, setIsResultsClosing] = useState(false);
     const [seasonRecap, setSeasonRecap] = useState(null);
     const [runEndingData, setRunEndingData] = useState(null);
@@ -748,10 +751,48 @@ const CurrentSeasonPage = () => {
                     trialCount={trialCount}
                     onCancel={() => setIsConfirmingTrial(false)}
                     onConfirm={() => {
-                        setIsConfirmingTrial(false);
-                        setIsViewingResults(true);
+                        // 1. Instantly mount the pitch-black loader OVER the modal (z-index: 999999)
+                        setIsProcessingResults(true);
+
+                        // 2. Safely unmount the modal 50ms later so it vanishes silently behind the black screen
+                        setTimeout(() => {
+                            setIsConfirmingTrial(false);
+                        }, 50);
+
+                        // 3. Hold the loader for 2 seconds to build suspense
+                        setTimeout(() => {
+                            // 4. Mount the Results overlay UNDER the loader
+                            setIsViewingResults(true);
+
+                            // 5. Trigger the loader's fade-out CSS
+                            setIsLoaderClosing(true);
+
+                            // 6. After the fade finishes, remove the loader from the DOM entirely
+                            setTimeout(() => {
+                                setIsProcessingResults(false);
+                                setIsLoaderClosing(false);
+                            }, 500);
+
+                        }, 2000);
                     }}
                 />
+            )}
+
+            {/* === THE BLACKOUT LOADING SCREEN === */}
+            {isProcessingResults && (
+                <div
+                    className={isLoaderClosing ? 'fade-out' : ''}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 999999, // Overrides everything!
+                        backgroundColor: '#000', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center'
+                    }}
+                >
+                    <EntityLoader />
+                    <h2 className="bebas-header-1 title-iri text-2xl mt-8 tracking-widest animate-pulse" style={{ textShadow: '0 0 15px rgba(172, 38, 27, 0.8)' }}>
+                        OFFERING TO THE ENTITY...
+                    </h2>
+                </div>
             )}
 
             {isViewingResults && (

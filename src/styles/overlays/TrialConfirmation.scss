@@ -47,6 +47,7 @@
     justify-content: center;
     position: relative;
     transition: all 0.2s ease;
+    overflow: hidden;
 
     img {
       width: 100%;
@@ -54,6 +55,12 @@
       object-fit: cover;
       filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
       z-index: 2;
+    }
+
+    .loadout-financial-overlay .price-banner {
+      font-family: var(--font-bebas);
+      font-size: 1.3rem !important;
+      line-height: 1;
     }
 
     &::after {

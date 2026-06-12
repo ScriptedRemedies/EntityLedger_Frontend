@@ -236,7 +236,7 @@ const TrialResultsOverlay = ({ season, killer, selectedPerks = [], selectedAddon
     const netIncome = earnings - penalties - totalCost;
 
     return (
-        <div className="trial-results-overlay fade-in">
+        <div className="trial-results-overlay">
             <div className="results-bg"></div>
 
             {/* === LEFT PANEL (The Form) === */}
