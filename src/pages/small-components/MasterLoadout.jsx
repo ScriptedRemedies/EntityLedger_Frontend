@@ -100,7 +100,6 @@ const MasterLoadout = ({
             try {
                 const response = await api.get('/reference-data/addons?killerId=' + currentKiller.killerId);
                 setKillerAddons(response.data);
-                setSelectedAddons([]); // Reset addons when killer changes
             } catch (err) { console.error("Failed to fetch addons:", err); }
         };
         fetchAddons();

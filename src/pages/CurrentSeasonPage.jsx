@@ -110,6 +110,8 @@ const CurrentSeasonPage = () => {
     const [trialCount, setTrialCount] = useState(0);
 
     const scrollRef = useRef(null);
+    const hasHydrated = useRef(false);
+    const initialDraftLoaded = useRef(false);
     const navView = useFadeTransition(NAV_TABS[0], 100, scrollRef);
     const [activeSeason, setActiveSeason] = useState(null);
     const [selectedKiller, setSelectedKiller] = useState(null);
@@ -145,82 +147,6 @@ const CurrentSeasonPage = () => {
     // --- MARATHON TIMER STATE ---
     const [timeLeft, setTimeLeft] = useState(null);
     const [isTimerDanger, setIsTimerDanger] = useState(false);
-
-    const fetchSeasonData = async () => {
-        if (!seasonId) return;
-        try {
-            const response = await api.get(`/seasons/active`);
-            setActiveSeason(response.data);
-
-            if (response.data && response.data.seasonId) {
-                const trialsRes = await api.get(`/seasons/${response.data.seasonId}/trials`);
-                setTrialCount(trialsRes.data.length);
-                setTrials(trialsRes.data);
-            }
-            console.log(response.data.roster);
-        } catch (error) {
-            console.error("Failed to fetch season or trials:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchSeasonData();
-    }, [seasonId]);
-
-    useEffect(() => {
-        if (activeSeason?.variantType === 'ADEPT') {
-            const fetchPerks = async () => {
-                try {
-                    const response = await api.get('/reference-data/perks');
-                    setAllPerks(response.data);
-                } catch (err) {
-                    console.error("Failed to preload perks for Adept variant:", err);
-                }
-            };
-            fetchPerks();
-        }
-    }, [activeSeason?.variantType]);
-
-    // --- MARATHON TIMER LOGIC ---
-    useEffect(() => {
-        if (activeSeason?.variantType !== 'IRON_MAN') return;
-        const lastEndTimeStr = activeSeason?.variantState?.lastTrialEndTime;
-        if (!lastEndTimeStr) return;
-
-        const timerInterval = setInterval(() => {
-            const lastEndTime = new Date(lastEndTimeStr).getTime();
-            const now = new Date().getTime();
-            const diffMs = now - lastEndTime;
-            const maxMs = 75 * 60 * 1000; // 75 minutes
-            const remainingMs = maxMs - diffMs;
-
-            if (remainingMs <= 0) {
-                setTimeLeft('00:00');
-                setIsTimerDanger(true);
-                clearInterval(timerInterval);
-
-                api.post(`/seasons/${activeSeason.seasonId}/fail`)
-                    .then(() => api.get(`/seasons/${activeSeason.seasonId}/trials`))
-                    .then(finalTrialsRes => {
-                        setRunEndingData({
-                            outcome: 'failure',
-                            isChained: false,
-                            recap: { status: 'FAILED_TIME', finalTrials: finalTrialsRes.data }
-                        });
-                        addToast("Time's up! The Entity has claimed your run.", "error");
-                    })
-                    .catch(err => console.error("Failed to automatically end season:", err));
-
-            } else {
-                const mins = Math.floor(remainingMs / 60000);
-                const secs = Math.floor((remainingMs % 60000) / 1000);
-                setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
-                setIsTimerDanger(mins < 5); // Turns red when under 5 minutes
-            }
-        }, 1000);
-
-        return () => clearInterval(timerInterval);
-    }, [activeSeason]);
 
     // --- ROSTER CYCLING LOGIC ---
     const isIronMan = activeSeason?.variantType === 'IRON_MAN';
@@ -299,6 +225,132 @@ const CurrentSeasonPage = () => {
     const killerCost = currentKiller?.cost || 0;
     const projectedBalance = startingBalance - killerCost - loadoutCost;
 
+    const fetchSeasonData = async () => {
+        if (!seasonId) return;
+        try {
+            const response = await api.get(`/seasons/active`);
+            setActiveSeason(response.data);
+
+            if (response.data && response.data.seasonId) {
+                const trialsRes = await api.get(`/seasons/${response.data.seasonId}/trials`);
+                setTrialCount(trialsRes.data.length);
+                setTrials(trialsRes.data);
+            }
+            console.log(response.data.roster);
+        } catch (error) {
+            console.error("Failed to fetch season or trials:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSeasonData();
+    }, [seasonId]);
+
+    useEffect(() => {
+        if (activeSeason?.variantType === 'ADEPT') {
+            const fetchPerks = async () => {
+                try {
+                    const response = await api.get('/reference-data/perks');
+                    setAllPerks(response.data);
+                } catch (err) {
+                    console.error("Failed to preload perks for Adept variant:", err);
+                }
+            };
+            fetchPerks();
+        }
+    }, [activeSeason?.variantType]);
+
+    // 1. HYDRATION: Run strictly ONCE when the page loads
+    useEffect(() => {
+        if (!activeSeason || hasHydrated.current) return;
+        hasHydrated.current = true;
+
+        const pendingKey = `pending_trial_${activeSeason.seasonId}`;
+        const pendingData = localStorage.getItem(pendingKey);
+
+        if (pendingData) {
+            // Restore a crashed trial!
+            const parsed = JSON.parse(pendingData);
+            setSelectedKiller(parsed.killer || null);
+            setSelectedPerks(parsed.perks || []);
+            setSelectedAddons(parsed.addons || []);
+            setIsViewingResults(true);
+            initialDraftLoaded.current = true; // Skip draft loading
+        }
+    }, [activeSeason]);
+
+    // 2. INITIAL DRAFT: Load the default killer's draft on first boot
+    useEffect(() => {
+        if (!activeSeason || !currentKiller || isViewingResults || initialDraftLoaded.current) return;
+        initialDraftLoaded.current = true;
+
+        const draftKey = `draft_loadout_${activeSeason.seasonId}_${currentKiller.killerId}`;
+        const draftData = localStorage.getItem(draftKey);
+
+        if (draftData) {
+            const parsed = JSON.parse(draftData);
+            setSelectedPerks(parsed.perks || []);
+            setSelectedAddons(parsed.addons || []);
+        }
+    }, [activeSeason, currentKiller, isViewingResults]);
+
+    // 3. AUTO-SAVE: Silently save loadouts PER KILLER
+    useEffect(() => {
+        if (!activeSeason || !currentKiller || !initialDraftLoaded.current) return;
+
+        // THE FIX: Isolated save files using Killer ID!
+        const draftKey = `draft_loadout_${activeSeason.seasonId}_${currentKiller.killerId}`;
+
+        if (!isViewingResults && !isProcessingResults) {
+            const draftData = {
+                perks: selectedPerks,
+                addons: selectedAddons
+            };
+            localStorage.setItem(draftKey, JSON.stringify(draftData));
+        }
+    }, [selectedPerks, selectedAddons, currentKiller, activeSeason, isViewingResults, isProcessingResults]);
+
+    // --- MARATHON TIMER LOGIC ---
+    useEffect(() => {
+        if (activeSeason?.variantType !== 'IRON_MAN') return;
+        const lastEndTimeStr = activeSeason?.variantState?.lastTrialEndTime;
+        if (!lastEndTimeStr) return;
+
+        const timerInterval = setInterval(() => {
+            const lastEndTime = new Date(lastEndTimeStr).getTime();
+            const now = new Date().getTime();
+            const diffMs = now - lastEndTime;
+            const maxMs = 75 * 60 * 1000; // 75 minutes
+            const remainingMs = maxMs - diffMs;
+
+            if (remainingMs <= 0) {
+                setTimeLeft('00:00');
+                setIsTimerDanger(true);
+                clearInterval(timerInterval);
+
+                api.post(`/seasons/${activeSeason.seasonId}/fail`)
+                    .then(() => api.get(`/seasons/${activeSeason.seasonId}/trials`))
+                    .then(finalTrialsRes => {
+                        setRunEndingData({
+                            outcome: 'failure',
+                            isChained: false,
+                            recap: { status: 'FAILED_TIME', finalTrials: finalTrialsRes.data }
+                        });
+                        addToast("Time's up! The Entity has claimed your run.", "error");
+                    })
+                    .catch(err => console.error("Failed to automatically end season:", err));
+
+            } else {
+                const mins = Math.floor(remainingMs / 60000);
+                const secs = Math.floor((remainingMs % 60000) / 1000);
+                setTimeLeft(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+                setIsTimerDanger(mins < 5); // Turns red when under 5 minutes
+            }
+        }, 1000);
+
+        return () => clearInterval(timerInterval);
+    }, [activeSeason]);
+
     useEffect(() => {
         if (activeSeason?.variantType === 'ADEPT' && currentKiller && allPerks.length > 0) {
             const adeptPerks = allPerks.filter(p =>
@@ -366,6 +418,9 @@ const CurrentSeasonPage = () => {
 
             const response = await api.post(`/trials`, payload);
             const trialResult = response.data;
+
+            localStorage.removeItem(`pending_trial_${activeSeason.seasonId}`);
+            localStorage.removeItem(`draft_loadout_${activeSeason.seasonId}_${currentKiller.killerId}`);
 
             const isKillerActuallyDead = isKillerDead && !(isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE');
 
@@ -632,7 +687,19 @@ const CurrentSeasonPage = () => {
                                                         isSelected={currentKiller?.killerId === rosterItem.killerId}
                                                         onSelect={() => {
                                                             setSelectedKiller(rosterItem);
-                                                            setSelectedAddons([]);
+
+                                                            const draftKey = `draft_loadout_${activeSeason.seasonId}_${rosterItem.killerId}`;
+                                                            const draftData = localStorage.getItem(draftKey);
+
+                                                            if (draftData) {
+                                                                const parsed = JSON.parse(draftData);
+                                                                setSelectedPerks(parsed.perks || []);
+                                                                setSelectedAddons(parsed.addons || []);
+                                                            } else {
+                                                                // Blank slate for new killers
+                                                                if (activeSeason.variantType !== 'ADEPT') setSelectedPerks([]);
+                                                                setSelectedAddons([]);
+                                                            }
                                                         }}
                                                         onSell={(k) => setKillerToSellConfirm(k)}
                                                         mode="active"
@@ -751,6 +818,15 @@ const CurrentSeasonPage = () => {
                     trialCount={trialCount}
                     onCancel={() => setIsConfirmingTrial(false)}
                     onConfirm={() => {
+                        // Lock the pending trial in memory
+                        const pendingKey = `pending_trial_${activeSeason.seasonId}`;
+                        const pendingData = {
+                            killer: currentKiller,
+                            perks: selectedPerks,
+                            addons: selectedAddons
+                        }
+                        localStorage.setItem(pendingKey, JSON.stringify(pendingData));
+
                         // 1. Instantly mount the pitch-black loader OVER the modal (z-index: 999999)
                         setIsProcessingResults(true);
 
