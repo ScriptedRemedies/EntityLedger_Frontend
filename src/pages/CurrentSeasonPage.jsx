@@ -452,7 +452,9 @@ const CurrentSeasonPage = () => {
                 : null;
 
             const finishSubmission = async () => {
-                setSelectedPerks([]);
+                if (activeSeason.variantType !== 'ADEPT') {
+                    setSelectedPerks([]);
+                }
                 setSelectedAddons([]);
                 setSelectedKiller(null);
 

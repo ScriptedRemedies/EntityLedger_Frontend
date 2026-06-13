@@ -110,16 +110,6 @@ const MasterLoadout = ({
     // 3. VARIANT SPECIFIC ENFORCEMENT
     // ==========================================
 
-    // Auto-Equip Adept Perks
-    useEffect(() => {
-        if (variantType === 'ADEPT' && allPerks.length > 0 && currentKiller) {
-            const adeptPerks = allPerks.filter(p =>
-                p.killerName === currentKiller.killerName || p.killer?.name === currentKiller.killerName
-            );
-            setSelectedPerks(adeptPerks);
-        }
-    }, [variantType, currentKiller, allPerks, setSelectedPerks]);
-
     // Force clear addons if they become locked
     useEffect(() => {
         if (rules.addonsLocked && selectedAddons.length > 0) {
