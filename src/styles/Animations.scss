@@ -376,21 +376,36 @@
   /* Start normal */
   0% { transform: scale(1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9); opacity: 1; }
 
-  /* --- FIRST BA-DUM --- */
-  10% { transform: scale(1.02); box-shadow: 0 0 60px 20px rgba(172, 38, 27, 0.7); opacity: 1; }
-  18% { transform: scale(1); box-shadow: 0 0 20px 0px rgba(172, 38, 27, 0); opacity: 1; }
+  /* --- FIRST BA-DUM (The Drawn-Out "Lub-Dub") --- */
+  /* The "Lub" - First click (0ms) */
+  2% { transform: scale(1.02); box-shadow: 0 0 60px 20px rgba(172, 38, 27, 0.7); opacity: 1; }
+  4% { transform: scale(1.02); box-shadow: 0 0 60px 20px rgba(172, 38, 27, 0.7); opacity: 1; } /* Squeeze and hold */
+  8% { transform: scale(1); box-shadow: 0 0 20px 0px rgba(172, 38, 27, 0); opacity: 1; }
 
-  28% { transform: scale(1.05); box-shadow: 0 0 100px 35px rgba(172, 38, 27, 0.9); opacity: 1; }
-  40% { transform: scale(1); box-shadow: 0 0 40px 10px rgba(172, 38, 27, 0); opacity: 1; }
+  /* The "Dub" - Mapped perfectly to your 524ms tap (13%) */
+  13% { transform: scale(1.04); box-shadow: 0 0 100px 35px rgba(172, 38, 27, 0.9); opacity: 1; }
+  16% { transform: scale(1.04); box-shadow: 0 0 100px 35px rgba(172, 38, 27, 0.9); opacity: 1; } /* Squeeze and hold */
+  24% { transform: scale(1); box-shadow: 0 0 30px 5px rgba(172, 38, 27, 0); opacity: 1; }
 
-  /* --- SECOND BA-DUM --- */
-  60% { transform: scale(1.03); box-shadow: 0 0 80px 30px rgba(172, 38, 27, 0.8); opacity: 1; }
-  68% { transform: scale(1); box-shadow: 0 0 20px 0px rgba(172, 38, 27, 0); opacity: 1; }
+  /* --- THE DEAD SILENCE --- */
+  /* Holds the tension during the huge 1.5 second gap */
+  45% { transform: scale(1); box-shadow: 0 0 30px 5px rgba(172, 38, 27, 0); opacity: 1; }
 
-  78% { transform: scale(1.08); box-shadow: 0 0 150px 60px rgba(172, 38, 27, 1); opacity: 1; }
+  /* --- SECOND BA-DUM (Closer & Louder) --- */
+  /* The "Lub" - Mapped perfectly to your 2084ms tap (52%) */
+  52% { transform: scale(1.04); box-shadow: 0 0 80px 30px rgba(172, 38, 27, 0.8); opacity: 1; }
+  54% { transform: scale(1.04); box-shadow: 0 0 80px 30px rgba(172, 38, 27, 0.8); opacity: 1; } /* Squeeze and hold */
+  58% { transform: scale(1); box-shadow: 0 0 20px 0px rgba(172, 38, 27, 0); opacity: 1; }
+
+  /* The final massive "Dub" - Mapped perfectly to your 2525ms tap (63%) */
+  63% { transform: scale(1.08); box-shadow: 0 0 160px 70px rgba(172, 38, 27, 1); opacity: 1; }
+  67% { transform: scale(1.08); box-shadow: 0 0 160px 70px rgba(172, 38, 27, 1); opacity: 1; } /* Final heavy hold */
+
+  /* Drop the scale slightly but hold the shadow glow before fading */
+  75% { transform: scale(1.06); box-shadow: 0 0 140px 50px rgba(172, 38, 27, 0.9); opacity: 1; }
 
   /* --- THE VOID --- */
-  95% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(172, 38, 27, 0); opacity: 0; }
+  85% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(172, 38, 27, 0); opacity: 0; }
   100% { transform: scale(0.95); opacity: 0; }
 }
 
