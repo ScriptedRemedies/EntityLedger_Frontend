@@ -615,7 +615,6 @@ const ReviewChallengesPage = () => {
                         <button
                             className="squareBtn"
                             onClick={() => navigate('/start-challenge')}
-                            style={{ bottom: '-15px' }}
                         >
                             Start New Challenge
                         </button>
