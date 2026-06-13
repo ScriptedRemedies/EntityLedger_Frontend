@@ -141,6 +141,7 @@ const CurrentSeasonPage = () => {
     const [isProcessingResults, setIsProcessingResults] = useState(false);
     const [isLoaderClosing, setIsLoaderClosing] = useState(false);
     const [isResultsClosing, setIsResultsClosing] = useState(false);
+    const [isFogTransitioning, setIsFogTransitioning] = useState(false);
     const [seasonRecap, setSeasonRecap] = useState(null);
     const [runEndingData, setRunEndingData] = useState(null);
     const [usedReRollTokens, setUsedReRollTokens] = useState(false);
@@ -519,12 +520,13 @@ const CurrentSeasonPage = () => {
                     }, 1500);
                 } else if (is4KAscension || isRuthlessAscension) {
                     await refreshPromise;
-                    setIsResultsClosing(true);
+                    setIsFogTransitioning(true);
                     setTimeout(() => {
                         setIsViewingResults(false);
                         setAscensionType(null);
-                        setIsResultsClosing(false);
                         finishSubmission();
+
+                        setIsFogTransitioning(false);
                     }, 500);
                 } else {
                     // Normal Path (Run continues)
@@ -969,6 +971,8 @@ const CurrentSeasonPage = () => {
                     stayOpenOnAction={true}
                 />
             )}
+
+            <div className={`global-fog-overlay ${isFogTransitioning ? 'fog-active' : ''}`}></div>
         </div>
     );
 };
