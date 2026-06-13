@@ -747,7 +747,11 @@ const CurrentSeasonPage = () => {
 
             {/* === RIGHT PANEL === */}
             <div className="right-panel">
-                <button className="squareBtn" onClick={handleStartTrialClick}>
+                <button
+                    className="squareBtn"
+                    onClick={handleStartTrialClick}
+                    style={isBankrupt ? { opacity: 0.3, cursor: 'not-allowed', filter: 'grayscale(100%)' } : { transition: 'all 0.3s ease' }}
+                >
                     Start Trial
                 </button>
 
@@ -759,7 +763,15 @@ const CurrentSeasonPage = () => {
                     />
 
                     <div className="global-season-text">
-                        <h3 key={displayCharacterName} className="bebas-header-1 global-character-name fade-in">{displayCharacterName}</h3>
+                        {/* Hide the name when bankrupt, otherwise run the fade-in animation */}
+                        <h3
+                            key={displayCharacterName}
+                            className={`bebas-header-1 global-character-name ${isBankrupt ? '' : 'roster-swap-fade'}`}
+                            style={isBankrupt ? { opacity: 0 } : {}}
+                        >
+                            {displayCharacterName}
+                        </h3>
+
                         <p className="inter-text-small">{activeSeason.variantType.replace('_', ' ')}</p>
                         <p className="inter-text-small global-days-left">{activeSeason.daysLeft} Days Left</p>
 
@@ -782,11 +794,13 @@ const CurrentSeasonPage = () => {
                     </div>
                 </div>
 
+                {/* Hide the dead killer image when bankrupt, otherwise run the fade-in animation */}
                 <img
                     key={displayImageUrl}
                     src={displayImageUrl}
-                    className="global-character-bg fade-in"
+                    className={`global-character-bg ${isBankrupt ? '' : 'roster-swap-fade'}`}
                     alt={displayCharacterName}
+                    style={isBankrupt ? { opacity: 0 } : {}}
                 />
             </div>
 
