@@ -412,3 +412,56 @@
 .roster-swap-fade {
   animation: rosterSwapFade 0.4s ease-out forwards;
 }
+
+/* ==========================================================================
+   THE IN-GRID LIQUIDATION (Seamless Sell)
+   ========================================================================== */
+
+.grid-sell-active {
+  animation: gridSellFlash 1.2s ease-out forwards;
+}
+
+@keyframes gridSellFlash {
+  0% { filter: brightness(1.4) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)); }
+  15% { filter: brightness(0.4) grayscale(100%); }
+  100% { filter: brightness(0.4) grayscale(100%); }
+}
+
+.grid-sold-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-family: var(--font-bebas);
+  font-size: var(--title-size);
+  color: var(--color-IRIDESCENT);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  letter-spacing: 4px;
+  z-index: 20;
+  pointer-events: none;
+  animation: gridStamp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gridStamp {
+  0% { transform: translate(-50%, -50%) rotate(-45deg) scale(2.5); opacity: 0; }
+  100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); opacity: 1; }
+}
+
+.grid-floating-profit {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  font-family: var(--font-bebas);
+  font-size: 2.5rem;
+  color: #4ade80; /* Bright Green */
+  text-shadow: 0 0 15px rgba(74, 222, 128, 0.8), 2px 2px 0px #000;
+  z-index: 30;
+  pointer-events: none;
+  animation: floatProfit 1.2s ease-out forwards;
+}
+
+@keyframes floatProfit {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+  15% { opacity: 1; transform: translate(-50%, -15px) scale(1.1); }
+  80% { opacity: 1; transform: translate(-50%, -50px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -60px) scale(1); }
+}

@@ -120,6 +120,7 @@ const CurrentSeasonPage = () => {
 
     const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
     const [deathCinematic, setDeathCinematic] = useState(null);
+    const [soldKiller, setSoldKiller] = useState(null);
     // Confirming sell killer states for blood money and afterburn
     const [killerToSellConfirm, setKillerToSellConfirm] = useState(null);
     const [isSellModalClosing, setIsSellModalClosing] = useState(false);
@@ -520,34 +521,44 @@ const CurrentSeasonPage = () => {
 
     const handleSellKiller = async (killerToSell) => {
         try {
-            // Capture the response so we can check the status
             const response = await api.put(`/seasons/${activeSeason.seasonId}/sell/${killerToSell.killerId}`);
             const updatedSeason = response.data;
 
-            addToast(`${killerToSell.killerName} was sold for $${killerToSell.cost}!`, "success");
+            // Trigger the IN-GRID cinematic!
+            setSoldKiller({ id: killerToSell.killerId, cost: killerToSell.cost });
 
-            // Check if the sale mathematically ended the run
-            if (updatedSeason.status && updatedSeason.status !== 'ACTIVE') {
-                const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
+            // Wait 1.2 seconds for the animation to finish...
+            setTimeout(async () => {
 
-                if (updatedSeason.status !== 'COMPLETED') {
-                    setRunEndingData({
-                        outcome: 'failure',
-                        isChained: false,
-                        recap: { status: updatedSeason.status, finalTrials: finalTrialsRes.data }
-                    });
+                // Check if the sale mathematically ended the run
+                if (updatedSeason.status && updatedSeason.status !== 'ACTIVE') {
+                    const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
+
+                    if (updatedSeason.status !== 'COMPLETED') {
+                        setRunEndingData({
+                            outcome: 'failure',
+                            isChained: false,
+                            recap: { status: updatedSeason.status, finalTrials: finalTrialsRes.data }
+                        });
+                    } else {
+                        setSeasonRecap({ status: updatedSeason.status, finalTrials: finalTrialsRes.data });
+                    }
+
+                    setSoldKiller(null);
+
                 } else {
-                    setSeasonRecap({ status: updatedSeason.status, finalTrials: finalTrialsRes.data });
+                    await fetchSeasonData();
+
+                    if (currentKiller?.killerId === killerToSell.killerId) {
+                        setSelectedKiller(null);
+                        setSelectedPerks([]);
+                        setSelectedAddons([]);
+                    }
+
+                    setSoldKiller(null);
                 }
-            } else {
-                // If they can still afford to play, carry on as normal
-                await fetchSeasonData();
-                if (currentKiller?.killerId === killerToSell.killerId) {
-                    setSelectedKiller(null);
-                    setSelectedPerks([]);
-                    setSelectedAddons([]);
-                }
-            }
+            }, 1200);
+
         } catch (error) {
             console.error("Failed to sell killer:", error);
             addToast("Failed to process sale.", "error");
@@ -680,34 +691,45 @@ const CurrentSeasonPage = () => {
                                         {[...activeSeason.roster]
                                             .sort((a, b) => parseInt(a.killerId) - parseInt(b.killerId))
                                             .map((rosterItem, index) => (
-                                                <div key={rosterItem.killerId} className="stagger-item" style={{ animationDelay: `${index * 25}ms` }}>
-                                                    <KillerCard
-                                                        killer={rosterItem}
-                                                        variantType={activeSeason.variantType}
-                                                        isSelected={currentKiller?.killerId === rosterItem.killerId}
-                                                        onSelect={() => {
-                                                            setSelectedKiller(rosterItem);
+                                                <div key={rosterItem.killerId} className="stagger-item" style={{ animationDelay: `${index * 25}ms`, position: 'relative' }}>
 
-                                                            const draftKey = `draft_loadout_${activeSeason.seasonId}_${rosterItem.killerId}`;
-                                                            const draftData = localStorage.getItem(draftKey);
+                                                    <div className={soldKiller?.id === rosterItem.killerId ? 'grid-sell-active' : ''}>
+                                                        <KillerCard
+                                                            killer={rosterItem}
+                                                            variantType={activeSeason.variantType}
+                                                            isSelected={currentKiller?.killerId === rosterItem.killerId}
+                                                            onSelect={() => {
+                                                                setSelectedKiller(rosterItem);
 
-                                                            if (draftData) {
-                                                                const parsed = JSON.parse(draftData);
-                                                                setSelectedPerks(parsed.perks || []);
-                                                                setSelectedAddons(parsed.addons || []);
-                                                            } else {
-                                                                // Blank slate for new killers
-                                                                if (activeSeason.variantType !== 'ADEPT') setSelectedPerks([]);
-                                                                setSelectedAddons([]);
-                                                            }
-                                                        }}
-                                                        onSell={(k) => setKillerToSellConfirm(k)}
-                                                        mode="active"
-                                                        currentBalance={projectedBalance}
-                                                        isVariantCooldown={isKillerOnCooldown(rosterItem.killerId.toString())}
-                                                        isUnaffordable={isFinancialVariant && rosterItem.cost > startingBalance}
-                                                        isBankrupt={isBankrupt}
-                                                    />
+                                                                const draftKey = `draft_loadout_${activeSeason.seasonId}_${rosterItem.killerId}`;
+                                                                const draftData = localStorage.getItem(draftKey);
+
+                                                                if (draftData) {
+                                                                    const parsed = JSON.parse(draftData);
+                                                                    setSelectedPerks(parsed.perks || []);
+                                                                    setSelectedAddons(parsed.addons || []);
+                                                                } else {
+                                                                    if (activeSeason.variantType !== 'ADEPT') setSelectedPerks([]);
+                                                                    setSelectedAddons([]);
+                                                                }
+                                                            }}
+                                                            onSell={(k) => setKillerToSellConfirm(k)}
+                                                            mode="active"
+                                                            currentBalance={projectedBalance}
+                                                            isVariantCooldown={isKillerOnCooldown(rosterItem.killerId.toString())}
+                                                            isUnaffordable={isFinancialVariant && rosterItem.cost > startingBalance}
+                                                            isBankrupt={isBankrupt}
+                                                        />
+                                                    </div>
+
+                                                    {/* The floating animations that trigger exactly when sold */}
+                                                    {soldKiller?.id === rosterItem.killerId && (
+                                                        <>
+                                                            <div className="grid-sold-stamp">SOLD</div>
+                                                            <div className="grid-floating-profit">+${soldKiller.cost}</div>
+                                                        </>
+                                                    )}
+
                                                 </div>
                                             ))}
                                     </div>
