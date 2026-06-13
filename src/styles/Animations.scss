@@ -465,3 +465,55 @@
   80% { opacity: 1; transform: translate(-50%, -50px) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -60px) scale(1); }
 }
+
+/* ==========================================================================
+   THE 4K ASCENSION (In-Place Showcase)
+   ========================================================================== */
+
+.trial-results-overlay.merciless-ascension {
+
+  /* 1. Dissolve the UI into the fog */
+  .results-left-panel, .complete-btn {
+    opacity: 0;
+    filter: blur(8px) grayscale(100%);
+    transform: translateY(10px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  /* 2. Deepen the background shadow */
+  .results-bg {
+    filter: brightness(0.4) grayscale(50%);
+    transition: filter 1.5s ease-out;
+  }
+
+  /* 3. Elevate and glide the killer portrait to the center */
+  .results-killer-bg {
+    transform: translateX(-20vw) scale(1.15);
+    filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 30px rgba(255, 10, 47, 0.4));
+    transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.5s ease;
+    z-index: 50;
+  }
+}
+
+.merciless-stamp-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  font-family: var(--font-bebas);
+  font-size: 8rem;
+  color: var(--color-IRIDESCENT, #ff0a2f);
+  text-shadow: 0 0 40px rgba(255, 10, 47, 0.8), 4px 4px 0px #000;
+  letter-spacing: 12px;
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  /* Waits 0.6s for the killer to start gliding, then slams down */
+  animation: ascensionBurnIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+}
+
+@keyframes ascensionBurnIn {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(2.5); filter: blur(10px); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0px); }
+}

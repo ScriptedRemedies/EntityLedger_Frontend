@@ -121,6 +121,7 @@ const CurrentSeasonPage = () => {
     const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
     const [deathCinematic, setDeathCinematic] = useState(null);
     const [soldKiller, setSoldKiller] = useState(null);
+    const [isAscending, setIsAscending] = useState(false);
     // Confirming sell killer states for blood money and afterburn
     const [killerToSellConfirm, setKillerToSellConfirm] = useState(null);
     const [isSellModalClosing, setIsSellModalClosing] = useState(false);
@@ -394,6 +395,15 @@ const CurrentSeasonPage = () => {
                 s === 'SACRIFICED' || s === 'KILLED'
             ).length;
 
+            const is4KAscension = killCount === 4 && !isKillerDead;
+            let minHoldPromise = Promise.resolve(); // Default empty promise
+
+            if (is4KAscension) {
+                setIsAscending(true); // Triggers the CSS dissolve immediately!
+                // Forces the UI to hold the glorious pose for at least 2.5 seconds
+                minHoldPromise = new Promise(resolve => setTimeout(resolve, 2500));
+            }
+
             const payload = {
                 killerId: currentKiller.killerId,
                 pipProgression: resultsPayload.pipChange,
@@ -417,7 +427,8 @@ const CurrentSeasonPage = () => {
                 payload.gateOpened = mappedSurvivors.includes('ESCAPED');
             }
 
-            const response = await api.post(`/trials`, payload);
+            const responsePromise = api.post(`/trials`, payload);
+            const [response] = await Promise.all([responsePromise, minHoldPromise]);
             const trialResult = response.data;
 
             localStorage.removeItem(`pending_trial_${activeSeason.seasonId}`);
@@ -456,7 +467,7 @@ const CurrentSeasonPage = () => {
                             recap: { status: trialResult.seasonStatus, finalTrials: finalTrialsRes.data }
                         });
                     } else {
-                        // THE CRIMSON ASH
+                        // Normal Path
                         setRunEndingData({
                             outcome: 'victory',
                             isChained: isKillerActuallyDead,
@@ -467,13 +478,6 @@ const CurrentSeasonPage = () => {
                     navView.triggerTransition(NAV_TABS[0]);
                 }
             };
-
-            // --- TOAST LOGIC ---
-            if (isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE') {
-                addToast("Mulligan used! Your run was saved.", "warning");
-            } else if (!isKillerActuallyDead && !isRunEnding) {
-                addToast("Trial complete! The Entity is pleased.", "success");
-            }
 
             if (isKillerActuallyDead) {
                 setDeathCinematic({
@@ -505,6 +509,15 @@ const CurrentSeasonPage = () => {
                     setTimeout(() => {
                         setIsViewingResults(false);
                     }, 1500);
+                } else if (is4KAscension) {
+                    await refreshPromise;
+                    setIsResultsClosing(true);
+                    setTimeout(() => {
+                        setIsViewingResults(false);
+                        setIsAscending(false);
+                        setIsResultsClosing(false);
+                        finishSubmission();
+                    }, 500);
                 } else {
                     // Normal Path (Run continues)
                     setIsViewingResults(false);
@@ -916,6 +929,7 @@ const CurrentSeasonPage = () => {
                         selectedPerks={selectedPerks}
                         trialCount={trialCount}
                         onSubmit={handleTrialSubmit}
+                        isAscending={isAscending}
                     />
                 </div>
             )}
