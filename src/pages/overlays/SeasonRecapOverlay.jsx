@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useFadeTransition } from '../../hooks/useFadeTranistion.js';
 import TrialListTable from '../small-components/TrialListTable';
 import TrialDetailsModal from '../modals/TrialDetailsModal.jsx';
+import KillerCard from '../small-components/KillerCard.jsx';
 import '../../styles/overlays/TrialConfirmation.scss';
 import '../../styles/ChallengesPage.scss';
 import '../../styles/overlays/SeasonRecapOverlay.scss';
@@ -206,7 +207,7 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction, stayOpenO
                     <p className="inter-text-normal text-muted uppercase mb-4">{subTitle}</p>
 
                     <div className="secondary-nav-container" style={{ justifyContent: 'center', width: '100%' }}>
-                        {['Stats', 'Trials'].map(tab => (
+                        {['Stats', 'Trials', 'Roster'].map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => tabView.triggerTransition(tab)}
@@ -421,6 +422,40 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction, stayOpenO
                                     variantType={season.variantType}
                                     onRowClick={setActiveTrialOverlay}
                                 />
+                            </div>
+                        )}
+
+                        {/* === VIEW: FINAL ROSTER === */}
+                        {tabView.display === 'Roster' && (
+                            <div className="killer-grid hide-scrollbar" style={{ padding: '10px' }}>
+                                {season?.roster && season.roster.length > 0 ? (
+                                    [...season.roster]
+                                        .sort((a, b) => parseInt(a.killerId) - parseInt(b.killerId))
+                                        .map((rosterItem, index) => (
+                                            <div
+                                                key={rosterItem.killerId}
+                                                className="stagger-item"
+                                                style={{
+                                                    animationDelay: `${index * 25}ms`,
+                                                    pointerEvents: 'none' // The Magic Trick: Makes the card read-only!
+                                                }}
+                                            >
+                                                <KillerCard
+                                                    killer={rosterItem}
+                                                    variantType={season.variantType}
+                                                    mode="active" // Forces the card to display the authentic Dead/Sold overlays
+                                                    onSelect={() => {}} // Dummy function to prevent errors
+                                                />
+                                            </div>
+                                        ))
+                                ) : (
+                                    /* THE FALLBACK: Prevents the crash if data is missing */
+                                    <div className="col-span-full flex justify-center py-10 fade-in">
+                                        <p className="text-muted inter-text-normal text-center">
+                                            Roster data is unavailable for this record.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
