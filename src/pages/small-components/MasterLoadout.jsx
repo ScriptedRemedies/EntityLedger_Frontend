@@ -48,6 +48,7 @@ const MasterLoadout = ({
     const [activeInventory, setActiveInventory] = useState(rules.defaultTab);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [isFading, setIsFading] = useState(false);
     const ITEMS_PER_PAGE = 15;
 
     // --- CHAOS SHUFFLE STATE ---
@@ -219,6 +220,15 @@ const MasterLoadout = ({
         }
     };
 
+    const changePageWithFade = (newPage) => {
+        if (newPage === currentPage) return;
+        setIsFading(true);
+        setTimeout(() => {
+            setCurrentPage(newPage);
+            setIsFading(false);
+        }, 150); // Matches the 0.15s CSS transition perfectly
+    };
+
     return (
         <div className="loadout">
             <div className="equipped-section">
@@ -364,8 +374,7 @@ const MasterLoadout = ({
 
                     <div className="divider-line"></div>
 
-                    <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'}`}>
-                        {activeInventory === 'PERKS' && rules.perksLocked ? (
+                    <div className={`inventory-grid ${activeInventory === 'PERKS' ? 'grid-diamonds' : 'grid-squares'} ${isFading ? 'grid-fade-out' : ''}`}>                        {activeInventory === 'PERKS' && rules.perksLocked ? (
                             <div className="col-span-full flex justify-center py-10">
                                 <p className="text-muted inter-text-normal text-center">Perks are automatically locked for the {variantType} challenge.</p>
                             </div>
@@ -441,7 +450,7 @@ const MasterLoadout = ({
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
                                 <button
                                     key={pageNum}
-                                    onClick={() => setCurrentPage(pageNum)}
+                                    onClick={() => changePageWithFade(pageNum)}
                                     className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
                                 >
                                     {pageNum}

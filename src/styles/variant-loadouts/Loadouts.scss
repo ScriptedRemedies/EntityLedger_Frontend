@@ -216,8 +216,14 @@
     align-content: start;
     gap: 30px;
     row-gap: 30px;
+    min-height: 290px;
     width: 100%;
     padding: 20px;
+    transition: opacity 0.15s ease-in-out;
+
+    &.grid-fade-out {
+      opacity: 0;
+    }
 
     .inventory-item {
       cursor: pointer;
