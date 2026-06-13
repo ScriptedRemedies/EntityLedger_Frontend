@@ -229,19 +229,28 @@ const CurrentSeasonPage = () => {
     const projectedBalance = startingBalance - killerCost - loadoutCost;
 
     const fetchSeasonData = async () => {
-        if (!seasonId) return;
         try {
             const response = await api.get(`/seasons/active`);
+            const fetchedSeason = response.data;
+            if (!fetchedSeason || !fetchedSeason.seasonId) {
+                navigate('/dashboard');
+                return;
+            }
+
             setActiveSeason(response.data);
 
             if (response.data && response.data.seasonId) {
-                const trialsRes = await api.get(`/seasons/${response.data.seasonId}/trials`);
+                const trialsRes = await api.get(`/seasons/${fetchedSeason.seasonId}/trials`);
                 setTrialCount(trialsRes.data.length);
                 setTrials(trialsRes.data);
+
+                if (fetchedSeason.status && fetchedSeason.status !== 'ACTIVE') {
+                    setSeasonRecap({ status: fetchedSeason.status, finalTrials: trialsRes.data });
+                }
             }
-            console.log(response.data.roster);
         } catch (error) {
             console.error("Failed to fetch season or trials:", error);
+            navigate('/dashboard');
         }
     };
 
@@ -353,6 +362,42 @@ const CurrentSeasonPage = () => {
 
         return () => clearInterval(timerInterval);
     }, [activeSeason]);
+
+    // --- THE DOOMSDAY CLOCK (Silent Background Poller) ---
+    useEffect(() => {
+        if (!activeSeason || activeSeason.status !== 'ACTIVE') return;
+
+        // Every 60 seconds, silently ask the backend if the season is still legally active.
+        const doomsdayClock = setInterval(async () => {
+            try {
+                const checkRes = await api.get(`/seasons/active`);
+                const liveSeason = checkRes.data;
+
+                // The exact minute the backend declares it dead...
+                if (!liveSeason || liveSeason.seasonId !== activeSeason.seasonId || liveSeason.status !== 'ACTIVE') {
+                    clearInterval(doomsdayClock); // Stop polling
+
+                    const finalTrialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
+
+                    // Force the Void Collapse cinematic to violently interrupt the user!
+                    setRunEndingData({
+                        outcome: 'failure',
+                        isChained: false,
+                        recap: { status: 'FAILED_TIME', finalTrials: trials }
+                    });
+                }
+            } catch (err) {
+                console.error("Doomsday clock sync failed", err);
+                setRunEndingData({
+                    outcome: 'failure',
+                    isChained: false,
+                    recap: { status: 'FAILED_TIME', finalTrials: trials }
+                })
+            }
+        }, 60000); // 60,000ms = exactly 1 minute
+
+        return () => clearInterval(doomsdayClock);
+    }, [activeSeason, trials]);
 
     useEffect(() => {
         if (activeSeason?.variantType === 'ADEPT' && currentKiller && allPerks.length > 0) {
