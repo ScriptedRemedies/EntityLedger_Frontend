@@ -121,7 +121,7 @@ const CurrentSeasonPage = () => {
     const [isConfirmingTrial, setIsConfirmingTrial] = useState(false);
     const [deathCinematic, setDeathCinematic] = useState(null);
     const [soldKiller, setSoldKiller] = useState(null);
-    const [isAscending, setIsAscending] = useState(false);
+    const [ascensionType, setAscensionType] = useState(null);
     // Confirming sell killer states for blood money and afterburn
     const [killerToSellConfirm, setKillerToSellConfirm] = useState(null);
     const [isSellModalClosing, setIsSellModalClosing] = useState(false);
@@ -395,13 +395,19 @@ const CurrentSeasonPage = () => {
                 s === 'SACRIFICED' || s === 'KILLED'
             ).length;
 
+            const hatches = mappedSurvivors.filter(s => s === 'HATCH_ESCAPE').length;
+
             const is4KAscension = killCount === 4 && !isKillerDead;
+            const isRuthlessAscension = killCount === 3 && hatches === 1 && !isKillerDead;
+
             let minHoldPromise = Promise.resolve(); // Default empty promise
 
             if (is4KAscension) {
-                setIsAscending(true); // Triggers the CSS dissolve immediately!
-                // Forces the UI to hold the glorious pose for at least 2.5 seconds
+                setAscensionType('merciless');
                 minHoldPromise = new Promise(resolve => setTimeout(resolve, 2500));
+            } else if (isRuthlessAscension) {
+                setAscensionType('ruthless');
+                minHoldPromise = new Promise(resolve => setTimeout(resolve, 3000));
             }
 
             const payload = {
@@ -509,12 +515,12 @@ const CurrentSeasonPage = () => {
                     setTimeout(() => {
                         setIsViewingResults(false);
                     }, 1500);
-                } else if (is4KAscension) {
+                } else if (is4KAscension || isRuthlessAscension) {
                     await refreshPromise;
                     setIsResultsClosing(true);
                     setTimeout(() => {
                         setIsViewingResults(false);
-                        setIsAscending(false);
+                        setAscensionType(null);
                         setIsResultsClosing(false);
                         finishSubmission();
                     }, 500);
@@ -929,7 +935,7 @@ const CurrentSeasonPage = () => {
                         selectedPerks={selectedPerks}
                         trialCount={trialCount}
                         onSubmit={handleTrialSubmit}
-                        isAscending={isAscending}
+                        ascensionType={ascensionType}
                     />
                 </div>
             )}

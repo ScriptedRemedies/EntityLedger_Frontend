@@ -3,7 +3,7 @@ import GradeBadgeDisplay from '../small-components/GradeBadgeDisplay.jsx';
 import { useToast } from '../../hooks/ToastContext.jsx';
 import '../../styles/overlays/TrialResults.scss';
 
-const TrialResultsOverlay = ({ season, killer, selectedPerks = [], selectedAddons = [], trialCount, onSubmit, isAscending }) => {
+const TrialResultsOverlay = ({ season, killer, selectedPerks = [], selectedAddons = [], trialCount, onSubmit, ascensionType }) => {
     const { addToast } = useToast();
 
     // --- STATE MANAGEMENT ---
@@ -236,11 +236,18 @@ const TrialResultsOverlay = ({ season, killer, selectedPerks = [], selectedAddon
     const netIncome = earnings - penalties - totalCost;
 
     return (
-        <div className={`trial-results-overlay ${isAscending ? 'merciless-ascension' : ''}`}>
+        <div className={`trial-results-overlay ${ascensionType ? `${ascensionType}-ascension` : ''}`}>
             <div className="results-bg"></div>
 
-            {isAscending && (
+            {ascensionType === 'merciless' && (
                 <div className="merciless-stamp-text">MERCILESS KILLER</div>
+            )}
+
+            {ascensionType === 'ruthless' && (
+                <>
+                    <div className="escaping-soul-wisp"></div>
+                    <div className="ruthless-stamp-text">RUTHLESS KILLER</div>
+                </>
             )}
 
             {/* === LEFT PANEL (The Form) === */}
