@@ -20,4 +20,4 @@ The Ledger currently tracks all major community variants, automating their speci
 * **Season Analytics:** At the end of a run, review a complete statistical breakdown of your performance, including Kill Rates, Hatch Escapes, Top Perks, and Most Played Killers.
 
 ### Future Updates
-- Survivor Challenges
+- Community Variant Submissions

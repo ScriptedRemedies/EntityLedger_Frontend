@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import fm from 'front-matter';
 import latestNotes from '../data/latest-update.md?raw';
 import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
-import {VersionModal} from "./modals/AppModals.jsx";
+import {GuidebookModal, VersionModal} from "./modals/AppModals.jsx";
 
 const DashboardPage = () => {
 
@@ -20,21 +20,14 @@ const DashboardPage = () => {
 
     // State to handle the version info overlay
     const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
-    const [isVersionClosing, setIsVersionClosing] = useState(false);
-    const handleCloseVersionModal = () => {
-        setIsVersionClosing(true);
-        setTimeout(() => {
-            setIsVersionModalOpen(false);
-            setIsVersionClosing(false);
-        }, 300);
-    }
+    const [isGuidebookOpen, setIsGuidebookOpen] = useState(false);
 
     // Getting the updated version notes and parsing them
     const parsedNotes = fm(latestNotes);
     const { version, date } = parsedNotes.attributes;
     const content = parsedNotes.body;
 
-    // --- NEW: Check for active season silently on mount ---
+    // --- Check for active season silently on mount ---
     useEffect(() => {
         const checkActiveSeason = async () => {
             try {
@@ -52,6 +45,18 @@ const DashboardPage = () => {
         };
 
         checkActiveSeason();
+    }, []);
+
+    // --- Auto-show Guidebook on first login ---
+    useEffect(() => {
+        const hasSeenGuidebook = localStorage.getItem('hasSeenGuidebook');
+
+        // If the key doesn't exist, it's their first time!
+        if (!hasSeenGuidebook) {
+            setIsGuidebookOpen(true);
+            // Immediately set the flag so reloading the page doesn't trigger it again
+            localStorage.setItem('hasSeenGuidebook', 'true');
+        }
     }, []);
 
     // Returns users to page they were on before auto logout
@@ -127,6 +132,25 @@ const DashboardPage = () => {
 
                 {/* Bottom Section: Version Info */}
                 <div className="bottom-section">
+
+                    {/* Guidebook Modal */}
+                    <button
+                        onClick={() => setIsGuidebookOpen(true)}
+                        className="inter-text-small guidebook-btn"
+                    >
+                        <div className="version-icon-wrapper">
+                            <img
+                                src="/assets/observer.png"
+                                alt="Observer Icon"
+                                className="menu-icon"
+                            />
+                        </div>
+                        <div className="version-text-wrapper">
+                            <div className="inter-text-small version-number">Guidebook</div>
+                        </div>
+                    </button>
+
+                    {/* Version Modal */}
                     <button
                         onClick={() => setIsVersionModalOpen(true)}
                         className="inter-text-small version-btn"
@@ -145,6 +169,13 @@ const DashboardPage = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Guidebook */}
+            {isGuidebookOpen && (
+                <GuidebookModal
+                    onClose={() => setIsGuidebookOpen(false)}
+                />
+            )}
 
             {/* Version Info Modal Overlay */}
             {isVersionModalOpen && (

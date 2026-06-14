@@ -127,19 +127,31 @@
 
 .bottom-section {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  gap: 20px;
 }
 
-.version-btn {
+.version-btn, .guidebook-btn {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: url('../assets/fog.png') center center no-repeat;
   padding: 1rem 2.5rem 1rem 1rem;
   border: none;
   border-left: 4px solid transparent;
   transition: background-color 0.3s, border-color 0.3s;
   cursor: pointer;
-
+}
+.guidebook-btn {
+  background: url('../assets/results_screen.png') center center no-repeat;
+  background-size: cover;
+  &:hover {
+    border-color: var(--color-IRIDESCENT);
+  }
+}
+.version-btn {
+  background: url('../assets/fog.png') center center no-repeat;
   &:hover {
     border-color: var(--color-ASH);
   }

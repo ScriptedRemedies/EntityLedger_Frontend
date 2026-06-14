@@ -1,3 +1,8 @@
+// Underlined to indicate option to click
+a {
+  text-decoration: underline;
+}
+
 /* ==========================================================================
    THE GLOBAL MODAL ENGINE
    ========================================================================== */
@@ -99,11 +104,6 @@
     margin: 0;
     left: auto;
   }
-
-  // Underlined to indicate option to click
-  p a {
-    text-decoration: underline;
-  }
 }
 
 .close-modal-btn {
@@ -128,3 +128,81 @@
   100% { transform: scale(0.95); opacity: 0; }
 }
 
+/* ==========================================================================
+   4. THE GUIDEBOOK MODAL (2-Column Layout)
+   ========================================================================== */
+
+.guidebook-body {
+  display: flex;
+  padding: 0 !important; /* Full bleed to let the sidebar hit the edges */
+  height: 500px; /* Fixed height so the content scrolls but the modal stays still */
+
+  /* --- LEFT NAV --- */
+  .guidebook-sidebar {
+    width: 220px;
+    background: rgba(0, 0, 0, 0.4);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+
+    .guidebook-tab {
+      padding: 15px 25px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      color: #666;
+      font-family: var(--font-bebas);
+      font-size: 1.4rem;
+      text-align: left;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover { color: #fff; background: rgba(255, 255, 255, 0.02); }
+
+      /* The Active Tab State */
+      &.active {
+        color: var(--color-IRIDESCENT, #ff0a2f);
+        background: rgba(255, 10, 47, 0.05);
+        border-left: 3px solid var(--color-IRIDESCENT, #ff0a2f);
+      }
+    }
+  }
+
+  /* --- RIGHT CONTENT --- */
+  .guidebook-content {
+    flex: 1;
+    padding: 30px 40px;
+    overflow-y: auto;
+
+    /* A temporary placeholder for your screenshots */
+    .guide-image-placeholder {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      max-height: 280px;
+      background: rgba(0, 0, 0 , 0.4);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      margin: 20px 0;
+      border-radius: 4px;
+      padding: 4px;
+
+      .guide-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        opacity: 0.85;
+        transition: opacity 0.3s ease;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    h3 { margin-bottom: 10px; }
+    p { margin-bottom: 20px; color: #a3a3a3; }
+  }
+}
