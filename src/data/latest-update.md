@@ -1,10 +1,14 @@
 ---
-version: 1.0.0
-date: June 13, 2026
+version: TESTING
+date: June 14, 2026
 ---
 
-# Welcome to The Entities Ledger
+# Welcome to The Entities Ledger Testing Phase
 This web application helps track the community-made Hardcore Challenges in Dead by Daylight. Whether you are running a casual gauntlet or a brutal marathon, this tool manages the math, rules, and rosters so you can focus on the trials.
+
+### Testing form
+This app is in the testing phase and would benefit greatly from your feedback. At any time please click on the form link below to submit your response. There are 12 sections, all of which are optional. Any feedback you can provide would be greatly appreciated. Thank you for being a part of the very beginnings of this project.
+[Testing Form](https://docs.google.com/forms/d/e/1FAIpQLSfiJZqyO5J7Qb4tQJuuOhIsbrF914o8hUn6OgJ3PUifU-9WDg/viewform?usp=dialog)
 
 ### Supported Challenge Variants
 The Ledger currently tracks all major community variants, automating their specific rulesets behind the scenes:
