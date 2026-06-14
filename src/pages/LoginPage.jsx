@@ -25,7 +25,7 @@ const LoginPage = () => {
             </div>
 
             {/* Content Wrapper: Pulls everything forward so the fog sits behind it */}
-            <div className="relative z-10 flex flex-col px-50">
+            <div className="relative z-10 flex flex-col px-6 md:px-24 w-full max-w-md mx-auto items-center text-center">
 
                 {/* Layer 3: Logo */}
                 <div className="mb-12 mx-auto">
