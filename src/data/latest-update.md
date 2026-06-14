@@ -8,7 +8,7 @@ This web application helps track the community-made Hardcore Challenges in Dead 
 
 ### Testing form
 This app is in the testing phase and would benefit greatly from your feedback. At any time please click on the form link below to submit your response. There are 12 sections, all of which are optional. Any feedback you can provide would be greatly appreciated. Thank you for being a part of the very beginnings of this project.
-[Testing Form](https://docs.google.com/forms/d/e/1FAIpQLSfiJZqyO5J7Qb4tQJuuOhIsbrF914o8hUn6OgJ3PUifU-9WDg/viewform?usp=dialog)
+[Testing Form](https://docs.google.com/forms/d/e/1FAIpQLSfiJZqyO5J7Qb4tQJuuOhIsbrF914o8hUn6OgJ3PUifU-9WDg/viewform?usp=dialog){:target="_blank"}
 
 ### Supported Challenge Variants
 The Ledger currently tracks all major community variants, automating their specific rulesets behind the scenes:
