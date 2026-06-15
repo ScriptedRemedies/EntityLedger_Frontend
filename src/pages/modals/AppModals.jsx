@@ -130,7 +130,7 @@ export const GuidebookModal = ({ onClose }) => {
                                 </p>
 
                                 <h3 className="bebas-header-2 title-iri text-2xl">ASSET CREDITS</h3>
-                                <ul className="inter-text-small text-muted" style={{ listStyleType: 'square', paddingLeft: '20px' }}>
+                                <ul className="inter-text-small" style={{ listStyleType: 'square', paddingLeft: '20px' }}>
                                     <li className="mb-2">
                                         <span className="text-white">Portraits, Perks, & Add-ons:</span> Sourced from the stunning <a href="https://nightlight.gg/packs/red-scratch-pack" target="_blank" rel="noopener noreferrer" className="title-iri" style={{ textDecoration: 'underline' }}>Red Scratch Pack</a> available on Nightlight.gg.
                                     </li>

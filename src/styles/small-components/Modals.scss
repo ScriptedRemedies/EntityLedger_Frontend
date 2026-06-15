@@ -28,6 +28,7 @@ a {
   max-height: 90vh;
   border-radius: 4px;
   overflow: hidden;
+  max-width: 90vw !important;
 
   /* Subtle fog background inside all modals */
   &::before {
@@ -51,6 +52,10 @@ a {
   background: rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
   z-index: 10;
+
+  @media (max-width: 768px) {
+    padding: 15px 20px;
+  }
 }
 
 .modal-body {
@@ -59,6 +64,39 @@ a {
   flex: 1;
   min-height: 0;
   z-index: 10;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+.markdown-content {
+  h1, h2, h3 {
+    font-family: var(--font-bebas);
+    text-transform: uppercase;
+    color: var(--color-white);
+    line-height: 1.1;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+
+    @media (min-width: 768px) {
+      font-size: 2.6rem;
+    }
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    @media (min-width: 768px) { font-size: 2rem; }
+  }
+
+  p {
+    font-family: var(--font-inter);
+    font-size: var(--text-size-small); /* 15px */
+    line-height: 1.5;
+    color: var(--color-normal);
+    margin-bottom: 15px;
+  }
 }
 
 .modal-footer {
@@ -129,7 +167,7 @@ a {
 }
 
 /* ==========================================================================
-   4. THE GUIDEBOOK MODAL (2-Column Layout)
+   4. THE GUIDEBOOK MODAL (2-Column / Tab Layout)
    ========================================================================== */
 
 .guidebook-body {
@@ -137,7 +175,12 @@ a {
   padding: 0 !important; /* Full bleed to let the sidebar hit the edges */
   height: 500px; /* Fixed height so the content scrolls but the modal stays still */
 
-  /* --- LEFT NAV --- */
+  /* MOBILE OVERRIDE: Flip from side-by-side to stacked */
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
+  /* --- LEFT NAV (TOP NAV ON MOBILE) --- */
   .guidebook-sidebar {
     width: 220px;
     background: rgba(0, 0, 0, 0.4);
@@ -145,6 +188,21 @@ a {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+
+    /* MOBILE OVERRIDE: Convert to a horizontal, swipeable tab row */
+    @media (max-width: 768px) {
+      width: 100%;
+      flex-direction: row;
+      overflow-y: hidden;
+      overflow-x: auto;
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+
+      /* Hide the scrollbar visually but keep the swipe functionality */
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
+    }
 
     .guidebook-tab {
       padding: 15px 25px;
@@ -159,6 +217,14 @@ a {
       cursor: pointer;
       transition: all 0.2s ease;
 
+      /* MOBILE OVERRIDE: Prevent tabs from squishing, adjust borders */
+      @media (max-width: 768px) {
+        flex-shrink: 0;
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.02);
+        text-align: center;
+      }
+
       &:hover { color: #fff; background: rgba(255, 255, 255, 0.02); }
 
       /* The Active Tab State */
@@ -166,15 +232,26 @@ a {
         color: var(--color-IRIDESCENT, #ff0a2f);
         background: rgba(255, 10, 47, 0.05);
         border-left: 3px solid var(--color-IRIDESCENT, #ff0a2f);
+
+        /* MOBILE OVERRIDE: Move the active indicator line to the bottom */
+        @media (max-width: 768px) {
+          border-left: none;
+          border-bottom: 3px solid var(--color-IRIDESCENT, #ff0a2f);
+        }
       }
     }
   }
 
-  /* --- RIGHT CONTENT --- */
+  /* --- RIGHT CONTENT (BOTTOM CONTENT ON MOBILE) --- */
   .guidebook-content {
     flex: 1;
     padding: 30px 40px;
     overflow-y: auto;
+
+    /* MOBILE OVERRIDE: Relax the massive padding to maximize reading space */
+    @media (max-width: 768px) {
+      padding: 20px 20px;
+    }
 
     /* A temporary placeholder for your screenshots */
     .guide-image-placeholder {
