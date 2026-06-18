@@ -82,3 +82,19 @@
   text-align: center;
   line-height: 1;
 }
+
+@media (max-width: 768px) {
+  .season-card {
+    min-width: 170px;
+    min-height: 230px;
+  }
+
+  .season-card .season-card-base,
+  .season-card .season-card-overlay {
+    padding: 12px;
+  }
+
+  .season-card .season-result-title {
+    font-size: 2rem;
+  }
+}

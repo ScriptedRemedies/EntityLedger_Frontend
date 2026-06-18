@@ -220,7 +220,7 @@ const ReviewChallengesPage = () => {
                     ))}
                 </div>
 
-                <button onClick={() => navigate(-1)} className="back-button">Back</button>
+                <button onClick={() => navigate(-1)} className="back-button desktop-only">Back</button>
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
@@ -497,7 +497,7 @@ const ReviewChallengesPage = () => {
                                                 {variantView.display.id === 'ADEPT' && stats.topKillers && (
                                                     <div className="stats-section mb-8">
                                                         <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
-                                                        <div className="stats-grid">
+                                                        <div className="stats-grid adept-killer-stats">
                                                             {stats.topKillers.map((killer, i) => (
                                                                 <div key={i} className="stat-card">
                                                                     <div className="stat-info">
@@ -515,7 +515,7 @@ const ReviewChallengesPage = () => {
                                                 {variantView.display.id !== 'ADEPT' && variantView.display.id !== 'CHAOS_SHUFFLE' && (
                                                     <div className="stats-section mb-8">
                                                         <h3 className="bebas-header-2 stats-section-title">META & LOADOUT TENDENCIES</h3>
-                                                        <div className="stats-grid">
+                                                        <div className="stats-grid meta-stats">
                                                             {stats.topPerks?.map((perk, i) => (
                                                                 <div key={i} className="stat-card">
                                                                     <div className="stat-info">
@@ -534,7 +534,7 @@ const ReviewChallengesPage = () => {
                                                 {/* EMBLEMS */}
                                                 <div className="stats-section">
                                                     <h3 className="bebas-header-2 stats-section-title">EMBLEMS</h3>
-                                                    <div className="stats-grid">
+                                                    <div className="stats-grid emblems-stats">
                                                         {stats.iridescentEmblems?.map((emblem, i) => (
                                                             <div key={i} className="stat-card">
                                                                 <div className="stat-info">
@@ -613,12 +613,31 @@ const ReviewChallengesPage = () => {
                 ) : (
                     <div className="global-actions">
                         <button
-                            className="squareBtn"
+                            className="squareBtn desktop-only"
                             onClick={() => navigate('/start-challenge')}
                         >
                             Start New Challenge
                         </button>
                     </div>
+                )}
+            </div>
+
+            <div className="mobile-action-bar">
+                <button onClick={() => navigate(-1)} className="back-button">Back</button>
+                {activeSeason ? (
+                    <button
+                        className="squareBtn"
+                        onClick={() => navigate(`/current-season/${activeSeason.seasonId}`)}
+                    >
+                        Continue
+                    </button>
+                ) : (
+                    <button
+                        className="squareBtn"
+                        onClick={() => navigate('/start-challenge')}
+                    >
+                        Start New Challenge
+                    </button>
                 )}
             </div>
 

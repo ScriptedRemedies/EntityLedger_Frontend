@@ -703,7 +703,6 @@
     overflow: hidden;
   }
 
-  /* 1. Top Info Header */
   .right-panel {
     display: contents;
   }
@@ -722,7 +721,6 @@
   }
   .global-season-text { text-align: right; }
 
-  /* 2. Horizontal Nav */
   .nav {
     position: relative;
     order: 2;
@@ -766,7 +764,6 @@
     &::after { display: none; }
   }
 
-  /* 3. Middle Content */
   .middle-content {
     order: 3;
     flex: 1;
@@ -775,7 +772,34 @@
   }
   .variant-content-area { padding: 20px 20px 0 20px; }
 
-  /* 4. The NEW Mobile Action Bar */
+  .seasons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding-top: 15px;
+
+    .stagger-item {
+      display: flex;
+      justify-content: center;
+
+      > div {
+        transform: scale(0.9);
+        transform-origin: top center;
+        margin-bottom: -10%;
+      }
+    }
+  }
+
+  // Changing to single column on elements that need it
+  .stats-grid-cols,
+  .stats-grid.meta-stats,
+  .stats-grid.emblems-stats,
+  .stats-grid.adept-killer-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .mobile-action-bar {
     display: flex;
     justify-content: space-between;
@@ -800,7 +824,6 @@
     }
   }
 
-  /* 5. Watermark Background */
   .global-character-bg {
     position: fixed;
     top: 50%;
@@ -816,7 +839,6 @@
     pointer-events: none;
   }
 
-  /* 6. Layout Fixes */
   .variant-header {
     flex-direction: column !important;
     align-items: flex-start !important;
