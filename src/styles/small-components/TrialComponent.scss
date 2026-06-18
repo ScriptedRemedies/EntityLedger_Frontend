@@ -433,13 +433,50 @@
     grid-area: body;
   }
 
-  /* Safely wrap the header so Blood Money financials don't overflow the X-axis */
-  .banner-header {
-    align-items: flex-start;
-    gap: 6px;
-  }
-
   .banner-metrics {
     gap: 10px;
+  }
+
+  /* Shatters the 2-column desktop grid and stacks the left/right sections vertically */
+  .td-body {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 20px;
+  }
+
+  /* Reorganize the complex financial header to stack gracefully and prevent horizontal crushing */
+  .modal-content-box:has(.td-body) .modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    gap: 12px;
+
+    h2 {
+      flex-wrap: wrap;
+      max-width: 85%;
+      line-height: 1.2;
+    }
+
+    > .flex.items-center {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .close-modal-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+    }
+  }
+
+  /* Reduces the gap between the Grade Badge and the Close Button to prevent clipping */
+  .modal-header .gap-6 {
+    gap: 12px;
+  }
+
+  /* Removes the desktop right-padding from the financial ledger to prevent X-axis overflow */
+  .td-item-row > .pr-8 {
+    padding-right: 0;
   }
 }
