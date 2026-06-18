@@ -198,9 +198,6 @@
   }
 }
 
-/* Assumes your text-overlay-diagonal class is rotated -45deg.
-  Starts 2x size, snaps down to 1x.
-*/
 @keyframes deathStamp {
   0% {
     transform: translate(-50%, -50%) rotate(-45deg) scale(2);
@@ -279,20 +276,17 @@
   opacity: 0;
 }
 
-/* 1. The Vacuum (Dimming the background UI quickly) */
 .vacuum-active {
   background: rgba(0,0,0,0.4);
   transition: background 0.5s ease-out;
 }
 
-/* 2. The Blackout (Rushes in from the edges) */
 .blackout-active {
   opacity: 1;
   box-shadow: inset 0 0 0 100vmax #000000;
   transition: box-shadow 1.2s cubic-bezier(0.5, 0, 0.1, 1), opacity 0.3s;
 }
 
-/* 3. The Verdict Text */
 .verdict-text {
   font-family: var(--font-bebas);
   font-size: 6rem;
@@ -312,7 +306,6 @@
   animation: verdictAshFade 1.5s ease-in forwards;
 }
 
-/* 4. The Lift (Fades the black screen to reveal the recap) */
 .blackout-reveal {
   opacity: 0 !important;
   transition: opacity 1s ease-in-out;
@@ -353,7 +346,6 @@
   animation: victoryAshFade 1.5s ease-in forwards;
 }
 
-/* Identical to the failure ash fade, but it drifts UPWARD like embers */
 @keyframes victoryAshFade {
   0% { opacity: 1; transform: scale(1); filter: blur(0px); }
   100% { opacity: 0; transform: scale(1.05) translateY(-40px); filter: blur(20px); }
@@ -485,7 +477,6 @@
    THE ASCENSION (In-Place Showcases for 4K and 3K)
    ========================================================================== */
 
-/* Group the shared UI dissolve logic */
 .trial-results-overlay.merciless-ascension,
 .trial-results-overlay.ruthless-ascension {
 
@@ -513,14 +504,12 @@
   }
 }
 
-/* Ruthless Override: Gives the killer a colder cyan drop-shadow */
 .trial-results-overlay.ruthless-ascension {
   .results-killer-bg {
     filter: brightness(1) contrast(1.1) drop-shadow(0 0 30px rgba(6, 182, 212, 0.2));
   }
 }
 
-/* Shared Stamp Keyframe */
 @keyframes ascensionBurnIn {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(2.5); filter: blur(10px); }
   100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0px); }
@@ -559,7 +548,6 @@
   animation: ascensionBurnIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
 }
 
-/* The Escaping Soul (Option 3) */
 .escaping-soul-wisp {
   position: absolute;
   left: 45%;
@@ -580,4 +568,28 @@
   0% { opacity: 0; transform: translate(0, 0) rotate(15deg); }
   20% { opacity: 0.8; }
   100% { opacity: 0; transform: translate(15vw, -120vh) rotate(35deg); }
+}
+
+/* ==========================================================================
+   MOBILE OVERRIDE: THE ASCENSION
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  .merciless-stamp-text,
+  .ruthless-stamp-text {
+    font-size: 4rem;
+    letter-spacing: 4px;
+    width: 90vw;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .verdict-text,
+  .victory-text {
+    font-size: 3.5rem;
+    letter-spacing: 4px;
+    width: 90vw;
+    text-align: center;
+    line-height: 1;
+  }
 }
