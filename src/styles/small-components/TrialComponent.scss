@@ -401,3 +401,45 @@
   filter: blur(0px);
   transition: all 0.3s cubic-bezier(0, 0, 0.2, 1);
 }
+
+/* ==========================================================================
+   MOBILE OVERRIDES: TRIAL LIST (2-Column Grid Area)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .trial-banner-row {
+    /* Swap from 3 columns to 2 columns using Grid Areas */
+    grid-template-columns: 75px 1fr;
+    grid-template-areas:
+      "portrait body"
+      "badge body";
+    gap: 10px 15px;
+    align-items: start;
+    padding: 12px;
+  }
+
+  .banner-portrait {
+    grid-area: portrait;
+  }
+
+  .banner-right {
+    grid-area: badge;
+    padding-left: 0;
+    border-left: none;
+    justify-content: center;
+    margin-top: -5px;
+  }
+
+  .banner-body {
+    grid-area: body;
+  }
+
+  /* Safely wrap the header so Blood Money financials don't overflow the X-axis */
+  .banner-header {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .banner-metrics {
+    gap: 10px;
+  }
+}

@@ -341,3 +341,21 @@
 .hidden-opacity {
   opacity: 0;
 }
+
+/* ==========================================================================
+   MOBILE OVERRIDES: LOADOUT (X-AXIS FIXES ONLY)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .perks-container {
+    gap: 10px !important;
+  }
+  .inventory-grid {
+    gap: 25px 15px !important;
+    min-height: 240px !important;
+    padding: 0 !important;
+
+    .inventory-item {
+      width: 55px !important;
+    }
+  }
+}

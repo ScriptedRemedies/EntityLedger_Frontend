@@ -697,7 +697,7 @@ const CurrentSeasonPage = () => {
                     ))}
                 </div>
 
-                <button onClick={() => navigate("/dashboard")} className="back-button">Back</button>
+                <button onClick={() => navigate("/dashboard")} className="back-button desktop-only">Back</button>
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
@@ -838,7 +838,7 @@ const CurrentSeasonPage = () => {
             {/* === RIGHT PANEL === */}
             <div className="right-panel">
                 <button
-                    className="squareBtn"
+                    className="squareBtn desktop-only"
                     onClick={handleStartTrialClick}
                     style={isBankrupt ? { opacity: 0.3, cursor: 'not-allowed', filter: 'grayscale(100%)' } : { transition: 'all 0.3s ease' }}
                 >
@@ -892,6 +892,18 @@ const CurrentSeasonPage = () => {
                     alt={displayCharacterName}
                     style={isBankrupt ? { opacity: 0 } : {}}
                 />
+            </div>
+
+            {/* === MOBILE ACTION BAR === */}
+            <div className="mobile-action-bar">
+                <button onClick={() => navigate("/dashboard")} className="back-button">Back</button>
+                <button
+                    className="squareBtn"
+                    onClick={handleStartTrialClick}
+                    style={isBankrupt ? { opacity: 0.3, cursor: 'not-allowed', filter: 'grayscale(100%)' } : { transition: 'all 0.3s ease' }}
+                >
+                    Start Trial
+                </button>
             </div>
 
             {/* === CUSTOM SELL CONFIRMATION MODAL === */}
