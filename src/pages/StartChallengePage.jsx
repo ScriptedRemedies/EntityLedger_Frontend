@@ -151,7 +151,7 @@ const StartChallengePage = () => {
                     ))}
                 </div>
 
-                <button onClick={() => navigate(-1)} className="back-button">Back</button>
+                <button onClick={() => navigate(-1)} className="back-button desktop-only">Back</button>
             </div>
 
             {/* === MIDDLE CONTENT AREA === */}
@@ -315,6 +315,11 @@ const StartChallengePage = () => {
 
             {/* === RIGHT PANEL (Triggers Confirmation Modal) === */}
             <div className="right-panel">
+                <button className="squareBtn desktop-only" onClick={() => setIsConfirmModalOpen(true)}>Start Challenge</button>
+            </div>
+
+            <div className="mobile-action-bar">
+                <button onClick={() => navigate(-1)} className="back-button">Back</button>
                 <button className="squareBtn" onClick={() => setIsConfirmModalOpen(true)}>Start Challenge</button>
             </div>
 

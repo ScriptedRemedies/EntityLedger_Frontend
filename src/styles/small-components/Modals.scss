@@ -283,3 +283,28 @@ a {
     p { margin-bottom: 20px; color: #a3a3a3; }
   }
 }
+
+.start-challenge-modal {
+  width: 70vw;
+  max-width: 800px;
+  height: 80vh;
+}
+
+.included-killers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+  padding-left: 1.5rem;
+  list-style-type: square;
+}
+
+@media (max-width: 768px) {
+  .start-challenge-modal {
+    width: 95vw !important;
+  }
+
+  .included-killers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

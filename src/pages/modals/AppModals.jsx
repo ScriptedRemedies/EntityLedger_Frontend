@@ -518,7 +518,7 @@ export const StartChallengeModal = ({ variant, startingBalance, rosterList, onSu
 
     return (
         <div className={`modal-backdrop ${isClosing ? 'fade-out' : 'fade-in'}`}>
-            <div className={`modal-content-box ${isClosing ? 'modal-slam-out' : 'modal-slam'}`} style={{ width: '70vw', maxWidth: '800px', height: '80vh' }}>
+            <div className={`modal-content-box start-challenge-modal ${isClosing ? 'modal-slam-out' : 'modal-slam'}`} style={{ width: '70vw', maxWidth: '800px', height: '80vh' }}>
                 {isSealingPact ? (
                     <div className="modal-body flex flex-col items-center justify-center fade-in">
                         <h2 className="bebas-header-1 title-iri text-4xl mb-6 tracking-widest">CHALLENGE STARTED</h2>
@@ -546,16 +546,12 @@ export const StartChallengeModal = ({ variant, startingBalance, rosterList, onSu
                                 <button className="inter-text-normal title-white" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', cursor: 'pointer' }} onClick={() => setIsExpanded(!isExpanded)}>
                                     <span>Included Killers ({rosterList.length})</span>
                                 </button>
-                                <ul style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(3, 1fr)',
-                                    gap: '10px',
-                                    marginTop: '15px',
-                                    paddingLeft: '1.5rem',
-                                    listStyleType: 'square'
-                                }}>
-                                    {rosterList.map(k => <li key={k.id || k.killerId}
-                                                             className="inter-text-small text-normal">{k.name || k.killerName}</li>)}
+                                <ul className="included-killers-grid">
+                                    {rosterList.map(k => (
+                                        <li key={k.id || k.killerId} className="inter-text-small text-normal">
+                                            {k.name || k.killerName}
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
