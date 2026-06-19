@@ -288,6 +288,7 @@ a {
   width: 70vw;
   max-width: 800px;
   height: 80vh;
+  max-height: 85vh;
 }
 
 .included-killers-grid {
@@ -302,6 +303,7 @@ a {
 @media (max-width: 768px) {
   .start-challenge-modal {
     width: 95vw !important;
+    max-height: 85dvh !important;
   }
 
   .included-killers-grid {

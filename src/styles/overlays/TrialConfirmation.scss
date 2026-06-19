@@ -24,6 +24,10 @@
   .confirm-modal-body {
     display: flex;
     gap: 15px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
   }
 
   .confirm-column {
