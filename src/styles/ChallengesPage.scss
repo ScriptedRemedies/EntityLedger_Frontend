@@ -394,12 +394,17 @@
 }
 .stat-card {
   background-color: var(--color-60-background);
-  padding: 10px 15px;
+  padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-left: 2px solid var(--color-IRIDESCENT);
 }
+.stat-card.killer-stats-card {
+  text-align: center;
+  flex-direction: column;
+}
+
 .stat-info {
   display: flex;
   flex-direction: column;
@@ -793,8 +798,7 @@
   // Changing to single column on elements that need it
   .stats-grid-cols,
   .stats-grid.meta-stats,
-  .stats-grid.emblems-stats,
-  .stats-grid.adept-killer-stats {
+  .stats-grid.emblems-stats {
     display: flex;
     flex-direction: column;
     gap: 10px;

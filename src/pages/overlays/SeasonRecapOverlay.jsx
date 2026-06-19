@@ -6,6 +6,7 @@ import KillerCard from '../small-components/KillerCard.jsx';
 import '../../styles/overlays/TrialConfirmation.scss';
 import '../../styles/ChallengesPage.scss';
 import '../../styles/overlays/SeasonRecapOverlay.scss';
+import KillerStatsCard from "../small-components/KillerStatsCard.jsx";
 
 const SeasonRecapOverlay = ({ season, recapData, actionText, onAction, stayOpenOnAction = false }) => {
 
@@ -337,38 +338,34 @@ const SeasonRecapOverlay = ({ season, recapData, actionText, onAction, stayOpenO
                                 {awards && awards.length > 0 && (
                                     <div className="stats-section mb-8">
                                         <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
-                                        <div className="recap-stats-grid auto-stagger-grid">
+                                        <div className="shared-award-grid auto-stagger-grid">
                                             {awards.map((award, i) => (
-                                                <div key={i} className="stats-card">
-                                                    <h4 className={`stats-title bebas-header-2 text-white text-center ${award.effect === "negative" ? "weakest-link-header" : ""}`}>{award.name}</h4>
-                                                    <img
-                                                        src={`/assets/Killers/${award.killer.name}.png`}
-                                                        className={`stat-killer-slot ${award.effect === "negative" ? "weakest-link-img" : ""}`}
-                                                        alt={award.killer.name}
-                                                    />
-                                                    <div className="award-text">
-                                                        <p className="inter-text-small uppercase">{award.killer.name}</p>
-                                                        <p className="inter-text-small">{award.detailText}</p>
-                                                    </div>
-                                                </div>
+                                                <KillerStatsCard
+                                                    key={i}
+                                                    title={award.name}
+                                                    killerName={award.killer.name}
+                                                    primaryText={award.killer.name}
+                                                    secondaryText={award.detailText}
+                                                    isNegative={award.effect === "negative"}
+                                                />
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* --- NEW: TOP KILLERS (Adept Only) --- */}
+                                {/* --- TOP KILLERS (Adept Only) --- */}
                                 {season.variantType === 'ADEPT' && adeptTopKillers && adeptTopKillers.length > 0 && (
                                     <div className="stats-section mb-8">
                                         <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
-                                        <div className="recap-stats-grid auto-stagger-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                                        <div className="shared-award-grid auto-stagger-grid">
                                             {adeptTopKillers.map((killer, i) => (
-                                                <div key={i} className="stat-card">
-                                                    <div className="stat-info">
-                                                        <span className="stat-value inter-text-normal text-white uppercase">{killer.name}</span>
-                                                        <span className="stat-label">{killer.pickRate}% Pick Rate | {killer.killRate}% Kill Rate</span>
-                                                    </div>
-                                                    <img src={`/assets/Killers/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
-                                                </div>
+                                                <KillerStatsCard
+                                                    key={i}
+                                                    title={killer.name}
+                                                    killerName={killer.name}
+                                                    primaryText={`${killer.pickRate}% Pick Rate`}
+                                                    secondaryText={`${killer.killRate}% Kill Rate`}
+                                                />
                                             ))}
                                         </div>
                                     </div>

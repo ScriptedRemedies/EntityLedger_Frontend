@@ -1,0 +1,66 @@
+.shared-award-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.killer-award-card {
+  background-color: var(--color-60-background);
+  padding: 10px 15px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  border-left: 2px solid var(--color-IRIDESCENT);
+
+  .stats-title {
+    grid-column: span 2;
+    text-align: left;
+  }
+
+  .stat-killer-slot {
+    width: 110px;
+  }
+
+  .award-text {
+    align-self: center;
+    padding-left: 15px;
+  }
+
+  .weakest-link-header {
+    color: var(--color-IRIDESCENT);
+  }
+
+  .weakest-link-img {
+    filter: grayscale(80%) brightness(0.8);
+  }
+}
+
+@media (max-width: 768px) {
+  .shared-award-grid {
+    gap: 15px;
+  }
+
+  .killer-award-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 15px;
+
+    .stats-title {
+      grid-column: unset;
+      text-align: center;
+    }
+
+    .stat-killer-slot {
+      width: 80px;
+      margin-top: 10px;
+    }
+
+    .award-text {
+      padding-left: 0 !important;
+      align-items: center;
+      margin-top: 10px;
+    }
+  }
+}

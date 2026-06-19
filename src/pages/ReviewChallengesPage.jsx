@@ -12,6 +12,7 @@ import SeasonRecapOverlay from './overlays/SeasonRecapOverlay';
 import SeasonCard from "./small-components/SeasonCard.jsx";
 import EntityLoader from "./small-components/EntityLoader.jsx";
 import {useCinematicNavigate} from "../hooks/NavigationContext.jsx";
+import KillerStatsCard from "./small-components/KillerStatsCard.jsx";
 
 // === SEASON STATUS MESSAGES ===
 const STATUS_MESSAGES = {
@@ -470,42 +471,38 @@ const ReviewChallengesPage = () => {
                                                     </div>
                                                 )}
 
-                                                {/* --- NEW: ROSTER PERFORMANCE AWARDS (All Variants) --- */}
+                                                {/* --- ROSTER PERFORMANCE AWARDS (All Variants) --- */}
                                                 {stats.rosterAwards && stats.rosterAwards.length > 0 && (
                                                     <div className="stats-section mb-8">
                                                         <h3 className="bebas-header-2 stats-section-title">ROSTER PERFORMANCE AWARDS</h3>
-                                                        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+                                                        <div className="shared-award-grid">
                                                             {stats.rosterAwards.map((award, i) => (
-                                                                <div key={i} className="stat-card" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '15px' }}>
-                                                                    <h4 className={`bebas-header-2 text-white mb-2 ${award.effect === "negative" ? "title-iri" : ""}`}>{award.name}</h4>
-                                                                    <img
-                                                                        src={`/assets/Killers/${award.killerName}.png`}
-                                                                        style={{ height: '80px', objectFit: 'contain', filter: award.effect === "negative" ? 'grayscale(100%)' : 'none' }}
-                                                                        alt={award.killerName}
-                                                                    />
-                                                                    <div className="mt-2">
-                                                                        <p className="inter-text-small text-white uppercase m-0">{award.killerName}</p>
-                                                                        <p className="inter-text-small m-0">{award.detailText}</p>
-                                                                    </div>
-                                                                </div>
+                                                                <KillerStatsCard
+                                                                    key={i}
+                                                                    title={award.name}
+                                                                    killerName={award.killerName}
+                                                                    primaryText={award.killerName}
+                                                                    secondaryText={award.detailText}
+                                                                    isNegative={award.effect === "negative"}
+                                                                />
                                                             ))}
                                                         </div>
                                                     </div>
                                                 )}
 
-                                                {/* --- NEW: TOP KILLERS (Adept Only) --- */}
+                                                {/* TOP KILLERS (Adept Only) */}
                                                 {variantView.display.id === 'ADEPT' && stats.topKillers && (
                                                     <div className="stats-section mb-8">
                                                         <h3 className="bebas-header-2 stats-section-title">MOST PLAYED KILLERS</h3>
-                                                        <div className="stats-grid adept-killer-stats">
+                                                        <div className="shared-award-grid">
                                                             {stats.topKillers.map((killer, i) => (
-                                                                <div key={i} className="stat-card">
-                                                                    <div className="stat-info">
-                                                                        <span className="stat-value inter-text-normal text-white uppercase">{killer.name}</span>
-                                                                        <span className="stat-label">{killer.pickRate}% Pick Rate | {killer.killRate}% Kill Rate</span>
-                                                                    </div>
-                                                                    <img src={`/assets/Killers/${killer.name}.png`} style={{ height: '50px', objectFit: 'cover' }} alt={killer.name} />
-                                                                </div>
+                                                                <KillerStatsCard
+                                                                    key={i}
+                                                                    title={killer.name}
+                                                                    killerName={killer.name}
+                                                                    primaryText={`${killer.pickRate}% Pick Rate`}
+                                                                    secondaryText={`${killer.killRate}% Kill Rate`}
+                                                                />
                                                             ))}
                                                         </div>
                                                     </div>
