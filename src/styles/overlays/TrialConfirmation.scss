@@ -156,6 +156,8 @@
     flex-direction: column;
     align-items: center;
     gap: 25px;
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
   }
 
   .confirm-column {
@@ -190,7 +192,7 @@
   }
 
   .confirm-actions {
-    padding-top: 1rem;
-    margin-top: 1rem;
+    margin-top: 0 !important;
+    padding-top: 10px;
   }
 }
