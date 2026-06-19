@@ -83,3 +83,31 @@
     color: var(--color-normal);
   }
 }
+
+/* ==========================================================================
+   GLOBAL SAFARI / iOS VIEWPORT FIXES
+   ========================================================================== */
+@supports (height: 100dvh) {
+  /* Forces all full-screen wrappers to dynamically shrink when the Safari bar appears */
+  .modal-backdrop,
+  .trial-results-overlay,
+  .recap-overlay-container {
+    height: 100dvh !important;
+    bottom: auto !important;
+  }
+
+  /* Pushes fixed footers and action bars above the iPhone home swipe line */
+  .mobile-action-bar,
+  .modal-footer,
+  .recap-footer,
+  .confirm-actions {
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
+
+  /* Adds extra padding to scrollable areas so the bottom content can clear the Safari UI */
+  .results-left-panel,
+  .recap-body-single,
+  .guidebook-content {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  }
+}
