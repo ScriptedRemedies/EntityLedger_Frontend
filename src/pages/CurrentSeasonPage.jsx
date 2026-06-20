@@ -399,12 +399,12 @@ const CurrentSeasonPage = () => {
         return () => clearInterval(doomsdayClock);
     }, [activeSeason, trials]);
 
-    // --- MULTI-DEVICE SYNC (Refetch on Window Focus) ---
+    // --- MULTI-DEVICE SYNC (Smart Polling & Window Focus) ---
     useEffect(() => {
-        const handleFocus = async () => {
-            // If we don't have an active season, or we are currently processing a submission, do nothing
-            if (!activeSeason || isProcessingResults) return;
+        // If we don't have an active season, or we are currently processing a submission, do nothing
+        if (!activeSeason || isProcessingResults) return;
 
+        const syncWithServer = async () => {
             try {
                 // 1. Ask the server for the absolute latest trials
                 const trialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
@@ -415,7 +415,7 @@ const CurrentSeasonPage = () => {
                 if (serverTrialCount > trialCount) {
                     console.log("External submission detected. Syncing state...");
 
-                    // Clear the isolated local storage on THIS device so it doesn't pop back up on refresh
+                    // Clear the isolated local storage on THIS device
                     localStorage.removeItem(`draft_loadout_${activeSeason.seasonId}_${currentKiller?.killerId}`);
                     localStorage.removeItem(`pending_trial_${activeSeason.seasonId}`);
 
@@ -436,7 +436,7 @@ const CurrentSeasonPage = () => {
                     if (!liveSeason || liveSeason.status !== 'ACTIVE') {
                         setRunEndingData({
                             outcome: liveSeason && liveSeason.status === 'COMPLETED' ? 'victory' : 'failure',
-                            isChained: false, // We skip the death cinematic to avoid weird sync bugs, straight to the verdict
+                            isChained: false,
                             recap: {
                                 status: liveSeason ? liveSeason.status : 'FAILED_TIME',
                                 finalTrials: trialsRes.data
@@ -445,14 +445,30 @@ const CurrentSeasonPage = () => {
                     }
                 }
             } catch (error) {
-                console.error("Failed to sync on focus:", error);
+                console.error("Failed to sync state:", error);
             }
         };
 
-        window.addEventListener('focus', handleFocus);
+        // Strategy 1: Active Polling (Only runs if the overlay is actively sitting open)
+        let pollInterval;
+        if (isViewingResults) {
+            pollInterval = setInterval(syncWithServer, 5000); // Check every 5 seconds
+        }
 
-        // Cleanup listener when the component unmounts
-        return () => window.removeEventListener('focus', handleFocus);
+        // Strategy 2: Tab Visibility (Fires instantly if you switch tabs back to the Ledger)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') syncWithServer();
+        };
+
+        window.addEventListener('focus', syncWithServer);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Cleanup all listeners and intervals when the component updates or unmounts
+        return () => {
+            if (pollInterval) clearInterval(pollInterval);
+            window.removeEventListener('focus', syncWithServer);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [activeSeason, trialCount, isViewingResults, isProcessingResults, currentKiller]);
 
     useEffect(() => {
