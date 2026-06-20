@@ -399,6 +399,62 @@ const CurrentSeasonPage = () => {
         return () => clearInterval(doomsdayClock);
     }, [activeSeason, trials]);
 
+    // --- MULTI-DEVICE SYNC (Refetch on Window Focus) ---
+    useEffect(() => {
+        const handleFocus = async () => {
+            // If we don't have an active season, or we are currently processing a submission, do nothing
+            if (!activeSeason || isProcessingResults) return;
+
+            try {
+                // 1. Ask the server for the absolute latest trials
+                const trialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
+                const serverTrialCount = trialsRes.data.length;
+
+                // 2. If the server has more trials than our local React state,
+                // it means a trial was successfully submitted on another device!
+                if (serverTrialCount > trialCount) {
+                    console.log("External submission detected. Syncing state...");
+
+                    // Clear the isolated local storage on THIS device so it doesn't pop back up on refresh
+                    localStorage.removeItem(`draft_loadout_${activeSeason.seasonId}_${currentKiller?.killerId}`);
+                    localStorage.removeItem(`pending_trial_${activeSeason.seasonId}`);
+
+                    // Drop the overlay if it is currently open
+                    if (isViewingResults) {
+                        setIsViewingResults(false);
+                        addToast("Trial submitted on another device. Syncing...", "info");
+                    }
+
+                    // Update our local state to match the server
+                    setTrialCount(serverTrialCount);
+                    setTrials(trialsRes.data);
+
+                    // 3. Check if the season status changed (e.g., they died or won on mobile)
+                    const checkRes = await api.get(`/seasons/active`);
+                    const liveSeason = checkRes.data;
+
+                    if (!liveSeason || liveSeason.status !== 'ACTIVE') {
+                        setRunEndingData({
+                            outcome: liveSeason && liveSeason.status === 'COMPLETED' ? 'victory' : 'failure',
+                            isChained: false, // We skip the death cinematic to avoid weird sync bugs, straight to the verdict
+                            recap: {
+                                status: liveSeason ? liveSeason.status : 'FAILED_TIME',
+                                finalTrials: trialsRes.data
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to sync on focus:", error);
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+
+        // Cleanup listener when the component unmounts
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [activeSeason, trialCount, isViewingResults, isProcessingResults, currentKiller]);
+
     useEffect(() => {
         if (activeSeason?.variantType === 'ADEPT' && currentKiller && allPerks.length > 0) {
             const adeptPerks = allPerks.filter(p =>
