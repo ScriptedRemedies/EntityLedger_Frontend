@@ -110,8 +110,6 @@ const CurrentSeasonPage = () => {
     const [trialCount, setTrialCount] = useState(0);
 
     const scrollRef = useRef(null);
-    const hasHydrated = useRef(false);
-    const initialDraftLoaded = useRef(false);
     const navView = useFadeTransition(NAV_TABS[0], 100, scrollRef);
     const [activeSeason, setActiveSeason] = useState(null);
     const [selectedKiller, setSelectedKiller] = useState(null);
@@ -146,6 +144,9 @@ const CurrentSeasonPage = () => {
     const [runEndingData, setRunEndingData] = useState(null);
     const [usedReRollTokens, setUsedReRollTokens] = useState(false);
     const [allPerks, setAllPerks] = useState([]);
+    const [allAddons, setAllAddons] = useState([]);
+    const initialDraftLoaded = useRef(false);
+    const isHydrating = useRef(false);
 
     // --- MARATHON TIMER STATE ---
     const [timeLeft, setTimeLeft] = useState(null);
@@ -258,69 +259,87 @@ const CurrentSeasonPage = () => {
         fetchSeasonData();
     }, [seasonId]);
 
+    // --- 1. FETCH PERKS ONCE ---
     useEffect(() => {
-        if (activeSeason?.variantType === 'ADEPT') {
-            const fetchPerks = async () => {
-                try {
-                    const response = await api.get('/reference-data/perks');
-                    setAllPerks(response.data);
-                } catch (err) {
-                    console.error("Failed to preload perks for Adept variant:", err);
+        api.get('/reference-data/perks')
+            .then(res => setAllPerks(res.data))
+            .catch(err => console.error("Failed to load perks", err));
+    }, []);
+
+    // --- 2. DYNAMIC HYDRATION & KILLER SWAP ---
+    // This runs automatically whenever you click a new killer in the grid
+    useEffect(() => {
+        if (!activeSeason || !currentKiller || allPerks.length === 0) return;
+
+        let isMounted = true;
+        isHydrating.current = true; // Lock auto-save while we fetch data!
+
+        const loadKillerData = async () => {
+            try {
+                // Fetch addons ONLY for this specific killer (bypasses the 500 error!)
+                const addonsRes = await api.get('/reference-data/addons?killerId=' + currentKiller.killerId);
+                if (!isMounted) return;
+
+                const killerAddons = addonsRes.data;
+                setAllAddons(killerAddons);
+
+                // Hydrate the saved loadout from the database
+                const loadouts = activeSeason.draftState?.loadouts || {};
+                const killerLoadout = loadouts[currentKiller.killerId];
+
+                if (killerLoadout) {
+                    setSelectedPerks(killerLoadout.perks.map(id => allPerks.find(p => p.id === id)).filter(Boolean));
+                    setSelectedAddons(killerLoadout.addons.map(id => killerAddons.find(a => a.id === id)).filter(Boolean));
+                } else {
+                    if (activeSeason.variantType !== 'ADEPT') setSelectedPerks([]);
+                    setSelectedAddons([]);
                 }
-            };
-            fetchPerks();
-        }
-    }, [activeSeason?.variantType]);
 
-    // 1. HYDRATION: Run strictly ONCE when the page loads
+                if (activeSeason.currentPhase === 'AWAITING_RESULTS') setIsViewingResults(true);
+
+                // Unlock auto-save
+                setTimeout(() => { if (isMounted) isHydrating.current = false; }, 100);
+            } catch (error) {
+                console.error("Failed to hydrate killer loadout", error);
+                if (isMounted) isHydrating.current = false;
+            }
+        };
+
+        loadKillerData();
+        return () => { isMounted = false; };
+    }, [currentKiller?.killerId, activeSeason?.seasonId, allPerks.length]);
+
+    // --- 3. BULLETPROOF AUTO-SAVE ---
     useEffect(() => {
-        if (!activeSeason || hasHydrated.current) return;
-        hasHydrated.current = true;
+        if (!activeSeason || !currentKiller || isViewingResults || isProcessingResults || isHydrating.current) return;
+        if (allPerks.length === 0) return;
 
-        const pendingKey = `pending_trial_${activeSeason.seasonId}`;
-        const pendingData = localStorage.getItem(pendingKey);
+        const saveTimer = setTimeout(async () => {
+            try {
+                setActiveSeason(prev => {
+                    const safeLoadouts = prev.draftState?.loadouts || {};
+                    const updatedLoadouts = {
+                        ...safeLoadouts,
+                        [currentKiller.killerId]: {
+                            perks: selectedPerks.filter(Boolean).map(p => p.id),
+                            addons: selectedAddons.filter(Boolean).map(a => a.id)
+                        }
+                    };
+                    return { ...prev, draftState: { ...prev.draftState, loadouts: updatedLoadouts } };
+                });
 
-        if (pendingData) {
-            // Restore a crashed trial!
-            const parsed = JSON.parse(pendingData);
-            setSelectedKiller(parsed.killer || null);
-            setSelectedPerks(parsed.perks || []);
-            setSelectedAddons(parsed.addons || []);
-            setIsViewingResults(true);
-            initialDraftLoaded.current = true; // Skip draft loading
-        }
-    }, [activeSeason]);
+                await api.patch(`/seasons/${activeSeason.seasonId}/draft`, {
+                    killerId: currentKiller.killerId,
+                    perkIds: selectedPerks.filter(Boolean).map(p => p.id),
+                    addOnIds: selectedAddons.filter(Boolean).map(a => a.id)
+                });
+            } catch (error) {
+                console.error("Failed to save draft to cloud", error);
+            }
+        }, 500);
 
-    // 2. INITIAL DRAFT: Load the default killer's draft on first boot
-    useEffect(() => {
-        if (!activeSeason || !currentKiller || isViewingResults || initialDraftLoaded.current) return;
-        initialDraftLoaded.current = true;
-
-        const draftKey = `draft_loadout_${activeSeason.seasonId}_${currentKiller.killerId}`;
-        const draftData = localStorage.getItem(draftKey);
-
-        if (draftData) {
-            const parsed = JSON.parse(draftData);
-            setSelectedPerks(parsed.perks || []);
-            setSelectedAddons(parsed.addons || []);
-        }
-    }, [activeSeason, currentKiller, isViewingResults]);
-
-    // 3. AUTO-SAVE: Silently save loadouts PER KILLER
-    useEffect(() => {
-        if (!activeSeason || !currentKiller || !initialDraftLoaded.current) return;
-
-        // THE FIX: Isolated save files using Killer ID!
-        const draftKey = `draft_loadout_${activeSeason.seasonId}_${currentKiller.killerId}`;
-
-        if (!isViewingResults && !isProcessingResults) {
-            const draftData = {
-                perks: selectedPerks,
-                addons: selectedAddons
-            };
-            localStorage.setItem(draftKey, JSON.stringify(draftData));
-        }
-    }, [selectedPerks, selectedAddons, currentKiller, activeSeason, isViewingResults, isProcessingResults]);
+        return () => clearTimeout(saveTimer);
+    }, [selectedPerks, selectedAddons, currentKiller?.killerId]);
 
     // --- MARATHON TIMER LOGIC ---
     useEffect(() => {
@@ -406,43 +425,31 @@ const CurrentSeasonPage = () => {
 
         const syncWithServer = async () => {
             try {
-                // 1. Ask the server for the absolute latest trials
-                const trialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
-                const serverTrialCount = trialsRes.data.length;
+                const checkRes = await api.get(`/seasons/active`);
+                const liveSeason = checkRes.data;
 
-                // 2. If the server has more trials than our local React state,
-                // it means a trial was successfully submitted on another device!
-                if (serverTrialCount > trialCount) {
-                    console.log("External submission detected. Syncing state...");
+                // 1. Check if the season died or was won on another device
+                if (!liveSeason || liveSeason.status !== 'ACTIVE') {
+                    const trialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
+                    setRunEndingData({
+                        outcome: liveSeason && liveSeason.status === 'COMPLETED' ? 'victory' : 'failure',
+                        isChained: false,
+                        recap: { status: liveSeason ? liveSeason.status : 'FAILED_TIME', finalTrials: trialsRes.data }
+                    });
+                    return;
+                }
 
-                    // Clear the isolated local storage on THIS device
-                    localStorage.removeItem(`draft_loadout_${activeSeason.seasonId}_${currentKiller?.killerId}`);
-                    localStorage.removeItem(`pending_trial_${activeSeason.seasonId}`);
+                // 2. THE DESYNC FIX: If the server says we are DRAFTING, but our screen is locked on the RESULTS OVERLAY...
+                // It means the trial was successfully submitted on another device!
+                if (liveSeason.currentPhase === 'DRAFTING' && isViewingResults) {
+                    console.log("External submission detected via Phase switch. Dropping overlay...");
 
-                    // Drop the overlay if it is currently open
-                    if (isViewingResults) {
-                        setIsViewingResults(false);
-                        addToast("Trial submitted on another device. Syncing...", "info");
-                    }
-
-                    // Update our local state to match the server
-                    setTrialCount(serverTrialCount);
+                    const trialsRes = await api.get(`/seasons/${activeSeason.seasonId}/trials`);
+                    setTrialCount(trialsRes.data.length);
                     setTrials(trialsRes.data);
 
-                    // 3. Check if the season status changed (e.g., they died or won on mobile)
-                    const checkRes = await api.get(`/seasons/active`);
-                    const liveSeason = checkRes.data;
-
-                    if (!liveSeason || liveSeason.status !== 'ACTIVE') {
-                        setRunEndingData({
-                            outcome: liveSeason && liveSeason.status === 'COMPLETED' ? 'victory' : 'failure',
-                            isChained: false,
-                            recap: {
-                                status: liveSeason ? liveSeason.status : 'FAILED_TIME',
-                                finalTrials: trialsRes.data
-                            }
-                        });
-                    }
+                    setIsViewingResults(false);
+                    addToast("Trial submitted on another device. Syncing...", "info");
                 }
             } catch (error) {
                 console.error("Failed to sync state:", error);
@@ -555,8 +562,6 @@ const CurrentSeasonPage = () => {
             const [response] = await Promise.all([responsePromise, minHoldPromise]);
             const trialResult = response.data;
 
-            localStorage.removeItem(`pending_trial_${activeSeason.seasonId}`);
-            localStorage.removeItem(`draft_loadout_${activeSeason.seasonId}_${currentKiller.killerId}`);
 
             const isKillerActuallyDead = isKillerDead && !(isIronMan && mappedSurvivors.includes('ESCAPED') && trialResult.seasonStatus === 'ACTIVE');
 
@@ -840,18 +845,6 @@ const CurrentSeasonPage = () => {
                                                             isSelected={currentKiller?.killerId === rosterItem.killerId}
                                                             onSelect={() => {
                                                                 setSelectedKiller(rosterItem);
-
-                                                                const draftKey = `draft_loadout_${activeSeason.seasonId}_${rosterItem.killerId}`;
-                                                                const draftData = localStorage.getItem(draftKey);
-
-                                                                if (draftData) {
-                                                                    const parsed = JSON.parse(draftData);
-                                                                    setSelectedPerks(parsed.perks || []);
-                                                                    setSelectedAddons(parsed.addons || []);
-                                                                } else {
-                                                                    if (activeSeason.variantType !== 'ADEPT') setSelectedPerks([]);
-                                                                    setSelectedAddons([]);
-                                                                }
                                                             }}
                                                             onSell={(k) => setKillerToSellConfirm(k)}
                                                             mode="active"
@@ -1005,39 +998,31 @@ const CurrentSeasonPage = () => {
                     selectedAddons={selectedAddons}
                     trialCount={trialCount}
                     onCancel={() => setIsConfirmingTrial(false)}
-                    onConfirm={() => {
-                        // Lock the pending trial in memory
-                        const pendingKey = `pending_trial_${activeSeason.seasonId}`;
-                        const pendingData = {
-                            killer: currentKiller,
-                            perks: selectedPerks,
-                            addons: selectedAddons
-                        }
-                        localStorage.setItem(pendingKey, JSON.stringify(pendingData));
-
-                        // 1. Instantly mount the pitch-black loader OVER the modal (z-index: 999999)
+                    onConfirm={async () => {
+                        // 1. Instantly mount the pitch-black loader
                         setIsProcessingResults(true);
+                        setIsConfirmingTrial(false);
 
-                        // 2. Safely unmount the modal 50ms later so it vanishes silently behind the black screen
-                        setTimeout(() => {
-                            setIsConfirmingTrial(false);
-                        }, 50);
+                        try {
+                            // 2. THE LOCK-IN: Tell Spring Boot to flip the phase to AWAITING_RESULTS
+                            await api.post(`/trials/${activeSeason.seasonId}/start`);
 
-                        // 3. Hold the loader for 2 seconds to build suspense
-                        setTimeout(() => {
-                            // 4. Mount the Results overlay UNDER the loader
-                            setIsViewingResults(true);
-
-                            // 5. Trigger the loader's fade-out CSS
-                            setIsLoaderClosing(true);
-
-                            // 6. After the fade finishes, remove the loader from the DOM entirely
+                            // 3. Hold the loader for suspense
                             setTimeout(() => {
-                                setIsProcessingResults(false);
-                                setIsLoaderClosing(false);
-                            }, 500);
+                                setIsViewingResults(true);
+                                setIsLoaderClosing(true);
 
-                        }, 2000);
+                                setTimeout(() => {
+                                    setIsProcessingResults(false);
+                                    setIsLoaderClosing(false);
+                                }, 500);
+                            }, 2000);
+
+                        } catch (error) {
+                            console.error("Failed to lock in trial:", error);
+                            addToast("Failed to connect to the Entity.", "error");
+                            setIsProcessingResults(false);
+                        }
                     }}
                 />
             )}
