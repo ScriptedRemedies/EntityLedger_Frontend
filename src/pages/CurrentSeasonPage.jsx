@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import '../styles/ChallengesPage.scss';
 import '../styles/CurrentSeasonPage.scss';
 import { useFadeTransition } from "../hooks/useFadeTranistion.js";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, memo } from "react";
 import api from "../services/api.js";
 import { useToast } from "../hooks/ToastContext.jsx";
 import KillerCard from "./small-components/KillerCard.jsx";
@@ -26,7 +26,7 @@ const NAV_TABS = [
 // ==========================================
 // THE ENTITY'S TOLL (Killer Death Cinematic)
 // ==========================================
-const DeathCinematic = ({ killer, isRunEnding, onComplete }) => {
+const DeathCinematic = memo(({ killer, isRunEnding, onComplete }) => {
     const [isDead, setIsDead] = useState(false);
     const [isFadingOut, setIsFadingOut] = useState(false);
 
@@ -54,12 +54,12 @@ const DeathCinematic = ({ killer, isRunEnding, onComplete }) => {
             </div>
         </div>
     );
-};
+})
 
 // ==========================================
 // THE RUN ENDING CINEMATIC (Victory & Void)
 // ==========================================
-const RunEndingCinematic = ({ outcome, recapData, isChained, onTriggerRecap, onComplete }) => {
+const RunEndingCinematic = memo(({ outcome, recapData, isChained, onTriggerRecap, onComplete }) => {
     const [phase, setPhase] = useState(isChained ? 'blackout' : 'idle');
 
     useEffect(() => {
@@ -101,7 +101,7 @@ const RunEndingCinematic = ({ outcome, recapData, isChained, onTriggerRecap, onC
             )}
         </div>
     );
-};
+})
 
 const CurrentSeasonPage = () => {
     const navigate = useCinematicNavigate();
@@ -147,10 +147,19 @@ const CurrentSeasonPage = () => {
     const [allAddons, setAllAddons] = useState([]);
     const initialDraftLoaded = useRef(false);
     const isHydrating = useRef(false);
+    const isLocalSubmissionActive = useRef(false);
 
     // --- MARATHON TIMER STATE ---
     const [timeLeft, setTimeLeft] = useState(null);
     const [isTimerDanger, setIsTimerDanger] = useState(false);
+
+    // --- CINEMATIC CALLBACKS ---
+    const handleTriggerRecap = useCallback((data) => {
+        setSeasonRecap(data);
+    }, []);
+    const handleRunEndingComplete = useCallback(() => {
+        setRunEndingData(null);
+    }, []);
 
     // --- ROSTER CYCLING LOGIC ---
     const isIronMan = activeSeason?.variantType === 'IRON_MAN';
@@ -384,7 +393,7 @@ const CurrentSeasonPage = () => {
 
     // --- THE DOOMSDAY CLOCK (Silent Background Poller) ---
     useEffect(() => {
-        if (!activeSeason || activeSeason.status !== 'ACTIVE') return;
+        if (!activeSeason || activeSeason.status !== 'ACTIVE' || deathCinematic || runEndingData) return;
 
         // Every 60 seconds, silently ask the backend if the season is still legally active.
         const doomsdayClock = setInterval(async () => {
@@ -416,14 +425,18 @@ const CurrentSeasonPage = () => {
         }, 60000); // 60,000ms = exactly 1 minute
 
         return () => clearInterval(doomsdayClock);
-    }, [activeSeason, trials]);
+    }, [activeSeason, trials, deathCinematic, runEndingData]);
 
     // --- MULTI-DEVICE SYNC (Smart Polling & Window Focus) ---
-    useEffect(() => {
+    useEffect(() =>  {
         // If we don't have an active season, or we are currently processing a submission, do nothing
-        if (!activeSeason || isProcessingResults) return;
+        if (!activeSeason || isProcessingResults || deathCinematic || runEndingData) return;
 
         const syncWithServer = async () => {
+            if(isLocalSubmissionActive.current) {
+                return;
+            }
+
             try {
                 const checkRes = await api.get(`/seasons/active`);
                 const liveSeason = checkRes.data;
@@ -476,7 +489,7 @@ const CurrentSeasonPage = () => {
             window.removeEventListener('focus', syncWithServer);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [activeSeason, trialCount, isViewingResults, isProcessingResults, currentKiller]);
+    }, [activeSeason, trialCount, isViewingResults, isProcessingResults, currentKiller, deathCinematic, runEndingData]);
 
     useEffect(() => {
         if (activeSeason?.variantType === 'ADEPT' && currentKiller && allPerks.length > 0) {
@@ -508,6 +521,8 @@ const CurrentSeasonPage = () => {
 
     // --- TRIAL SUBMISSION LOGIC ---
     const handleTrialSubmit = async (resultsPayload) => {
+        isLocalSubmissionActive.current = true;
+
         try {
             const isKillerDead = resultsPayload.survivors.includes('escaped');
 
@@ -639,6 +654,7 @@ const CurrentSeasonPage = () => {
                     // Silently delete the results overlay behind the black fog after 1.5 seconds
                     setTimeout(() => {
                         setIsViewingResults(false);
+                        isLocalSubmissionActive.current = false;
                     }, 1500);
                 } else if (is4KAscension || isRuthlessAscension) {
                     await refreshPromise;
@@ -649,18 +665,21 @@ const CurrentSeasonPage = () => {
                         finishSubmission();
 
                         setIsFogTransitioning(false);
+                        isLocalSubmissionActive.current = false;
                     }, 500);
                 } else {
                     // Normal Path (Run continues)
                     setIsViewingResults(false);
                     await refreshPromise;
                     finishSubmission();
+                    isLocalSubmissionActive.current = false;
                 }
             }
 
         } catch (error) {
             console.error("Failed to submit trial:", error);
             addToast("Failed to submit trial data.", "error");
+            isLocalSubmissionActive. current = false;
         }
     };
 
@@ -1071,8 +1090,8 @@ const CurrentSeasonPage = () => {
                     outcome={runEndingData.outcome}
                     recapData={runEndingData.recap}
                     isChained={runEndingData.isChained}
-                    onTriggerRecap={(data) => setSeasonRecap(data)} // Renders the overlay silently in the background
-                    onComplete={() => setRunEndingData(null)}
+                    onTriggerRecap={handleTriggerRecap}
+                    onComplete={handleRunEndingComplete}
                 />
             )}
 
